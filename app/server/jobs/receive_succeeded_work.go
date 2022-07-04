@@ -51,7 +51,7 @@ func handleSucceeded(m *nats.Msg) {
 		global.DB.First(&account, workSucceeded.AccountID)
 
 		// Update account
-		interv := workSucceeded.SucceededAt.Sub(account.LastUpdated)
+		interv := workSucceeded.NewInterval
 		platform := commonConsts.SUPPORTED_PLATFORM[workSucceeded.Platform]
 		if interv < platform.MinRefreshGap {
 			interv = platform.MinRefreshGap

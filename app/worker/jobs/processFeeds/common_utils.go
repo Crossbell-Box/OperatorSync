@@ -25,12 +25,18 @@ func makeRequest(url string, withProxy bool) ([]*gofeed.Item, uint, error) {
 	return feed.Items, 0, nil
 }
 
-func handleSucceeded(workDispatched *commonTypes.WorkDispatched, acceptTime time.Time, rawFeeds []commonTypes.RawFeed) {
+func handleSucceeded(workDispatched *commonTypes.WorkDispatched, acceptTime time.Time, rawFeeds []commonTypes.RawFeed, newInterval time.Duration) {
+	if len(rawFeeds) == 0 {
+		// Actually nothing
+		return
+	}
+
 	succeededWork := commonTypes.WorkSucceeded{
 		WorkDispatched: *workDispatched,
 		AcceptedAt:     acceptTime,
 		SucceededAt:    time.Now(),
 		Feeds:          rawFeeds,
+		NewInterval:    newInterval,
 	}
 	if succeededWorkBytes, err := json.Marshal(&succeededWork); err != nil {
 		global.Logger.Error("Failed to marshall succeeded work: ", succeededWork)

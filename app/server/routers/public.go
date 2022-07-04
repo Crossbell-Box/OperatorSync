@@ -11,5 +11,6 @@ func PublicEndpoints(rg *gin.RouterGroup) {
 
 	// List
 	rg.GET("/account/:character", public.ListAccounts)
+	rg.POST("/account/:character/refresh", public.RefreshAccounts)
 	rg.GET("/feed/:platform/:username", public.ListFeeds)
 }

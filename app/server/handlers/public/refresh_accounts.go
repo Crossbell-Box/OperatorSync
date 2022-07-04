@@ -12,7 +12,7 @@ import (
 	"time"
 )
 
-func ListAccounts(ctx *gin.Context) {
+func RefreshAccounts(ctx *gin.Context) {
 	// Parse request params
 	reqCharacter := ctx.Param("character")
 	if reqCharacter == "" {
@@ -23,42 +23,29 @@ func ListAccounts(ctx *gin.Context) {
 		return
 	}
 
-	// Get requests
-	var accounts []models.Account
-
 	// Use redis cache
-	cacheKey := fmt.Sprintf("%s:%s:%s", consts.CACHE_PREFIX, "accounts:list", reqCharacter)
+	refreshAccountsCacheKey := fmt.Sprintf("%s:%s:%s", consts.CACHE_PREFIX, "accounts:refresh", reqCharacter)
 
 	// Get data from cache
 	getCacheCtx, cancelGetCacheCtx := context.WithTimeout(context.Background(), 1*time.Second)
 	defer cancelGetCacheCtx()
-	if exist, err := global.Redis.Exists(getCacheCtx, cacheKey).Result(); err != nil {
+	if exist, err := global.Redis.Exists(getCacheCtx, refreshAccountsCacheKey).Result(); err != nil {
 		global.Logger.Error("Unable to check accounts cache")
 	} else if exist > 0 {
-		if accountsBytes, err := global.Redis.Get(getCacheCtx, cacheKey).Bytes(); err != nil {
-			global.Logger.Error("Unable to get accounts cache")
-		} else if err = json.Unmarshal(accountsBytes, &accounts); err != nil {
-			global.Logger.Error("Unable to parse accounts cache")
-			// Clear invalid cache
-			global.Redis.Del(getCacheCtx, cacheKey)
-		} else {
-			// Successfully parsed
-
-			ctx.JSON(http.StatusOK, gin.H{
-				"ok":      true,
-				"message": "Records found",
-				"result":  accounts,
-			})
-
-			return
-		}
+		ctx.JSON(http.StatusOK, gin.H{
+			"ok":      false,
+			"message": "Please try again later",
+		})
+		return
 	}
 
-	// Get data from database
-	global.DB.
-		Model(&models.Account{}).
-		Order("created_at").
-		Find(&accounts)
+	// Start flush account work
+	var accounts []models.Account
+
+	// TODO: Finish this
+
+	// Reset cache key
+	listAccountsCacheKey := fmt.Sprintf("%s:%s:%s", consts.CACHE_PREFIX, "accounts:list", reqCharacter)
 
 	// Set cache
 	setCacheCtx := context.Background()
@@ -66,13 +53,14 @@ func ListAccounts(ctx *gin.Context) {
 		// WTF?
 		global.Logger.Error("Failed to parse accounts")
 	} else {
-		global.Redis.Set(setCacheCtx, cacheKey, accountsBytes, consts.ACCOUNT_LIST_CACHE_EXPIRE)
+		global.Redis.Set(setCacheCtx, listAccountsCacheKey, accountsBytes, consts.ACCOUNT_LIST_CACHE_EXPIRE)
 	}
+	global.Redis.Set(setCacheCtx, refreshAccountsCacheKey, time.Now(), consts.ACCOUNT_REFRESH_COOLDOWN)
 
 	// Respond
 	ctx.JSON(http.StatusOK, gin.H{
 		"ok":      true,
-		"message": "Records found",
+		"message": "Accounts flushed",
 		"result":  accounts,
 	})
 
