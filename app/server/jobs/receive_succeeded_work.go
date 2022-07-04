@@ -17,13 +17,13 @@ import (
 func ReceiveSucceededWork() error {
 	sub, err := global.MQ.Subscribe(commonConsts.MQSETTINGS_SucceededChannelName, handleSucceeded)
 	if err != nil {
-		global.Logger.Error("Failed to subscribe to MQ succeeded queue with error: ", err)
+		global.Logger.Error("Failed to subscribe to MQ succeeded queue with error: ", err.Error())
 		return err
 	}
 
 	defer sub.Drain() // Ignore errors
 
-	return err
+	return nil
 }
 
 func handleSucceeded(m *nats.Msg) {

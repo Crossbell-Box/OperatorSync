@@ -53,7 +53,7 @@ func dispatch() {
 			Platform:    account.Platform,
 			CollectLink: strings.ReplaceAll(platform.FeedLink, "{{username}}", account.Username),
 			DropBefore:  account.LastUpdated,
-			Deadline:    account.NextUpdate, // If cannot be peformed before DDL, work fails (cause new work would replace current one)
+			DropAfter:   account.NextUpdate, // If cannot be peformed before DDL, work fails (cause new work would replace current one)
 		}
 
 		if workBytes, err := json.Marshal(&work); err != nil {

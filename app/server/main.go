@@ -24,22 +24,27 @@ func main() {
 
 	// Initialize database
 	if err := inits.DB(); err != nil {
-		global.Logger.Fatal("Failed to load database:", err)
+		global.Logger.Fatal("Failed to load database: ", err.Error())
 	}
 
 	// Initialize redis
 	if err := inits.Redis(); err != nil {
-		global.Logger.Fatal("Failed to load redis:", err)
+		global.Logger.Fatal("Failed to load redis: ", err.Error())
 	}
 
 	// Initialize MQ
 	if err := inits.MQ(); err != nil {
-		global.Logger.Fatal("Failed to load MQ:", err)
+		global.Logger.Fatal("Failed to load MQ: ", err.Error())
 	}
 
 	// Initialize metrics
 	if err := inits.Metrics(); err != nil {
-		global.Logger.Fatal("Failed to load metrics:", err)
+		global.Logger.Fatal("Failed to load metrics: ", err.Error())
+	}
+
+	// Initialize jobs
+	if err := inits.Jobs(); err != nil {
+		global.Logger.Fatal("Failed to start jobs: ", err.Error())
 	}
 
 	// Initializing router
@@ -50,7 +55,7 @@ func main() {
 	// Start
 	global.Logger.Info("Service starting...")
 	if err := engine.Run(); err != nil {
-		global.Logger.Fatal("Failed to start service:", err)
+		global.Logger.Fatal("Failed to start service:", err.Error())
 	}
 
 }

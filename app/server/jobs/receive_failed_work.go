@@ -11,13 +11,13 @@ import (
 func ReceiveFailedWork() error {
 	sub, err := global.MQ.Subscribe(commonConsts.MQSETTINGS_FailedChannelName, handleFailed)
 	if err != nil {
-		global.Logger.Error("Failed to subscribe to MQ failed queue with error: ", err)
+		global.Logger.Error("Failed to subscribe to MQ failed queue with error: ", err.Error())
 		return err
 	}
 
 	defer sub.Drain() // Ignore errors
 
-	return err
+	return nil
 }
 
 func handleFailed(m *nats.Msg) {
