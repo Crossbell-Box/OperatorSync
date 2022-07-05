@@ -12,7 +12,7 @@ import (
 
 func StartDispatchFeedCollectWork() {
 	go func() {
-		t := time.NewTimer(1 * time.Minute)
+		t := time.NewTimer(10 * time.Second)
 		for {
 			select {
 			case <-t.C:
