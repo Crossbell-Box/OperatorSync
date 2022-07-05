@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"github.com/Crossbell-Box/OperatorSync/app/worker/config"
 	"github.com/Crossbell-Box/OperatorSync/app/worker/global"
+	"github.com/Crossbell-Box/OperatorSync/app/worker/types"
 	commonConsts "github.com/Crossbell-Box/OperatorSync/common/consts"
 	commonTypes "github.com/Crossbell-Box/OperatorSync/common/types"
 	"github.com/nats-io/nats.go"
@@ -11,7 +12,7 @@ import (
 	"time"
 )
 
-func ProcessFeeds(platformID string) func(m *nats.Msg) {
+func ProcessFeeds(platformID string, cccs *types.ConcurrencyChannels) func(m *nats.Msg) {
 	return func(m *nats.Msg) {
 
 		var workDispatched commonTypes.WorkDispatched
@@ -38,9 +39,9 @@ func ProcessFeeds(platformID string) func(m *nats.Msg) {
 
 		switch platformID {
 		case "medium":
-			feedsMedium(&workDispatched, acceptTime)
+			feedsMedium(cccs, &workDispatched, acceptTime)
 		case "tiktok":
-			feedsTikTok(&workDispatched, acceptTime)
+			feedsTikTok(cccs, &workDispatched, acceptTime)
 		default:
 			// Unable to handle
 			handleFailed(&workDispatched, acceptTime, commonConsts.ERROR_CODE_UNSUPPORTED_PLATFORM, "Unsupported platform")

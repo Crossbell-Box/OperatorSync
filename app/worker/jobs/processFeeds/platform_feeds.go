@@ -2,7 +2,8 @@ package processFeeds
 
 import (
 	"fmt"
-	"github.com/Crossbell-Box/OperatorSync/app/server/global"
+	"github.com/Crossbell-Box/OperatorSync/app/worker/global"
+	"github.com/Crossbell-Box/OperatorSync/app/worker/types"
 	"github.com/Crossbell-Box/OperatorSync/app/worker/utils"
 	commonTypes "github.com/Crossbell-Box/OperatorSync/common/types"
 	"github.com/mmcdole/gofeed"
@@ -23,8 +24,12 @@ func init() {
 	videoRegex = regexp.MustCompile("<source src=\"(.+?)\"")
 }
 
-func feedsMedium(work *commonTypes.WorkDispatched, acceptTime time.Time) {
+func feedsMedium(cccs *types.ConcurrencyChannels, work *commonTypes.WorkDispatched, acceptTime time.Time) {
 	// Refer to https://medium.com/feed/@mintable
+
+	// Concurrency control
+	cccs.Direct.Request()
+	defer cccs.Direct.Done()
 
 	rawItems, errCode, err := makeRequest(work.CollectLink, true)
 	if err != nil {
@@ -63,8 +68,12 @@ func feedsMedium(work *commonTypes.WorkDispatched, acceptTime time.Time) {
 
 }
 
-func feedsTikTok(work *commonTypes.WorkDispatched, acceptTime time.Time) {
+func feedsTikTok(cccs *types.ConcurrencyChannels, work *commonTypes.WorkDispatched, acceptTime time.Time) {
 	// Refer to https://github.com/DIYgod/RSSHub/pull/9867
+
+	// Concurrency control
+	cccs.Stateful.Request()
+	defer cccs.Stateful.Done()
 
 	rawItems, errCode, err := makeRequest(work.CollectLink, true)
 	if err != nil {

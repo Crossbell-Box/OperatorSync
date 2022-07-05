@@ -13,6 +13,11 @@ type workerConfig struct {
 
 	IPFSEndpoint string
 
+	// Concurrency control
+	ConcurrencyStateful  int
+	ConcurrencyStateless int
+	ConcurrencyDirect    int
+
 	commonConfig.Config
 }
 

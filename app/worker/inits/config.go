@@ -3,8 +3,10 @@ package inits
 import (
 	"fmt"
 	"github.com/Crossbell-Box/OperatorSync/app/worker/config"
+	"github.com/Crossbell-Box/OperatorSync/app/worker/global"
 	"net/url"
 	"os"
+	"strconv"
 	"strings"
 )
 
@@ -30,6 +32,25 @@ func Config() error {
 	}
 	if config.Config.MQConnString, exist = os.LookupEnv("MQ_CONNECTION_STRING"); !exist {
 		config.Config.MQConnString = "nats://localhost:4222"
+	}
+
+	if concurrencyStatefulStr, exist := os.LookupEnv("CONCURRENCY_CONTROL_STATEFUL"); !exist {
+		config.Config.ConcurrencyStateful = 10 // Default
+	} else if config.Config.ConcurrencyStateful, err = strconv.Atoi(concurrencyStatefulStr); err != nil || config.Config.ConcurrencyStateful <= 0 {
+		global.Logger.Error("Invalid stateful concurrency control settings, using default value")
+		config.Config.ConcurrencyStateful = 10 // Default
+	}
+	if concurrencyStatelessStr, exist := os.LookupEnv("CONCURRENCY_CONTROL_STATELESS"); !exist {
+		config.Config.ConcurrencyStateless = 50 // Default
+	} else if config.Config.ConcurrencyStateless, err = strconv.Atoi(concurrencyStatelessStr); err != nil || config.Config.ConcurrencyStateless <= 0 {
+		global.Logger.Error("Invalid stateless concurrency control settings, using default value")
+		config.Config.ConcurrencyStateless = 50 // Default
+	}
+	if concurrencyDirectStr, exist := os.LookupEnv("CONCURRENCY_CONTROL_DIRECT"); !exist {
+		config.Config.ConcurrencyDirect = 100 // Default
+	} else if config.Config.ConcurrencyDirect, err = strconv.Atoi(concurrencyDirectStr); err != nil || config.Config.ConcurrencyDirect <= 0 {
+		global.Logger.Error("Invalid direct concurrency control settings, using default value")
+		config.Config.ConcurrencyDirect = 100 // Default
 	}
 
 	config.Config.DevelopmentMode = !strings.Contains(strings.ToLower(os.Getenv("MODE")), "prod")
