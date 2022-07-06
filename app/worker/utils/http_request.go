@@ -9,7 +9,7 @@ import (
 func HttpRequest(url string, withProxy bool) ([]byte, error) {
 
 	var tr http.Transport
-	if withProxy {
+	if withProxy && config.Config.ProxyURL != nil {
 		tr.Proxy = http.ProxyURL(config.Config.ProxyURL)
 	}
 

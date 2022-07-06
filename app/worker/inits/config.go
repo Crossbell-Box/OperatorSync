@@ -3,7 +3,7 @@ package inits
 import (
 	"fmt"
 	"github.com/Crossbell-Box/OperatorSync/app/worker/config"
-	"github.com/Crossbell-Box/OperatorSync/app/worker/global"
+	"log"
 	"net/url"
 	"os"
 	"strconv"
@@ -22,9 +22,11 @@ func Config() error {
 	}
 
 	if rawProxyURL, exist := os.LookupEnv("PROXY_URL"); !exist {
-		return fmt.Errorf("please specify http proxy URL")
+		log.Println("Http proxy URL not set, skip proxy")
+		config.Config.ProxyURL = nil
 	} else if config.Config.ProxyURL, err = url.Parse(rawProxyURL); err != nil {
-		return fmt.Errorf("http proxy URL is invalid")
+		log.Println("Invalid http proxy URL setting, skip proxy")
+		config.Config.ProxyURL = nil
 	}
 
 	if config.Config.IPFSEndpoint, exist = os.LookupEnv("IPFS_ENDPOINT"); !exist {
@@ -37,19 +39,19 @@ func Config() error {
 	if concurrencyStatefulStr, exist := os.LookupEnv("CONCURRENCY_CONTROL_STATEFUL"); !exist {
 		config.Config.ConcurrencyStateful = 10 // Default
 	} else if config.Config.ConcurrencyStateful, err = strconv.Atoi(concurrencyStatefulStr); err != nil || config.Config.ConcurrencyStateful <= 0 {
-		global.Logger.Error("Invalid stateful concurrency control settings, using default value")
+		log.Println("Invalid stateful concurrency control settings, using default value")
 		config.Config.ConcurrencyStateful = 10 // Default
 	}
 	if concurrencyStatelessStr, exist := os.LookupEnv("CONCURRENCY_CONTROL_STATELESS"); !exist {
 		config.Config.ConcurrencyStateless = 50 // Default
 	} else if config.Config.ConcurrencyStateless, err = strconv.Atoi(concurrencyStatelessStr); err != nil || config.Config.ConcurrencyStateless <= 0 {
-		global.Logger.Error("Invalid stateless concurrency control settings, using default value")
+		log.Println("Invalid stateless concurrency control settings, using default value")
 		config.Config.ConcurrencyStateless = 50 // Default
 	}
 	if concurrencyDirectStr, exist := os.LookupEnv("CONCURRENCY_CONTROL_DIRECT"); !exist {
 		config.Config.ConcurrencyDirect = 100 // Default
 	} else if config.Config.ConcurrencyDirect, err = strconv.Atoi(concurrencyDirectStr); err != nil || config.Config.ConcurrencyDirect <= 0 {
-		global.Logger.Error("Invalid direct concurrency control settings, using default value")
+		log.Println("Invalid direct concurrency control settings, using default value")
 		config.Config.ConcurrencyDirect = 100 // Default
 	}
 
