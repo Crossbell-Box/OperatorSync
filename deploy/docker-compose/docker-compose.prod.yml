@@ -1,0 +1,70 @@
+version: "3"
+services:
+  # Server related
+  db:
+    image: postgres
+    restart: unless-stopped
+    env_file: ../env/db.env
+    networks:
+      - server_network
+    volumes:
+      - db_storage:/var/lib/postgresql/data
+  redis:
+    image: redis
+    restart: unless-stopped
+    env_file: ../env/redis.env
+    networks:
+      - server_network
+    volumes:
+      - redis_storage:/data
+  # Both related
+  mq:
+    image: nats
+    restart: unless-stopped
+    env_file: ../env/mq.env
+    networks:
+      - server_network
+      - worker_network
+  # Worker related
+  rsshub_stateful:
+    image: diygod/rsshub
+    restart: unless-stopped
+    env_file: ../env/rsshub.stateful.env
+    networks:
+      - worker_network
+      - external_network
+  rsshub_stateless:
+    image: diygod/rsshub
+    restart: unless-stopped
+    env_file: ../env/rsshub.stateless.env
+    networks:
+      - worker_network
+      - external_network
+  # Server & Worker
+  server:
+    image: operator-sync/server
+    restart: unless-stopped
+    env_file: ../env/server.env
+    networks:
+      - server_network
+      - external_network
+    ports:
+      - 127.0.0.1:8080:8080
+  worker:
+    image: operator-sync/worker
+    restart: unless-stopped
+    env_file: ../env/worker.env
+    networks:
+      - worker_network
+      - external_network
+
+networks:
+  server_network:
+    internal: true
+  worker_network:
+    internal: true
+  external_network:
+
+volumes:
+  db_storage:
+  redis_storage:

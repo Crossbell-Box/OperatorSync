@@ -1,0 +1,30 @@
+version: "3"
+services:
+  # Server related
+  db:
+    image: postgres
+    ports:
+      - 127.0.0.1:5432:5432
+    env_file: ../env/db.env
+  redis:
+    image: redis
+    ports:
+      - 127.0.0.1:6379:6379
+    env_file: ../env/redis.env
+  # Both related
+  mq:
+    image: nats
+    ports:
+      - 127.0.0.1:4222:4222
+    env_file: ../env/mq.env
+  # Worker related
+  rsshub_stateful:
+    image: diygod/rsshub
+    ports:
+      - 127.0.0.1:1200:1200
+    env_file: ../env/rsshub.stateful.env
+  rsshub_stateless:
+    image: diygod/rsshub
+    ports:
+      - 127.0.0.1:1201:1200
+    env_file: ../env/rsshub.stateless.env
