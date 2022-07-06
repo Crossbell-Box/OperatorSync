@@ -31,10 +31,10 @@ type RawFeed struct {
 	Link        string         `json:"link"`
 	UpdatedAt   time.Time      `json:"updated_at"`
 	PublishedAt time.Time      `json:"published_at"`
-	Authors     pq.StringArray `json:"authors"`
+	Authors     pq.StringArray `json:"authors" gorm:"type:text[]"`
 	GUID        string         `json:"guid"`
 	Image       string         `json:"image"`
-	Categories  pq.StringArray `json:"categories"`
-	Media       pq.StringArray `json:"media"`
+	Categories  pq.StringArray `json:"categories" gorm:"type:text[]"`
+	Media       pq.StringArray `json:"media" gorm:"type:text[]"`
 	//Media       MediaArray     `json:"media" gorm:"type:longtext"` // Enclosure
 }

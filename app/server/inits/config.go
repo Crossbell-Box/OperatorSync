@@ -2,6 +2,7 @@ package inits
 
 import (
 	"github.com/Crossbell-Box/OperatorSync/app/server/config"
+	"log"
 	"os"
 	"strings"
 )
@@ -22,6 +23,10 @@ func Config() error {
 	}
 
 	config.Config.DevelopmentMode = !strings.Contains(strings.ToLower(os.Getenv("MODE")), "prod")
+
+	if config.Config.DevelopmentMode {
+		log.Println("Configurations: ", config.Config)
+	}
 
 	return nil
 }
