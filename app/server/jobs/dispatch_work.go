@@ -12,7 +12,7 @@ import (
 
 func StartDispatchFeedCollectWork() {
 	go func() {
-		t := time.NewTimer(10 * time.Second)
+		t := time.NewTicker(10 * time.Second)
 		for {
 			select {
 			case <-t.C:
@@ -29,7 +29,13 @@ func dispatch() {
 
 	// Accounts need update
 	var accountsNeedUpdate []models.Account
+
 	global.DB.Find(&accountsNeedUpdate, "next_update < ?", nowTime)
+
+	if len(accountsNeedUpdate) == 0 {
+		global.Logger.Debug("No accounts need update currently")
+		return
+	}
 
 	// Dispatch update works
 	for _, account := range accountsNeedUpdate {
@@ -64,10 +70,10 @@ func dispatch() {
 			// Dispatched successfully
 			global.MetricsDispatchedWorkCount.Inc(1)
 		}
+
+		// Update account
+		global.DB.Save(&account)
 	}
 
-	// Update accounts
-	global.DB.Save(&accountsNeedUpdate)
-
-	global.Logger.Debug("Feeds collect works dispatched!")
+	global.Logger.Debugf("Feeds collect works dispatched for %d accounts.", len(accountsNeedUpdate))
 }

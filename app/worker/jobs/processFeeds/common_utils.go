@@ -26,8 +26,12 @@ func makeRequest(url string, withProxy bool) ([]*gofeed.Item, uint, error) {
 }
 
 func handleSucceeded(workDispatched *commonTypes.WorkDispatched, acceptTime time.Time, rawFeeds []commonTypes.RawFeed, newInterval time.Duration) {
+
+	global.Logger.Debug("Work succeeded: ", workDispatched)
+
 	if len(rawFeeds) == 0 {
 		// Actually nothing
+		global.Logger.Debug("... but nothing found")
 		return
 	}
 
@@ -44,11 +48,15 @@ func handleSucceeded(workDispatched *commonTypes.WorkDispatched, acceptTime time
 		err = global.MQ.Publish(commonConsts.MQSETTINGS_SucceededChannelName, succeededWorkBytes)
 		if err != nil {
 			global.Logger.Error("Failed to report succeeded work with error: ", err.Error())
+		} else {
+			global.Logger.Debug("And result pushed to succeeded channel.")
 		}
 	}
 }
 
 func handleFailed(workDispatched *commonTypes.WorkDispatched, acceptTime time.Time, errCode uint, errMsg string) {
+	global.Logger.Error("Work failed: ", workDispatched)
+
 	failedWork := commonTypes.WorkFailed{
 		WorkDispatched: *workDispatched,
 		AcceptAt:       acceptTime,

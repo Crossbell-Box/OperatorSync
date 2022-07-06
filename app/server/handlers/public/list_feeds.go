@@ -8,6 +8,7 @@ import (
 	"github.com/Crossbell-Box/OperatorSync/app/server/consts"
 	"github.com/Crossbell-Box/OperatorSync/app/server/global"
 	"github.com/Crossbell-Box/OperatorSync/app/server/models"
+	commonConsts "github.com/Crossbell-Box/OperatorSync/common/consts"
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 	"net/http"
@@ -27,8 +28,16 @@ func ListFeeds(ctx *gin.Context) {
 		return
 	}
 
+	if _, ok := commonConsts.SUPPORTED_PLATFORM[reqPlatform]; !ok {
+		ctx.JSON(http.StatusOK, gin.H{
+			"ok":      false,
+			"message": "Platform not supported",
+		})
+		return
+	}
+
 	nowTime := time.Now()
-	reqAfterTimeString := ctx.DefaultQuery("after", nowTime.String())
+	reqAfterTimeString := ctx.DefaultQuery("after", nowTime.Format(time.RFC3339))
 	reqAfterTime, err := time.Parse(time.RFC3339, reqAfterTimeString)
 	if err != nil {
 		ctx.JSON(http.StatusOK, gin.H{

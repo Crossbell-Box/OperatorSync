@@ -15,21 +15,23 @@ import (
 )
 
 func ReceiveSucceededWork() error {
-	sub, err := global.MQ.Subscribe(commonConsts.MQSETTINGS_SucceededChannelName, handleSucceeded)
+	_, err := global.MQ.Subscribe(commonConsts.MQSETTINGS_SucceededChannelName, handleSucceeded)
 	if err != nil {
 		global.Logger.Error("Failed to subscribe to MQ succeeded queue with error: ", err.Error())
 		return err
 	}
 
-	defer sub.Drain() // Ignore errors
+	//defer sub.Drain() // Ignore errors
 
 	return nil
 }
 
 func handleSucceeded(m *nats.Msg) {
+	global.Logger.Debug("New succeeded work received: ", string(m.Data))
+
 	var workSucceeded commonTypes.WorkSucceeded
 	if err := json.Unmarshal(m.Data, &workSucceeded); err != nil {
-		global.Logger.Error("Unable to parse succeeded work: ", m.Data)
+		global.Logger.Error("Unable to parse succeeded work: ", string(m.Data))
 	} else {
 		// Parse successfully
 		// Parse feeds

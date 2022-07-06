@@ -9,18 +9,20 @@ import (
 )
 
 func ReceiveFailedWork() error {
-	sub, err := global.MQ.Subscribe(commonConsts.MQSETTINGS_FailedChannelName, handleFailed)
+	_, err := global.MQ.Subscribe(commonConsts.MQSETTINGS_FailedChannelName, handleFailed)
 	if err != nil {
 		global.Logger.Error("Failed to subscribe to MQ failed queue with error: ", err.Error())
 		return err
 	}
 
-	defer sub.Drain() // Ignore errors
+	//defer sub.Drain() // Ignore errors
 
 	return nil
 }
 
 func handleFailed(m *nats.Msg) {
+	global.Logger.Warn("New failed work received: ", m.Data)
+
 	var workFailed commonTypes.WorkFailed
 	if err := json.Unmarshal(m.Data, &workFailed); err != nil {
 		global.Logger.Error("Unable to parse failed work: ", m.Data)

@@ -49,7 +49,6 @@ func feedsMedium(cccs *types.ConcurrencyChannels, work *commonTypes.WorkDispatch
 				Categories:  item.Categories,
 				Authors:     parseAuthors(item.Authors),
 				PublishedAt: *item.PublishedParsed,
-				UpdatedAt:   *item.UpdatedParsed,
 				Content:     item.Content,
 			})
 			if index > 0 {

@@ -15,6 +15,8 @@ import (
 func ProcessFeeds(platformID string, cccs *types.ConcurrencyChannels) func(m *nats.Msg) {
 	return func(m *nats.Msg) {
 
+		global.Logger.Debug("New work received: ", string(m.Data))
+
 		var workDispatched commonTypes.WorkDispatched
 
 		if err := json.Unmarshal(m.Data, &workDispatched); err != nil {

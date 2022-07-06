@@ -32,6 +32,8 @@ func main() {
 		global.Logger.Fatal("Failed to start jobs: ", err.Error())
 	}
 
+	global.Logger.Info("Worker started!")
+
 	select {} // Keep process running
 
 }
