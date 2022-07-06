@@ -7,9 +7,8 @@ type Account struct {
 	CrossbellCharacter string `json:"crossbell_character" gorm:"index"`
 
 	// Metadata
-	Platform   string `json:"platform" gorm:"index"` // Platform ID
-	Username   string `json:"username" gorm:"index"`
-	IsVerified bool   `json:"is_verified"`
+	Platform string `json:"platform" gorm:"index"` // Platform ID
+	Username string `json:"username" gorm:"index"`
 
 	// Update related fields
 	LastUpdated    time.Time     `json:"-"`              // Only update when new data found
