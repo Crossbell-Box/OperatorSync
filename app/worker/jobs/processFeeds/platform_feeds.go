@@ -44,7 +44,7 @@ func feedsMedium(cccs *types.ConcurrencyChannels, work *commonTypes.WorkDispatch
 		return
 	}
 
-	if !strings.Contains(rawFeed.Description, work.VerifyKey) {
+	if !strings.Contains(strings.ToLower(rawFeed.Description), strings.ToLower(work.VerifyKey)) {
 		handleFailed(
 			work, acceptTime,
 			commonConsts.ERROR_CODE_ACCOUNT_NOT_VERIFIED,
@@ -101,7 +101,7 @@ func feedsTikTok(cccs *types.ConcurrencyChannels, work *commonTypes.WorkDispatch
 		return
 	}
 
-	if !strings.Contains(rawFeed.Description, work.VerifyKey) {
+	if !strings.Contains(strings.ToLower(rawFeed.Description), strings.ToLower(work.VerifyKey)) {
 		handleFailed(
 			work, acceptTime,
 			commonConsts.ERROR_CODE_ACCOUNT_NOT_VERIFIED,
