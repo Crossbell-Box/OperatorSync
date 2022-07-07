@@ -45,7 +45,7 @@ func UploadURLToIPFS(targetUrl string) (string, error) {
 		return "", err
 	}
 
-	_, err = fileWriter.Write(body)
+	_, err = fileWriter.Write(body[:])
 	if err != nil {
 		global.Logger.Error("Failed to copy buffer data")
 	}
@@ -54,9 +54,17 @@ func UploadURLToIPFS(targetUrl string) (string, error) {
 	var resp response
 	contentType := bodyWriter.FormDataContentType()
 	_ = bodyWriter.Close() // Ignore error
-	ipfsReq, _ := http.NewRequest("POST", config.Config.IPFSEndpoint, bodyBuffer)
+	ipfsReq, err := http.NewRequest("POST", config.Config.IPFSEndpoint, bodyBuffer)
+	if err != nil {
+		global.Logger.Error("Failed to initialize request: ", err.Error())
+		return "", err
+	}
 	ipfsReq.Header.Set("Content-Type", contentType)
-	ipfsRes, _ := (&http.Client{}).Do(ipfsReq)
+	ipfsRes, err := (&http.Client{}).Do(ipfsReq)
+	if err != nil {
+		global.Logger.Error("Failed to do request: ", err.Error())
+		return "", err
+	}
 	err = json.NewDecoder(ipfsRes.Body).Decode(&resp)
 	if err != nil {
 		log.Println("Error decoding JSON:", err)
