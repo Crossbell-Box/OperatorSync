@@ -21,11 +21,11 @@ func ReceiveFailedWork() error {
 }
 
 func handleFailed(m *nats.Msg) {
-	global.Logger.Warn("New failed work received: ", m.Data)
+	global.Logger.Warn("New failed work received: ", string(m.Data))
 
 	var workFailed commonTypes.WorkFailed
 	if err := json.Unmarshal(m.Data, &workFailed); err != nil {
-		global.Logger.Error("Unable to parse failed work: ", m.Data)
+		global.Logger.Error("Unable to parse failed work: ", string(m.Data))
 	} else {
 		global.Logger.Error("Work failed for: ", workFailed)
 		global.MetricsFailedWorkCount.Inc(1)
