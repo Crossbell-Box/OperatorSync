@@ -62,6 +62,7 @@ func handleSucceeded(m *nats.Msg) {
 		}
 		account.LastUpdated = workSucceeded.SucceededAt
 		account.UpdateInterval = interv
+		account.NextUpdate = account.LastUpdated.Add(account.UpdateInterval)
 
 		if err := global.DB.Transaction(func(tx *gorm.DB) error {
 			// do some database operations in the transaction (use 'tx' from this point, not 'db')
