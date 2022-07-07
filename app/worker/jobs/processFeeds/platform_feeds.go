@@ -15,15 +15,19 @@ import (
 )
 
 var (
+	imageRegex  *regexp.Regexp
 	posterRegex *regexp.Regexp
 	videoRegex  *regexp.Regexp
 )
 
 func init() {
 
+	// Medium regex
+	imageRegex = regexp.MustCompile(`<img[^>]+\bsrc=["']([^"']+)["']`)
+
 	// TikTok regex
-	posterRegex = regexp.MustCompile("poster=\"(.+?)\"")
-	videoRegex = regexp.MustCompile("<source src=\"(.+?)\"")
+	posterRegex = regexp.MustCompile(`poster="(.+?)"`)
+	videoRegex = regexp.MustCompile(`<source src="(.+?)"`)
 }
 
 func feedsMedium(cccs *types.ConcurrencyChannels, work *commonTypes.WorkDispatched, acceptTime time.Time, collectLink string) {
@@ -58,15 +62,29 @@ func feedsMedium(cccs *types.ConcurrencyChannels, work *commonTypes.WorkDispatch
 
 	for index, item := range rawFeed.Items {
 		if item.PublishedParsed.After(work.DropBefore) && item.PublishedParsed.Before(work.DropAfter) {
-			feeds = append(feeds, commonTypes.RawFeed{
+			feed := commonTypes.RawFeed{
 				Title:       item.Title,
 				Link:        item.Link,
 				GUID:        item.GUID,
 				Categories:  item.Categories,
 				Authors:     parseAuthors(item.Authors),
 				PublishedAt: *item.PublishedParsed,
-				Content:     item.Content,
-			})
+			}
+
+			rawContent := item.Content
+
+			imgs := imageRegex.FindAllStringSubmatch(rawContent, -1)
+			for _, img := range imgs {
+				if ipfsUrl, err := utils.UploadURLToIPFS(img[1]); err != nil {
+					global.Logger.Error("Failed to upload link (", img[1], ") onto IPFS: ", err.Error())
+				} else {
+					rawContent = strings.ReplaceAll(rawContent, img[1], ipfsUrl)
+				}
+			}
+
+			feed.Content = rawContent
+
+			feeds = append(feeds, feed)
 			if index > 0 {
 				interv := rawFeed.Items[index-1].PublishedParsed.Sub(*item.PublishedParsed)
 				if interv < 0 {
