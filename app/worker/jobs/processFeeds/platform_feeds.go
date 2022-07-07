@@ -5,10 +5,12 @@ import (
 	"github.com/Crossbell-Box/OperatorSync/app/worker/global"
 	"github.com/Crossbell-Box/OperatorSync/app/worker/types"
 	"github.com/Crossbell-Box/OperatorSync/app/worker/utils"
+	commonConsts "github.com/Crossbell-Box/OperatorSync/common/consts"
 	commonTypes "github.com/Crossbell-Box/OperatorSync/common/types"
 	"github.com/mmcdole/gofeed"
 	"math"
 	"regexp"
+	"strings"
 	"time"
 )
 
@@ -31,16 +33,25 @@ func feedsMedium(cccs *types.ConcurrencyChannels, work *commonTypes.WorkDispatch
 	cccs.Direct.Request()
 	defer cccs.Direct.Done()
 
-	rawItems, errCode, err := makeRequest(work.CollectLink, true)
+	rawFeed, errCode, err := makeRequest(work.CollectLink, true)
 	if err != nil {
 		handleFailed(work, acceptTime, errCode, err.Error())
+		return
+	}
+
+	if !strings.Contains(rawFeed.Description, work.VerifyKey) {
+		handleFailed(
+			work, acceptTime,
+			commonConsts.ERROR_CODE_ACCOUNT_NOT_VERIFIED,
+			"No identity verify string found on this account",
+		)
 		return
 	}
 
 	var feeds []commonTypes.RawFeed
 	var minimalInterval time.Duration = math.MaxInt64
 
-	for index, item := range rawItems {
+	for index, item := range rawFeed.Items {
 		if item.PublishedParsed.After(work.DropBefore) && item.PublishedParsed.Before(work.DropAfter) {
 			feeds = append(feeds, commonTypes.RawFeed{
 				Title:       item.Title,
@@ -52,7 +63,7 @@ func feedsMedium(cccs *types.ConcurrencyChannels, work *commonTypes.WorkDispatch
 				Content:     item.Content,
 			})
 			if index > 0 {
-				interv := rawItems[index-1].PublishedParsed.Sub(*item.PublishedParsed)
+				interv := rawFeed.Items[index-1].PublishedParsed.Sub(*item.PublishedParsed)
 				if interv < 0 {
 					interv = -interv
 				}
@@ -74,16 +85,25 @@ func feedsTikTok(cccs *types.ConcurrencyChannels, work *commonTypes.WorkDispatch
 	cccs.Stateful.Request()
 	defer cccs.Stateful.Done()
 
-	rawItems, errCode, err := makeRequest(work.CollectLink, true)
+	rawFeed, errCode, err := makeRequest(work.CollectLink, true)
 	if err != nil {
 		handleFailed(work, acceptTime, errCode, err.Error())
+		return
+	}
+
+	if !strings.Contains(rawFeed.Description, work.VerifyKey) {
+		handleFailed(
+			work, acceptTime,
+			commonConsts.ERROR_CODE_ACCOUNT_NOT_VERIFIED,
+			"No identity verify string found on this account",
+		)
 		return
 	}
 
 	var feeds []commonTypes.RawFeed
 	var minimalInterval time.Duration = math.MaxInt64
 
-	for index, item := range rawItems {
+	for index, item := range rawFeed.Items {
 		if item.PublishedParsed.After(work.DropBefore) && item.PublishedParsed.Before(work.DropAfter) {
 			feed := commonTypes.RawFeed{
 				Content:     item.Title, // This should better be content
@@ -126,7 +146,7 @@ func feedsTikTok(cccs *types.ConcurrencyChannels, work *commonTypes.WorkDispatch
 
 			// Calc interval
 			if index > 0 {
-				interv := item.PublishedParsed.Sub(*rawItems[index-1].PublishedParsed)
+				interv := item.PublishedParsed.Sub(*rawFeed.Items[index-1].PublishedParsed)
 				if interv < 0 {
 					interv = -interv
 				}

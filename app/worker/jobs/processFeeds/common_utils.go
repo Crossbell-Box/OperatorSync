@@ -10,7 +10,7 @@ import (
 	"time"
 )
 
-func makeRequest(url string, withProxy bool) ([]*gofeed.Item, uint, error) {
+func makeRequest(url string, withProxy bool) (*gofeed.Feed, uint, error) {
 	feedsBody, err := utils.HttpRequest(url, withProxy)
 	if err != nil {
 		return nil, commonConsts.ERROR_CODE_HTTP_REQUEST_FAILED, err
@@ -22,7 +22,7 @@ func makeRequest(url string, withProxy bool) ([]*gofeed.Item, uint, error) {
 		return nil, commonConsts.ERROR_CODE_FAILED_TO_PARSE_FEEDS, err
 	}
 
-	return feed.Items, 0, nil
+	return feed, 0, nil
 }
 
 func handleSucceeded(workDispatched *commonTypes.WorkDispatched, acceptTime time.Time, rawFeeds []commonTypes.RawFeed, newInterval time.Duration) {
