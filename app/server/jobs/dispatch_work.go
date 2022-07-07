@@ -7,7 +7,6 @@ import (
 	"github.com/Crossbell-Box/OperatorSync/app/server/models"
 	commonConsts "github.com/Crossbell-Box/OperatorSync/common/consts"
 	commonTypes "github.com/Crossbell-Box/OperatorSync/common/types"
-	"strings"
 	"time"
 )
 
@@ -55,13 +54,13 @@ func dispatch() {
 		// Dispatch work
 		mqChannel := commonConsts.MQSETTINGS_PlatformChannelPrefix + account.Platform
 		work := commonTypes.WorkDispatched{
-			DispatchAt:  nowTime,
-			AccountID:   account.ID,
-			VerifyKey:   fmt.Sprintf("Crossbell@%s", account.CrossbellCharacter), // TODO: confirm style
-			Platform:    account.Platform,
-			CollectLink: strings.ReplaceAll(platform.FeedLink, "{{username}}", account.Username),
-			DropBefore:  account.LastUpdated,
-			DropAfter:   account.NextUpdate, // If cannot be peformed before DDL, work fails (cause new work would replace current one)
+			DispatchAt: nowTime,
+			AccountID:  account.ID,
+			VerifyKey:  fmt.Sprintf("Crossbell@%s", account.CrossbellCharacter), // TODO: confirm style
+			Platform:   account.Platform,
+			Username:   account.Username,
+			DropBefore: account.LastUpdated,
+			DropAfter:  account.NextUpdate, // If cannot be peformed before DDL, work fails (cause new work would replace current one)
 		}
 
 		if workBytes, err := json.Marshal(&work); err != nil {

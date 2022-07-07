@@ -26,14 +26,19 @@ func init() {
 	videoRegex = regexp.MustCompile("<source src=\"(.+?)\"")
 }
 
-func feedsMedium(cccs *types.ConcurrencyChannels, work *commonTypes.WorkDispatched, acceptTime time.Time) {
+func feedsMedium(cccs *types.ConcurrencyChannels, work *commonTypes.WorkDispatched, acceptTime time.Time, collectLink string) {
 	// Refer to https://medium.com/feed/@mintable
 
 	// Concurrency control
 	cccs.Direct.Request()
 	defer cccs.Direct.Done()
 
-	rawFeed, errCode, err := makeRequest(work.CollectLink, true)
+	global.Logger.Debug("New feeds request for medium")
+
+	rawFeed, errCode, err := makeRequest(
+		strings.ReplaceAll(collectLink, "{{username}}", work.Username),
+		true,
+	)
 	if err != nil {
 		handleFailed(work, acceptTime, errCode, err.Error())
 		return
@@ -78,14 +83,19 @@ func feedsMedium(cccs *types.ConcurrencyChannels, work *commonTypes.WorkDispatch
 
 }
 
-func feedsTikTok(cccs *types.ConcurrencyChannels, work *commonTypes.WorkDispatched, acceptTime time.Time) {
+func feedsTikTok(cccs *types.ConcurrencyChannels, work *commonTypes.WorkDispatched, acceptTime time.Time, collectLink string) {
 	// Refer to https://github.com/DIYgod/RSSHub/pull/9867
 
 	// Concurrency control
 	cccs.Stateful.Request()
 	defer cccs.Stateful.Done()
 
-	rawFeed, errCode, err := makeRequest(work.CollectLink, true)
+	global.Logger.Debug("New feeds request for tiktok")
+
+	rawFeed, errCode, err := makeRequest(
+		strings.ReplaceAll(collectLink, "{{username}}", work.Username),
+		false,
+	)
 	if err != nil {
 		handleFailed(work, acceptTime, errCode, err.Error())
 		return

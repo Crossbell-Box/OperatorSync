@@ -27,11 +27,12 @@ func ProcessFeeds(platformID string, cccs *types.ConcurrencyChannels) func(m *na
 
 		acceptTime := time.Now()
 
-		// Parse settings
-		workDispatched.CollectLink =
+		collectLink := commonConsts.SUPPORTED_PLATFORM[workDispatched.Platform].FeedLink
+
+		collectLink =
 			strings.ReplaceAll(
 				strings.ReplaceAll(
-					workDispatched.CollectLink,
+					collectLink,
 					"{{rsshub_stateful}}",
 					config.Config.RSSHubEndpointStateful,
 				),
@@ -41,9 +42,9 @@ func ProcessFeeds(platformID string, cccs *types.ConcurrencyChannels) func(m *na
 
 		switch platformID {
 		case "medium":
-			feedsMedium(cccs, &workDispatched, acceptTime)
+			feedsMedium(cccs, &workDispatched, acceptTime, collectLink)
 		case "tiktok":
-			feedsTikTok(cccs, &workDispatched, acceptTime)
+			feedsTikTok(cccs, &workDispatched, acceptTime, collectLink)
 		default:
 			// Unable to handle
 			handleFailed(&workDispatched, acceptTime, commonConsts.ERROR_CODE_UNSUPPORTED_PLATFORM, "Unsupported platform")

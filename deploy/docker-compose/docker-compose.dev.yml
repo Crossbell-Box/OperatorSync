@@ -19,12 +19,12 @@ services:
     env_file: ../env/mq.env
   # Worker related
   rsshub_stateful:
-    image: diygod/rsshub
+    image: diygod/rsshub:chromium-bundled
     ports:
       - 127.0.0.1:1200:1200
     env_file: ../env/rsshub.stateful.env
   rsshub_stateless:
-    image: diygod/rsshub
+    image: diygod/rsshub:chromium-bundled
     ports:
       - 127.0.0.1:1201:1200
     env_file: ../env/rsshub.stateless.env

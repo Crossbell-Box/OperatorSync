@@ -27,14 +27,14 @@ services:
       - worker_network
   # Worker related
   rsshub_stateful:
-    image: diygod/rsshub
+    image: diygod/rsshub:chromium-bundled
     restart: unless-stopped
     env_file: ../env/rsshub.stateful.env
     networks:
       - worker_network
       - external_network
   rsshub_stateless:
-    image: diygod/rsshub
+    image: diygod/rsshub:chromium-bundled
     restart: unless-stopped
     env_file: ../env/rsshub.stateless.env
     networks:
