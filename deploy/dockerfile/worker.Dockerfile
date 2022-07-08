@@ -25,9 +25,6 @@ COPY --from=BUILDER /app/build/worker /app/worker
 RUN chmod +x /app/worker
 RUN ln -s /app/worker /usr/local/bin/worker
 
-# This container exposes port 8080 to the outside world
-EXPOSE 8080/tcp
-
 # Environment variables
 ## RSSHub endpoints setting
 ENV RSSHUB_STATEFUL=https://rsshub.app
