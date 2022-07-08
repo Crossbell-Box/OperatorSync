@@ -27,7 +27,7 @@ func handleFailed(m *nats.Msg) {
 	if err := json.Unmarshal(m.Data, &workFailed); err != nil {
 		global.Logger.Error("Unable to parse failed work: ", string(m.Data))
 	} else {
-		global.Logger.Error("Work failed for: ", workFailed)
+		global.Logger.Warn("Work failed for: ", workFailed)
 		global.MetricsFailedWorkCount.Inc(1)
 	}
 }

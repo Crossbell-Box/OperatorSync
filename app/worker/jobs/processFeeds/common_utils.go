@@ -55,7 +55,7 @@ func handleSucceeded(workDispatched *commonTypes.WorkDispatched, acceptTime time
 }
 
 func handleFailed(workDispatched *commonTypes.WorkDispatched, acceptTime time.Time, errCode uint, errMsg string) {
-	global.Logger.Error("Work failed: ", workDispatched)
+	global.Logger.Warn("Work failed: ", workDispatched, " with code: ", errCode, " , reason: ", errMsg)
 
 	failedWork := commonTypes.WorkFailed{
 		WorkDispatched: *workDispatched,
