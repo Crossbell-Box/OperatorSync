@@ -50,7 +50,7 @@ func RefreshAccounts(ctx *gin.Context) {
 		Find(&dbAccounts)
 
 	// Get accounts from CrossBell
-	csbAccounts, err := utils.GetAccountFromCrossbell(reqCharacter)
+	csbAccounts, err := utils.GetAccountsFromCrossbell(reqCharacter)
 	if err != nil {
 		// Internal server error
 		global.Logger.Error("Failed to get accounts from CSB for (", reqCharacter, ") : ", err.Error())
