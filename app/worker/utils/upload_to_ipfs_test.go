@@ -14,11 +14,12 @@ func TestUploadURLToIPFS(t *testing.T) {
 	origLink := "https://file.nya.one/misskey/1dfe05b6-32d5-42ff-aa39-7e33aefb84ec.jpg"
 
 	// Test with image
-	ipfsUrl, err := UploadURLToIPFS(origLink)
+	ipfsUrl, fileSize, err := UploadURLToIPFS(origLink)
 	if err != nil {
 		t.Fatal(err.Error())
 	} else {
-		t.Log(ipfsUrl) // ipfs://bafkreiftzistch5wftiswc4rkye4zvagbkvdscijhejo43w5bvyjzw7tjm
+		t.Log(ipfsUrl)  // ipfs://bafkreiftzistch5wftiswc4rkye4zvagbkvdscijhejo43w5bvyjzw7tjm
+		t.Log(fileSize) // 815510
 	}
 
 }

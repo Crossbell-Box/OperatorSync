@@ -69,7 +69,7 @@ func dispatch() {
 			global.Logger.Error("Failed to dispatch work: ", work)
 		} else {
 			// Dispatched successfully
-			global.MetricsDispatchedWorkCount.Inc(1)
+			global.Metrics.Work.Dispatched.Inc(1)
 		}
 
 		// Update account

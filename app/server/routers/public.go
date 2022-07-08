@@ -6,11 +6,9 @@ import (
 )
 
 func PublicEndpoints(rg *gin.RouterGroup) {
+	// List endpoints
+	rg.GET("/", public.ListEndpoints)
+
 	// Health Check
 	rg.GET("/healthcheck", public.HealthCheck)
-
-	// List
-	rg.GET("/account/:character", public.ListAccounts)
-	rg.POST("/account/:character/refresh", public.RefreshAccounts)
-	rg.GET("/feed/:platform/:username", public.ListFeeds)
 }

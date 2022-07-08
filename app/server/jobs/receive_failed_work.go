@@ -28,6 +28,6 @@ func handleFailed(m *nats.Msg) {
 		global.Logger.Error("Unable to parse failed work: ", string(m.Data))
 	} else {
 		global.Logger.Warn("Work failed for: ", workFailed)
-		global.MetricsFailedWorkCount.Inc(1)
+		global.Metrics.Work.Failed.Inc(1)
 	}
 }

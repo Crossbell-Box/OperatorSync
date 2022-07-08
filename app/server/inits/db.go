@@ -20,7 +20,7 @@ func DB() error {
 	if config.Config.DevelopmentMode {
 		gormConfig.Logger = logger.Default.LogMode(logger.Info)
 	} else {
-		gormConfig.Logger = logger.Default.LogMode(logger.Error)
+		gormConfig.Logger = logger.Default.LogMode(logger.Warn)
 	}
 
 	// Connect to database
@@ -41,6 +41,7 @@ func DB() error {
 func mig() error {
 	err := global.DB.AutoMigrate(
 		&models.Account{},
+		&models.Media{},
 	)
 	if err != nil {
 		return err

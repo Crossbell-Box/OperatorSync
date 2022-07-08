@@ -21,6 +21,12 @@ var SUPPORTED_PLATFORM = map[string]platform{
 		MinRefreshGap: 12 * time.Hour,     // Half of a day
 		MaxRefreshGap: 7 * 24 * time.Hour, // One week
 	},
+	"github": {
+		Name:          "GitHub",
+		FeedLink:      "https://github.com/{{username}}.atom",
+		MinRefreshGap: 1 * time.Hour,  // 1 Hour
+		MaxRefreshGap: 24 * time.Hour, // 1 Day
+	},
 	"tiktok": {
 		Name:          "TikTok",
 		FeedLink:      "{{rsshub_stateless}}/tiktok/user/@{{username}}",

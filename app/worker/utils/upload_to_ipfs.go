@@ -21,11 +21,13 @@ type response struct {
 	Error   string `json:"error"`
 }
 
-func UploadURLToIPFS(targetUrl string) (string, error) {
+func UploadURLToIPFS(targetUrl string) (string, uint, error) {
 	// Get filename
+	global.Logger.Debug("Uploading file ", targetUrl, " to IPFS...")
+
 	reqUrl, err := url.Parse(targetUrl)
 	if err != nil {
-		return "", err
+		return "", 0, err
 	}
 	filename := path.Base(reqUrl.Path)
 
@@ -33,8 +35,10 @@ func UploadURLToIPFS(targetUrl string) (string, error) {
 	body, err := HttpRequest(targetUrl, false)
 	if err != nil {
 		global.Logger.Error("Failed to retrieve data from: ", targetUrl)
-		return "", err
+		return "", 0, err
 	}
+
+	global.Logger.Debug("File download successfully, uploading...")
 
 	// Prepare
 	bodyBuffer := &bytes.Buffer{}
@@ -42,10 +46,10 @@ func UploadURLToIPFS(targetUrl string) (string, error) {
 
 	fileWriter, err := bodyWriter.CreateFormFile("file", filename)
 	if err != nil {
-		return "", err
+		return "", 0, err
 	}
 
-	_, err = fileWriter.Write(body[:])
+	fileSize, err := fileWriter.Write(body[:])
 	if err != nil {
 		global.Logger.Error("Failed to copy buffer data")
 	}
@@ -57,25 +61,26 @@ func UploadURLToIPFS(targetUrl string) (string, error) {
 	ipfsReq, err := http.NewRequest("POST", config.Config.IPFSEndpoint, bodyBuffer)
 	if err != nil {
 		global.Logger.Error("Failed to initialize request: ", err.Error())
-		return "", err
+		return "", 0, err
 	}
 	ipfsReq.Header.Set("Content-Type", contentType)
 	ipfsRes, err := (&http.Client{}).Do(ipfsReq)
 	if err != nil {
 		global.Logger.Error("Failed to do request: ", err.Error())
-		return "", err
+		return "", 0, err
 	}
 	err = json.NewDecoder(ipfsRes.Body).Decode(&resp)
 	if err != nil {
 		log.Println("Error decoding JSON:", err)
-		return "", err
+		return "", 0, err
 	}
 
 	// Return URL
 	if resp.Status == "ok" {
-		return resp.URL, nil
+		global.Logger.Debug("File (Size: ", fileSize, ") upload succeeded: ", resp.URL)
+		return resp.URL, uint(fileSize), nil
 	} else {
-		return "", fmt.Errorf(resp.Error)
+		return "", 0, fmt.Errorf(resp.Error)
 	}
 
 }

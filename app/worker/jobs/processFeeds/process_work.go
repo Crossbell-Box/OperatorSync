@@ -43,6 +43,8 @@ func ProcessFeeds(platformID string, cccs *types.ConcurrencyChannels) func(m *na
 		switch platformID {
 		case "medium":
 			feedsMedium(cccs, &workDispatched, acceptTime, collectLink)
+		case "github":
+			feedsGitHub(cccs, &workDispatched, acceptTime, collectLink)
 		case "tiktok":
 			feedsTikTok(cccs, &workDispatched, acceptTime, collectLink)
 		default:

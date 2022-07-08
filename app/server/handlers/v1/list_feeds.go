@@ -1,4 +1,4 @@
-package public
+package v1
 
 import (
 	"context"
@@ -37,8 +37,8 @@ func ListFeeds(ctx *gin.Context) {
 	}
 
 	nowTime := time.Now()
-	reqAfterTimeString := ctx.DefaultQuery("after", nowTime.Format(time.RFC3339))
-	reqAfterTime, err := time.Parse(time.RFC3339, reqAfterTimeString)
+	reqBeforeTimeString := ctx.DefaultQuery("before", nowTime.Format(time.RFC3339))
+	reqBeforeTime, err := time.Parse(time.RFC3339, reqBeforeTimeString)
 	if err != nil {
 		ctx.JSON(http.StatusOK, gin.H{
 			"ok":      false,
@@ -46,11 +46,11 @@ func ListFeeds(ctx *gin.Context) {
 		})
 		return
 	}
-	if nowTime.Before(reqAfterTime) {
-		reqAfterTime = nowTime
-	}
+	//if nowTime.Before(reqBeforeTime) {
+	//	reqBeforeTime = nowTime
+	//}
 
-	reqLimitString := ctx.DefaultQuery("limit", fmt.Sprintf("%d", consts.MAX_FEED_LIMIT))
+	reqLimitString := ctx.DefaultQuery("limit", fmt.Sprintf("%d", consts.MAX_FEED_LIMIT_PER_PAGE))
 	reqLimit, err := strconv.ParseUint(reqLimitString, 10, 32)
 	if err != nil {
 		ctx.JSON(http.StatusOK, gin.H{
@@ -59,8 +59,8 @@ func ListFeeds(ctx *gin.Context) {
 		})
 		return
 	}
-	if reqLimit > consts.MAX_FEED_LIMIT {
-		reqLimit = consts.MAX_FEED_LIMIT
+	if reqLimit > consts.MAX_FEED_LIMIT_PER_PAGE {
+		reqLimit = consts.MAX_FEED_LIMIT_PER_PAGE
 	}
 
 	// Validate request
@@ -83,10 +83,10 @@ func ListFeeds(ctx *gin.Context) {
 	// Check cache
 	getCacheCtx, getCacheCtxCancel := context.WithTimeout(context.Background(), 1*time.Second)
 	defer getCacheCtxCancel()
-	if nowTime.Equal(reqAfterTime) {
-		cacheQueryKey += "latest"
+	if nowTime.Sub(reqBeforeTime) < 1*time.Second {
+		cacheQueryKey += "latest" // Regard as realtime
 	} else {
-		cacheQueryKey += fmt.Sprintf("%s", reqAfterTime)
+		cacheQueryKey += fmt.Sprintf("%s", reqBeforeTime)
 	}
 	if exist, err := global.Redis.HExists(getCacheCtx, cacheBaseKey, cacheQueryKey).Result(); err != nil {
 		global.Logger.Error("Unable to check feeds cache")
@@ -117,7 +117,7 @@ func ListFeeds(ctx *gin.Context) {
 	global.DB.
 		Scopes(models.FeedTable(feedWithPlatform)).
 		Order("created_at DESC").
-		Where("account_id = ? AND collected_at < ?", account.ID, reqAfterTime).
+		Where("account_id = ? AND collected_at < ?", account.ID, reqBeforeTime).
 		Limit(int(reqLimit)).
 		Find(&feeds)
 

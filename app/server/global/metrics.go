@@ -2,8 +2,12 @@ package global
 
 import "github.com/rcrowley/go-metrics"
 
-var (
-	MetricsDispatchedWorkCount metrics.Counter
-	MetricsSucceededWorkCount  metrics.Counter
-	MetricsFailedWorkCount     metrics.Counter
-)
+type gMetrics struct {
+	Work struct {
+		Dispatched metrics.Counter
+		Succeeded  metrics.Counter
+		Failed     metrics.Counter
+	}
+}
+
+var Metrics gMetrics

@@ -5,23 +5,6 @@ import (
 	"time"
 )
 
-//type Media struct {
-//	Url    string `json:"url"`
-//	Length uint   `json:"length"`
-//	Type   string `json:"type"`
-//}
-//
-//type MediaArray []Media
-//
-//func (ma *MediaArray) Scan(src interface{}) error {
-//	return json.Unmarshal(src.([]byte), ma)
-//}
-//
-//func (ma *MediaArray) Value() (driver.Value, error) {
-//	val, err := json.Marshal(ma)
-//	return string(val), err
-//}
-
 // RawFeed : Minimal content of feed (just for work response)
 type RawFeed struct {
 	Language    string         `json:"language"`
@@ -35,6 +18,5 @@ type RawFeed struct {
 	GUID        string         `json:"guid"`
 	Image       string         `json:"image"`
 	Categories  pq.StringArray `json:"categories" gorm:"type:text[]"`
-	Media       pq.StringArray `json:"media" gorm:"type:text[]"`
-	//Media       MediaArray     `json:"media" gorm:"type:longtext"` // Enclosure
+	Media       []Media        `json:"media" gorm:"-"`
 }

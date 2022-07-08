@@ -3,6 +3,7 @@ package jobs
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"github.com/Crossbell-Box/OperatorSync/app/server/consts"
 	"github.com/Crossbell-Box/OperatorSync/app/server/global"
@@ -73,10 +74,60 @@ func handleSucceeded(m *nats.Msg) {
 			}
 
 			// Insert feeds
-			tx.Scopes(models.FeedTable(platformSpecifiedFeed)).Create(&feeds)
+			if err := tx.Scopes(models.FeedTable(platformSpecifiedFeed)).Create(&feeds).Error; err != nil {
+				return err
+			}
+
+			// Insert medias (Can only be processed here because we need feed IDs to identify them)
+			mediaMap := make(map[string]models.Media)
+			for _, feed := range feeds {
+				for _, media := range feed.Media {
+					var singleMedia models.Media
+					var ok bool
+					if singleMedia, ok = mediaMap[media.IPFSURI]; !ok {
+						// Try to find in database
+						if err = global.DB.First(&singleMedia, "ipfs_uri = ?", media.IPFSURI).Error; errors.Is(err, gorm.ErrRecordNotFound) {
+							singleMedia = models.Media{
+								ID:                 0,
+								CrossbellCharacter: account.CrossbellCharacter,
+								Media:              media,
+							}
+						}
+					}
+					singleMedia.RelatedFeeds = append(singleMedia.RelatedFeeds, models.FeedRecord{
+						Platform: workSucceeded.Platform,
+						ID:       feed.ID,
+					})
+					mediaMap[media.IPFSURI] = singleMedia
+				}
+			}
+
+			var mediaUpdateList []models.Media
+			var mediaCreateList []models.Media
+			for _, singleMedia := range mediaMap {
+				if singleMedia.ID == 0 {
+					mediaCreateList = append(mediaCreateList, singleMedia)
+				} else {
+					mediaUpdateList = append(mediaUpdateList, singleMedia)
+				}
+			}
+
+			if len(mediaUpdateList) > 0 {
+				if err := tx.Save(&mediaUpdateList).Error; err != nil {
+					return err
+				}
+			}
+
+			if len(mediaCreateList) > 0 {
+				if err := tx.Create(&mediaCreateList).Error; err != nil {
+					return err
+				}
+			}
 
 			// Update account
-			tx.Save(&account)
+			if err := tx.Save(&account).Error; err != nil {
+				return err
+			}
 
 			// return nil will commit the whole transaction
 			return nil
@@ -87,12 +138,14 @@ func handleSucceeded(m *nats.Msg) {
 			// Clear cache
 			accountsCacheKey := fmt.Sprintf("%s:%s:%s", consts.CACHE_PREFIX, "accounts", account.CrossbellCharacter)
 			feedsCacheKey := fmt.Sprintf("%s:%s:%d", consts.CACHE_PREFIX, "feeds", account.ID)
+			mediasCacheKey := fmt.Sprintf("%s:%s:%s", consts.CACHE_PREFIX, "medias", account.CrossbellCharacter)
 			clearCacheCtx := context.Background()
 			global.Redis.Del(clearCacheCtx, accountsCacheKey) // To flush account update time
 			global.Redis.Del(clearCacheCtx, feedsCacheKey)    // To flush cached feeds
+			global.Redis.Del(clearCacheCtx, mediasCacheKey)   // To flush cached media list
 
 			// Update metrics
-			global.MetricsSucceededWorkCount.Inc(1)
+			global.Metrics.Work.Succeeded.Inc(1)
 		}
 	}
 }

@@ -10,7 +10,7 @@ type Feed struct {
 	AccountID uint `gorm:"index"`
 
 	// Feed Metadata
-	Platform    string    `json:"platform"`
+	Platform    string    `json:"platform" gorm:"-"` // For table splitting
 	CollectedAt time.Time `json:"collected_at"`
 
 	// Raw feed

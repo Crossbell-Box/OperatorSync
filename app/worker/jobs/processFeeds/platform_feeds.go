@@ -31,7 +31,7 @@ func init() {
 }
 
 func feedsMedium(cccs *types.ConcurrencyChannels, work *commonTypes.WorkDispatched, acceptTime time.Time, collectLink string) {
-	// Refer to https://medium.com/feed/@mintable
+	// Refer to https://medium.com/feed/@nya_9949
 
 	// Concurrency control
 	cccs.Direct.Request()
@@ -48,14 +48,15 @@ func feedsMedium(cccs *types.ConcurrencyChannels, work *commonTypes.WorkDispatch
 		return
 	}
 
-	if !strings.Contains(strings.ToLower(rawFeed.Description), strings.ToLower(work.VerifyKey)) {
-		handleFailed(
-			work, acceptTime,
-			commonConsts.ERROR_CODE_ACCOUNT_NOT_VERIFIED,
-			"No identity verify string found on this account",
-		)
-		return
-	}
+	// Medium feed won't show user's bio
+	//if !strings.Contains(strings.ToLower(rawFeed.Description), strings.ToLower(work.VerifyKey)) {
+	//	handleFailed(
+	//		work, acceptTime,
+	//		commonConsts.ERROR_CODE_ACCOUNT_NOT_VERIFIED,
+	//		"No identity verify string found on this account",
+	//	)
+	//	return
+	//}
 
 	var feeds []commonTypes.RawFeed
 	var minimalInterval time.Duration = math.MaxInt64
@@ -75,10 +76,14 @@ func feedsMedium(cccs *types.ConcurrencyChannels, work *commonTypes.WorkDispatch
 
 			imgs := imageRegex.FindAllStringSubmatch(rawContent, -1)
 			for _, img := range imgs {
-				if ipfsUrl, err := utils.UploadURLToIPFS(img[1]); err != nil {
-					global.Logger.Error("Failed to upload link (", img[1], ") onto IPFS: ", err.Error())
+				media := commonTypes.Media{
+					OriginalURI: img[1],
+				}
+				if media.IPFSURI, media.FileSize, err = utils.UploadURLToIPFS(media.OriginalURI); err != nil {
+					global.Logger.Error("Failed to upload link (", media.OriginalURI, ") onto IPFS: ", err.Error())
 				} else {
-					rawContent = strings.ReplaceAll(rawContent, img[1], ipfsUrl)
+					rawContent = strings.ReplaceAll(rawContent, media.OriginalURI, media.IPFSURI)
+					feed.Media = append(feed.Media, media)
 				}
 			}
 
@@ -101,8 +106,89 @@ func feedsMedium(cccs *types.ConcurrencyChannels, work *commonTypes.WorkDispatch
 
 }
 
+func feedsGitHub(cccs *types.ConcurrencyChannels, work *commonTypes.WorkDispatched, acceptTime time.Time, collectLink string) {
+	// Refer to https://github.com/candinya.atom
+
+	// Concurrency control
+	cccs.Direct.Request()
+	defer cccs.Direct.Done()
+
+	global.Logger.Debug("New feeds request for github")
+
+	rawFeed, errCode, err := makeRequest(
+		strings.ReplaceAll(collectLink, "{{username}}", work.Username),
+		true,
+	)
+	if err != nil {
+		handleFailed(work, acceptTime, errCode, err.Error())
+		return
+	}
+
+	if !rawFeed.UpdatedParsed.After(work.DropBefore) {
+		// Not updated after last update, drop all
+		handleSucceeded(work, acceptTime, nil, 0)
+		return
+	}
+
+	// GitHub feed won't show user's bio
+	//if !strings.Contains(strings.ToLower(rawFeed.Description), strings.ToLower(work.VerifyKey)) {
+	//	handleFailed(
+	//		work, acceptTime,
+	//		commonConsts.ERROR_CODE_ACCOUNT_NOT_VERIFIED,
+	//		"No identity verify string found on this account",
+	//	)
+	//	return
+	//}
+
+	var feeds []commonTypes.RawFeed
+	var minimalInterval time.Duration = math.MaxInt64
+
+	for index, item := range rawFeed.Items {
+		if item.PublishedParsed.After(work.DropBefore) && item.PublishedParsed.Before(work.DropAfter) {
+			feed := commonTypes.RawFeed{
+				Title:       item.Title,
+				Link:        item.Link,
+				GUID:        item.GUID,
+				Authors:     parseAuthors(item.Authors),
+				PublishedAt: *item.PublishedParsed,
+				UpdatedAt:   *item.UpdatedParsed,
+			}
+
+			rawContent := item.Content
+
+			imgs := imageRegex.FindAllStringSubmatch(rawContent, -1)
+			for _, img := range imgs {
+				media := commonTypes.Media{
+					OriginalURI: img[1],
+				}
+				if media.IPFSURI, media.FileSize, err = utils.UploadURLToIPFS(media.OriginalURI); err != nil {
+					global.Logger.Error("Failed to upload link (", media.OriginalURI, ") onto IPFS: ", err.Error())
+				} else {
+					rawContent = strings.ReplaceAll(rawContent, media.OriginalURI, media.IPFSURI)
+					feed.Media = append(feed.Media, media)
+				}
+			}
+
+			feed.Content = rawContent
+
+			feeds = append(feeds, feed)
+			if index > 0 {
+				interv := rawFeed.Items[index-1].PublishedParsed.Sub(*item.PublishedParsed)
+				if interv < 0 {
+					interv = -interv
+				}
+				if interv < minimalInterval {
+					minimalInterval = interv
+				}
+			}
+		}
+	}
+
+	handleSucceeded(work, acceptTime, feeds, minimalInterval)
+}
+
 func feedsTikTok(cccs *types.ConcurrencyChannels, work *commonTypes.WorkDispatched, acceptTime time.Time, collectLink string) {
-	// Refer to https://github.com/DIYgod/RSSHub/pull/9867
+	// Refer to https://rsshub.app/tiktok/user/@linustech
 
 	// Concurrency control
 	cccs.Stateful.Request()
@@ -134,7 +220,8 @@ func feedsTikTok(cccs *types.ConcurrencyChannels, work *commonTypes.WorkDispatch
 	for index, item := range rawFeed.Items {
 		if item.PublishedParsed.After(work.DropBefore) && item.PublishedParsed.Before(work.DropAfter) {
 			feed := commonTypes.RawFeed{
-				Content:     item.Title, // This should better be content
+				Title:       item.Title, // This should better be content
+				Content:     item.Description,
 				PublishedAt: *item.PublishedParsed,
 				GUID:        item.GUID,
 				Link:        item.Link,
@@ -142,31 +229,41 @@ func feedsTikTok(cccs *types.ConcurrencyChannels, work *commonTypes.WorkDispatch
 			}
 
 			// 2 medias to upload: poster & video
-			if posterRegex.MatchString(item.Description) {
-				posterUrl := posterRegex.FindStringSubmatch(item.Description)[1]
+			if posterRegex.MatchString(feed.Content) {
+				rawContent := feed.Content
+
+				posterUrl := posterRegex.FindStringSubmatch(rawContent)[1]
 
 				// Upload to IPFS
-				if ipfsUrl, err := utils.UploadURLToIPFS(posterUrl); err != nil {
-					global.Logger.Error("Failed to upload link (", posterUrl, ") onto IPFS: ", err.Error())
+				media := commonTypes.Media{
+					OriginalURI: posterUrl,
+				}
+				if media.IPFSURI, media.FileSize, err = utils.UploadURLToIPFS(media.OriginalURI); err != nil {
+					global.Logger.Error("Failed to upload link (", media.OriginalURI, ") onto IPFS: ", err.Error())
 				} else {
-					posterUrl = ipfsUrl
+					rawContent = strings.ReplaceAll(rawContent, media.OriginalURI, media.IPFSURI)
+					feed.Media = append(feed.Media, media)
 				}
 
-				// Save to media
-				feed.Media = append(feed.Media, posterUrl)
+				feed.Content = rawContent
 			}
-			if videoRegex.MatchString(item.Description) {
-				videoUrl := videoRegex.FindStringSubmatch(item.Description)[1]
+			if videoRegex.MatchString(feed.Content) {
+				rawContent := feed.Content
+
+				videoUrl := videoRegex.FindStringSubmatch(rawContent)[1]
 
 				// Upload to IPFS
-				if ipfsUrl, err := utils.UploadURLToIPFS(videoUrl); err != nil {
-					global.Logger.Error("Failed to upload link (", videoUrl, ") onto IPFS: ", err.Error())
+				media := commonTypes.Media{
+					OriginalURI: videoUrl,
+				}
+				if media.IPFSURI, media.FileSize, err = utils.UploadURLToIPFS(media.OriginalURI); err != nil {
+					global.Logger.Error("Failed to upload link (", media.OriginalURI, ") onto IPFS: ", err.Error())
 				} else {
-					videoUrl = ipfsUrl
+					rawContent = strings.ReplaceAll(rawContent, media.OriginalURI, media.IPFSURI)
+					feed.Media = append(feed.Media, media)
 				}
 
-				// Save to media
-				feed.Media = append(feed.Media, videoUrl)
+				feed.Content = rawContent
 			}
 
 			// Add to results

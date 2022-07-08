@@ -9,7 +9,10 @@ func R(e *gin.Engine) {
 	e.Use(middleware.PublicCORS())
 
 	// Public API
-	publicEndpoint := e.Group("/")
-	PublicEndpoints(publicEndpoint)
+	publicGroup := e.Group("/")
+	PublicEndpoints(publicGroup)
+
+	v1Group := e.Group("/v1")
+	V1Endpoints(v1Group)
 
 }
