@@ -21,7 +21,6 @@ var SUPPORTED_PLATFORM = map[string]platform{
 		MinRefreshGap: 12 * time.Hour,     // Half of a day
 		MaxRefreshGap: 7 * 24 * time.Hour, // One week
 	},
-	},
 	"tiktok": {
 		Name:          "TikTok",
 		FeedLink:      "{{rsshub_stateless}}/tiktok/user/@{{username}}",
