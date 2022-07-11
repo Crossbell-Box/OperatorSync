@@ -3,8 +3,8 @@ dev: dev-start
 prod: prod-start
 
 build-image:
-	docker build . -f deploy/dockerfile/server.Dockerfile -t operator-sync/server
-	docker build . -f deploy/dockerfile/worker.Dockerfile -t operator-sync/worker
+	docker build . -f deploy/dockerfile/server.Dockerfile -t rss3/crossbell-operator-sync:server
+	docker build . -f deploy/dockerfile/worker.Dockerfile -t rss3/crossbell-operator-sync:worker
 
 dev-start:
 	docker-compose -f deploy/docker-compose/docker-compose.dev.yml -p operatorsync-dev up -d
@@ -25,5 +25,5 @@ prod-down:
 	docker-compose -f deploy/docker-compose/docker-compose.prod.yml down
 
 clean: dev-down prod-down
-	docker image rm operator-sync/server -f
-	docker image rm operator-sync/worker -f
+	docker image rm rss3/crossbell-operator-sync:server -f
+	docker image rm rss3/crossbell-operator-sync:worker -f

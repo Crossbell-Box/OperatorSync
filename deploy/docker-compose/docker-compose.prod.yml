@@ -42,7 +42,7 @@ services:
       - external_network
   # Server & Worker
   server:
-    image: operator-sync/server
+    image: rss3/crossbell-operator-sync:server
     restart: unless-stopped
     env_file: ../env/server.env
     networks:
@@ -51,7 +51,7 @@ services:
     ports:
       - 127.0.0.1:8080:8080
   worker:
-    image: operator-sync/worker
+    image: rss3/crossbell-operator-sync:worker
     restart: unless-stopped
     env_file: ../env/worker.env
     networks:
