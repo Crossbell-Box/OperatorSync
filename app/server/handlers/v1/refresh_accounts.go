@@ -45,6 +45,7 @@ func RefreshAccounts(ctx *gin.Context) {
 	if err := global.DB.First(&character, "crossbell_character = ?", reqCharacter).Error; errors.Is(err, gorm.ErrRecordNotFound) {
 		// No, so it's time to insert a new one
 		character.CrossbellCharacter = reqCharacter
+		character.MediaUsage = 0
 		global.DB.Create(&character)
 	}
 
