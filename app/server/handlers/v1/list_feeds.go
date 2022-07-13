@@ -16,7 +16,7 @@ import (
 	"time"
 )
 
-func ListFeeds(ctx *gin.Context) {
+func ListSingleAccountFeeds(ctx *gin.Context) {
 	// Parse request params
 	reqPlatform := ctx.Param("platform")
 	reqUsername := ctx.Param("username")

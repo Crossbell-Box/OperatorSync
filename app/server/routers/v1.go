@@ -6,8 +6,11 @@ import (
 )
 
 func V1Endpoints(rg *gin.RouterGroup) {
-	rg.GET("/account/:character", v1.ListAccounts)
-	rg.POST("/account/:character/refresh", v1.RefreshAccounts)
-	rg.GET("/feed/:platform/:username", v1.ListFeeds)
-	rg.GET("/media/:character", v1.ListMedias)
+	rg.GET("/:character", v1.CheckCharacter)
+	rg.GET("/:character/account", v1.ListAccounts)
+	rg.POST("/:character/account/refresh", v1.RefreshAccounts)
+	rg.GET("/:character/media", v1.ListMedias)
+	//rg.GET("/:character/feed") // Get feeds (not enabled)
+
+	rg.GET("/feed/:platform/:username", v1.ListSingleAccountFeeds)
 }
