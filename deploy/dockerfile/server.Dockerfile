@@ -32,6 +32,7 @@ EXPOSE 8080/tcp
 ENV DATABASE_CONNECTION_STRING=postgres://postgres:postgres@localhost:5432/postgres
 ENV REDIS_CONNECTION_STRING=redis://localhost:6379/0
 ENV MQ_CONNECTION_STRING=nats://localhost:4222
+ENV DISABLE_FLUSH_WORK=false
 ENV MODE=prod
 
 # Run the executable

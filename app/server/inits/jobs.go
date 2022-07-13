@@ -1,6 +1,9 @@
 package inits
 
-import "github.com/Crossbell-Box/OperatorSync/app/server/jobs"
+import (
+	"github.com/Crossbell-Box/OperatorSync/app/server/config"
+	"github.com/Crossbell-Box/OperatorSync/app/server/jobs"
+)
 
 func Jobs() error {
 
@@ -12,8 +15,10 @@ func Jobs() error {
 		return err
 	}
 
-	// Start dispatch flush works
-	jobs.StartDispatchFeedCollectWork()
+	if !config.Config.DisableFlushWorkDispatch {
+		// Start dispatch flush works
+		jobs.StartDispatchFeedCollectWork()
+	}
 
 	return nil
 

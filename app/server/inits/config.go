@@ -21,6 +21,7 @@ func Config() error {
 	if config.Config.MQConnString, exist = os.LookupEnv("MQ_CONNECTION_STRING"); !exist {
 		config.Config.MQConnString = "nats://localhost:4222"
 	}
+	config.Config.DisableFlushWorkDispatch = strings.Contains(strings.ToLower(os.Getenv("DISABLE_FLUSH_WORK")), "t")
 
 	config.Config.DevelopmentMode = !strings.Contains(strings.ToLower(os.Getenv("MODE")), "prod")
 
