@@ -75,16 +75,9 @@ func feedsMedium(cccs *types.ConcurrencyChannels, work *commonTypes.WorkDispatch
 			rawContent := item.Content
 
 			imgs := imageRegex.FindAllStringSubmatch(rawContent, -1)
-			for _, img := range imgs {
-				media := commonTypes.Media{
-					OriginalURI: img[1],
-				}
-				if media.IPFSURI, media.FileSize, err = utils.UploadURLToIPFS(media.OriginalURI); err != nil {
-					global.Logger.Error("Failed to upload link (", media.OriginalURI, ") onto IPFS: ", err.Error())
-				} else {
-					rawContent = strings.ReplaceAll(rawContent, media.OriginalURI, media.IPFSURI)
-					feed.Media = append(feed.Media, media)
-				}
+			feed.Media = uploadAllMedia(imgs)
+			for _, media := range feed.Media {
+				rawContent = strings.ReplaceAll(rawContent, media.OriginalURI, media.IPFSURI)
 			}
 
 			feed.Content = rawContent
@@ -157,16 +150,9 @@ func feedsGitHub(cccs *types.ConcurrencyChannels, work *commonTypes.WorkDispatch
 			rawContent := item.Content
 
 			imgs := imageRegex.FindAllStringSubmatch(rawContent, -1)
-			for _, img := range imgs {
-				media := commonTypes.Media{
-					OriginalURI: img[1],
-				}
-				if media.IPFSURI, media.FileSize, err = utils.UploadURLToIPFS(media.OriginalURI); err != nil {
-					global.Logger.Error("Failed to upload link (", media.OriginalURI, ") onto IPFS: ", err.Error())
-				} else {
-					rawContent = strings.ReplaceAll(rawContent, media.OriginalURI, media.IPFSURI)
-					feed.Media = append(feed.Media, media)
-				}
+			feed.Media = uploadAllMedia(imgs)
+			for _, media := range feed.Media {
+				rawContent = strings.ReplaceAll(rawContent, media.OriginalURI, media.IPFSURI)
 			}
 
 			feed.Content = rawContent

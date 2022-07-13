@@ -7,6 +7,7 @@ import (
 	commonConsts "github.com/Crossbell-Box/OperatorSync/common/consts"
 	commonTypes "github.com/Crossbell-Box/OperatorSync/common/types"
 	"github.com/mmcdole/gofeed"
+	"sync"
 	"time"
 )
 
@@ -73,4 +74,46 @@ func handleFailed(workDispatched *commonTypes.WorkDispatched, acceptTime time.Ti
 			global.Logger.Error("Failed to report failed work with error: ", err.Error())
 		}
 	}
+}
+
+func uploadAllMedia(regResult [][]string) []commonTypes.Media {
+
+	// Collect all unique media URIs
+	mediaUriSet := make(map[string]struct{})
+	for _, rawMediaUriRegRes := range regResult {
+		if _, ok := mediaUriSet[rawMediaUriRegRes[1]]; !ok {
+			mediaUriSet[rawMediaUriRegRes[1]] = struct{}{}
+		}
+	}
+
+	// Upload them all
+	var ipfsUploadWg sync.WaitGroup
+	ipfsUploadResultChannel := make(chan commonTypes.Media, len(mediaUriSet))
+	for uri := range mediaUriSet {
+		uri := uri
+		ipfsUploadWg.Add(1)
+		go func() {
+			media := commonTypes.Media{
+				OriginalURI: uri,
+			}
+			var err error
+			if media.IPFSURI, media.FileSize, err = utils.UploadURLToIPFS(media.OriginalURI); err != nil {
+				global.Logger.Error("Failed to upload link (", media.OriginalURI, ") onto IPFS: ", err.Error())
+			} else {
+				ipfsUploadResultChannel <- media
+			}
+			ipfsUploadWg.Done()
+		}()
+	}
+
+	// Collect results
+	ipfsUploadWg.Wait()
+	close(ipfsUploadResultChannel)
+	var medias []commonTypes.Media
+	for media := range ipfsUploadResultChannel {
+		medias = append(medias, media)
+	}
+
+	return medias
+
 }
