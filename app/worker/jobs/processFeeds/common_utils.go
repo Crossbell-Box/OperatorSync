@@ -32,6 +32,7 @@ func handleSucceeded(workDispatched *commonTypes.WorkDispatched, acceptTime time
 	if len(rawFeeds) == 0 {
 		// Actually nothing
 		global.Logger.Debug("... but nothing found")
+		handleFailed(workDispatched, acceptTime, commonConsts.ERROR_CODE_NOTHING_FOUND, "Nothing found")
 		return
 	}
 
