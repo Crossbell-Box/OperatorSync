@@ -7,6 +7,7 @@ import (
 	"github.com/Crossbell-Box/OperatorSync/app/server/consts"
 	"github.com/Crossbell-Box/OperatorSync/app/server/global"
 	"github.com/Crossbell-Box/OperatorSync/app/server/models"
+	"time"
 )
 
 func RefreshAccountForCharacter(character string) ([]models.Account, error) {
@@ -61,6 +62,12 @@ func RefreshAccountForCharacter(character string) ([]models.Account, error) {
 			global.DB.Create(&csbAccounts[csbI])
 		}
 	}
+
+	// Update character
+	var dbCharacter models.Character
+	global.DB.First(&dbCharacter, "crossbell_character = ?", character)
+	dbCharacter.AccountLastUpdatedAt = time.Now()
+	global.DB.Save(&dbCharacter)
 
 	// Cache key
 	listAccountsCacheKey := fmt.Sprintf("%s:%s:%s", consts.CACHE_PREFIX, "accounts:list", character)

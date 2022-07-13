@@ -18,6 +18,7 @@ func Jobs() error {
 	if !config.Config.DisableFlushWorkDispatch {
 		// Start dispatch flush works
 		jobs.StartDispatchFeedCollectWork()
+		jobs.StartDispatchAccountRefreshWork()
 	}
 
 	return nil

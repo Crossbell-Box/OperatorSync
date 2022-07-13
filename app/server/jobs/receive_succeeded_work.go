@@ -65,6 +65,10 @@ func handleSucceeded(m *nats.Msg) {
 		account.UpdateInterval = interv
 		account.NextUpdate = account.LastUpdated.Add(account.UpdateInterval)
 
+		// Update character
+		var character models.Character
+		global.DB.First(&character, "crossbell_character = ?", account.CrossbellCharacter)
+
 		if err := global.DB.Transaction(func(tx *gorm.DB) error {
 			// do some database operations in the transaction (use 'tx' from this point, not 'db')
 			platformSpecifiedFeed := models.Feed{
@@ -107,6 +111,8 @@ func handleSucceeded(m *nats.Msg) {
 			for _, singleMedia := range mediaMap {
 				if singleMedia.ID == 0 {
 					mediaCreateList = append(mediaCreateList, singleMedia)
+
+					character.MediaUsage += singleMedia.FileSize
 				} else {
 					mediaUpdateList = append(mediaUpdateList, singleMedia)
 				}
@@ -126,6 +132,11 @@ func handleSucceeded(m *nats.Msg) {
 
 			// Update account
 			if err := tx.Save(&account).Error; err != nil {
+				return err
+			}
+
+			// Update character
+			if err := tx.Save(&character).Error; err != nil {
 				return err
 			}
 

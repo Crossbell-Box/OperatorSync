@@ -16,13 +16,13 @@ func StartDispatchFeedCollectWork() {
 		for {
 			select {
 			case <-t.C:
-				dispatch()
+				dispatchFeedCollectWork()
 			}
 		}
 	}()
 }
 
-func dispatch() {
+func dispatchFeedCollectWork() {
 	global.Logger.Debug("Start dispatching feeds collect works...")
 
 	nowTime := time.Now()

@@ -2,11 +2,14 @@ package v1
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"github.com/Crossbell-Box/OperatorSync/app/server/consts"
 	"github.com/Crossbell-Box/OperatorSync/app/server/global"
+	"github.com/Crossbell-Box/OperatorSync/app/server/models"
 	"github.com/Crossbell-Box/OperatorSync/app/server/utils"
 	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
 	"net/http"
 	"time"
 )
@@ -35,6 +38,14 @@ func RefreshAccounts(ctx *gin.Context) {
 			"message": "Please try again later",
 		})
 		return
+	}
+
+	// Check if is in database
+	var character models.Character
+	if err := global.DB.First(&character, "crossbell_character = ?", reqCharacter).Error; errors.Is(err, gorm.ErrRecordNotFound) {
+		// No, so it's time to insert a new one
+		character.CrossbellCharacter = reqCharacter
+		global.DB.Create(&character)
 	}
 
 	accounts, err := utils.RefreshAccountForCharacter(reqCharacter)
