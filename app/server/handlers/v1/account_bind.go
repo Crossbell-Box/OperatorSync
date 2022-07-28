@@ -8,6 +8,7 @@ import (
 	"github.com/Crossbell-Box/OperatorSync/app/server/global"
 	"github.com/Crossbell-Box/OperatorSync/app/server/types"
 	"github.com/Crossbell-Box/OperatorSync/app/server/utils"
+	commonConsts "github.com/Crossbell-Box/OperatorSync/common/consts"
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 	"net/http"
@@ -20,6 +21,14 @@ func BindAccount(ctx *gin.Context) {
 	reqCharacter := ctx.Param("character") // ID
 	reqPlatform := ctx.Param("platform")
 	reqUsername := ctx.Param("username")
+
+	if _, ok := commonConsts.SUPPORTED_PLATFORM[reqPlatform]; !ok {
+		ctx.JSON(http.StatusOK, gin.H{
+			"ok":      false,
+			"message": "Platform not supported",
+		})
+		return
+	}
 
 	// Check character -> create if not exist
 	if err := global.DB.First(&types.Character{}, "crossbell_character = ?", reqCharacter).Error; errors.Is(err, gorm.ErrRecordNotFound) {

@@ -8,6 +8,7 @@ import (
 	"github.com/Crossbell-Box/OperatorSync/app/server/global"
 	"github.com/Crossbell-Box/OperatorSync/app/server/types"
 	"github.com/Crossbell-Box/OperatorSync/app/server/utils"
+	commonConsts "github.com/Crossbell-Box/OperatorSync/common/consts"
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 	"net/http"
@@ -19,6 +20,14 @@ func UnbindAccount(ctx *gin.Context) {
 	reqCharacter := ctx.Param("character")
 	reqPlatform := ctx.Param("platform")
 	reqUsername := ctx.Param("username")
+
+	if _, ok := commonConsts.SUPPORTED_PLATFORM[reqPlatform]; !ok {
+		ctx.JSON(http.StatusOK, gin.H{
+			"ok":      false,
+			"message": "Platform not supported",
+		})
+		return
+	}
 
 	global.Logger.Debug("Account ", reqCharacter, reqPlatform, reqUsername, " bind request received.")
 
