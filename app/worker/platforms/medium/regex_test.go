@@ -1,4 +1,4 @@
-package validateAccounts
+package medium
 
 import "testing"
 

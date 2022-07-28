@@ -1,8 +1,11 @@
-package validateAccounts
+package dispatch
 
 import (
 	"encoding/json"
 	"github.com/Crossbell-Box/OperatorSync/app/worker/global"
+	"github.com/Crossbell-Box/OperatorSync/app/worker/jobs/callback"
+	"github.com/Crossbell-Box/OperatorSync/app/worker/platforms/medium"
+	"github.com/Crossbell-Box/OperatorSync/app/worker/platforms/tiktok"
 	commonConsts "github.com/Crossbell-Box/OperatorSync/common/consts"
 	commonTypes "github.com/Crossbell-Box/OperatorSync/common/types"
 	"github.com/nats-io/nats.go"
@@ -16,7 +19,7 @@ func ValidateAccounts(m *nats.Msg) {
 
 	if err := json.Unmarshal(m.Data, &validateReq); err != nil {
 		global.Logger.Error("Failed to parse validate request.", err.Error())
-		handleFailed(m.Reply, commonConsts.ERROR_CODE_FAILED_TO_PARSE_JSON, "Failed to parse validate request")
+		callback.ValidateHandleFailed(m.Reply, commonConsts.ERROR_CODE_FAILED_TO_PARSE_JSON, "Failed to parse validate request")
 		return
 	}
 
@@ -24,11 +27,11 @@ func ValidateAccounts(m *nats.Msg) {
 
 	switch validateReq.Platform {
 	case "medium":
-		accountMedium(m.Reply, validateReq.Username, validateString)
+		medium.Account(m.Reply, validateReq.Username, validateString)
 	case "tiktok":
-		accountTikTok(m.Reply, validateReq.Username, validateString)
+		tiktok.Account(m.Reply, validateReq.Username, validateString)
 	default:
-		handleFailed(m.Reply, commonConsts.ERROR_CODE_UNSUPPORTED_PLATFORM, "Unsupported platform")
+		callback.ValidateHandleFailed(m.Reply, commonConsts.ERROR_CODE_UNSUPPORTED_PLATFORM, "Unsupported platform")
 	}
 
 }

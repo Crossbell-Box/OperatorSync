@@ -1,4 +1,4 @@
-package processFeeds
+package utils
 
 import (
 	"github.com/Crossbell-Box/OperatorSync/app/worker/config"
@@ -32,7 +32,7 @@ func TestUploadAllMedia(t *testing.T) {
 	}}
 
 	// Run test
-	mediaUploadResults := uploadAllMedia(mediaRegResults)
+	mediaUploadResults := UploadAllMedia(mediaRegResults)
 	t.Log("All media files uploaded")
 	t.Log(mediaUploadResults)
 }

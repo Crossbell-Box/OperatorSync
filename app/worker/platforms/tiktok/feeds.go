@@ -1,12 +1,11 @@
-package processFeeds
+package tiktok
 
 import (
-	"fmt"
 	"github.com/Crossbell-Box/OperatorSync/app/worker/global"
+	"github.com/Crossbell-Box/OperatorSync/app/worker/jobs/callback"
 	"github.com/Crossbell-Box/OperatorSync/app/worker/types"
 	"github.com/Crossbell-Box/OperatorSync/app/worker/utils"
 	commonTypes "github.com/Crossbell-Box/OperatorSync/common/types"
-	"github.com/mmcdole/gofeed"
 	"math"
 	"regexp"
 	"strings"
@@ -14,81 +13,18 @@ import (
 )
 
 var (
-	imageRegex  *regexp.Regexp
 	posterRegex *regexp.Regexp
 	videoRegex  *regexp.Regexp
 )
 
 func init() {
 
-	// Medium regex
-	imageRegex = regexp.MustCompile(`<img[^>]+\bsrc=["']([^"']+)["']`)
-
 	// TikTok regex
 	posterRegex = regexp.MustCompile(`poster="(.+?)"`)
 	videoRegex = regexp.MustCompile(`<source src="(.+?)"`)
 }
 
-func feedsMedium(cccs *types.ConcurrencyChannels, work *commonTypes.WorkDispatched, acceptTime time.Time, collectLink string) {
-	// Refer to https://medium.com/feed/@nya_9949
-
-	// Concurrency control
-	cccs.Direct.Request()
-	defer cccs.Direct.Done()
-
-	global.Logger.Debug("New feeds request for medium")
-
-	rawFeed, errCode, err := utils.FeedRequest(
-		strings.ReplaceAll(collectLink, "{{username}}", work.Username),
-		true,
-	)
-	if err != nil {
-		handleFailed(work, acceptTime, errCode, err.Error())
-		return
-	}
-
-	var feeds []commonTypes.RawFeed
-	var minimalInterval time.Duration = math.MaxInt64
-
-	for index, item := range rawFeed.Items {
-		if item.PublishedParsed.After(work.DropBefore) && item.PublishedParsed.Before(work.DropAfter) {
-			feed := commonTypes.RawFeed{
-				Title:       item.Title,
-				Link:        item.Link,
-				GUID:        item.GUID,
-				Categories:  item.Categories,
-				Authors:     parseAuthors(item.Authors),
-				PublishedAt: *item.PublishedParsed,
-			}
-
-			rawContent := item.Content
-
-			imgs := imageRegex.FindAllStringSubmatch(rawContent, -1)
-			feed.Media = uploadAllMedia(imgs)
-			for _, media := range feed.Media {
-				rawContent = strings.ReplaceAll(rawContent, media.OriginalURI, media.IPFSURI)
-			}
-
-			feed.Content = rawContent
-
-			feeds = append(feeds, feed)
-			if index > 0 {
-				interv := rawFeed.Items[index-1].PublishedParsed.Sub(*item.PublishedParsed)
-				if interv < 0 {
-					interv = -interv
-				}
-				if interv < minimalInterval {
-					minimalInterval = interv
-				}
-			}
-		}
-	}
-
-	handleSucceeded(work, acceptTime, feeds, minimalInterval)
-
-}
-
-func feedsTikTok(cccs *types.ConcurrencyChannels, work *commonTypes.WorkDispatched, acceptTime time.Time, collectLink string) {
+func Feeds(cccs *types.ConcurrencyChannels, work *commonTypes.WorkDispatched, acceptTime time.Time, collectLink string) {
 	// Refer to https://rsshub.app/tiktok/user/@linustech
 
 	// Concurrency control
@@ -102,7 +38,7 @@ func feedsTikTok(cccs *types.ConcurrencyChannels, work *commonTypes.WorkDispatch
 		false,
 	)
 	if err != nil {
-		handleFailed(work, acceptTime, errCode, err.Error())
+		callback.FeedsHandleFailed(work, acceptTime, errCode, err.Error())
 		return
 	}
 
@@ -117,7 +53,7 @@ func feedsTikTok(cccs *types.ConcurrencyChannels, work *commonTypes.WorkDispatch
 				PublishedAt: *item.PublishedParsed,
 				GUID:        item.GUID,
 				Link:        item.Link,
-				Authors:     parseAuthors(item.Authors),
+				Authors:     utils.ParseAuthors(item.Authors),
 			}
 
 			// 2 medias to upload: poster & video
@@ -174,19 +110,6 @@ func feedsTikTok(cccs *types.ConcurrencyChannels, work *commonTypes.WorkDispatch
 		}
 	}
 
-	handleSucceeded(work, acceptTime, feeds, minimalInterval)
+	callback.FeedsHandleSucceeded(work, acceptTime, feeds, minimalInterval)
 
-}
-
-func parseAuthors(authors []*gofeed.Person) []string {
-	var parsedAuthors []string
-	for _, gofeedAuthor := range authors {
-		authorStr := gofeedAuthor.Name
-		if gofeedAuthor.Email != "" {
-			authorStr += fmt.Sprintf(" <%s>", gofeedAuthor.Email)
-		}
-		parsedAuthors = append(parsedAuthors, authorStr)
-	}
-
-	return parsedAuthors
 }

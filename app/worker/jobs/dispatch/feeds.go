@@ -1,9 +1,12 @@
-package processFeeds
+package dispatch
 
 import (
 	"encoding/json"
 	"github.com/Crossbell-Box/OperatorSync/app/worker/config"
 	"github.com/Crossbell-Box/OperatorSync/app/worker/global"
+	"github.com/Crossbell-Box/OperatorSync/app/worker/jobs/callback"
+	"github.com/Crossbell-Box/OperatorSync/app/worker/platforms/medium"
+	"github.com/Crossbell-Box/OperatorSync/app/worker/platforms/tiktok"
 	"github.com/Crossbell-Box/OperatorSync/app/worker/types"
 	commonConsts "github.com/Crossbell-Box/OperatorSync/common/consts"
 	commonTypes "github.com/Crossbell-Box/OperatorSync/common/types"
@@ -42,12 +45,12 @@ func ProcessFeeds(platformID string, cccs *types.ConcurrencyChannels) func(m *na
 
 		switch platformID {
 		case "medium":
-			feedsMedium(cccs, &workDispatched, acceptTime, collectLink)
+			medium.Feeds(cccs, &workDispatched, acceptTime, collectLink)
 		case "tiktok":
-			feedsTikTok(cccs, &workDispatched, acceptTime, collectLink)
+			tiktok.Feeds(cccs, &workDispatched, acceptTime, collectLink)
 		default:
 			// Unable to handle
-			handleFailed(&workDispatched, acceptTime, commonConsts.ERROR_CODE_UNSUPPORTED_PLATFORM, "Unsupported platform")
+			callback.FeedsHandleFailed(&workDispatched, acceptTime, commonConsts.ERROR_CODE_UNSUPPORTED_PLATFORM, "Unsupported platform")
 		}
 	}
 }

@@ -1,16 +1,14 @@
-package processFeeds
+package callback
 
 import (
 	"encoding/json"
 	"github.com/Crossbell-Box/OperatorSync/app/worker/global"
-	"github.com/Crossbell-Box/OperatorSync/app/worker/utils"
 	commonConsts "github.com/Crossbell-Box/OperatorSync/common/consts"
 	commonTypes "github.com/Crossbell-Box/OperatorSync/common/types"
-	"sync"
 	"time"
 )
 
-func handleSucceeded(workDispatched *commonTypes.WorkDispatched, acceptTime time.Time, rawFeeds []commonTypes.RawFeed, newInterval time.Duration) {
+func FeedsHandleSucceeded(workDispatched *commonTypes.WorkDispatched, acceptTime time.Time, rawFeeds []commonTypes.RawFeed, newInterval time.Duration) {
 
 	global.Logger.Debug("Work succeeded: ", workDispatched)
 
@@ -38,7 +36,7 @@ func handleSucceeded(workDispatched *commonTypes.WorkDispatched, acceptTime time
 	}
 }
 
-func handleFailed(workDispatched *commonTypes.WorkDispatched, acceptTime time.Time, errCode uint, errMsg string) {
+func FeedsHandleFailed(workDispatched *commonTypes.WorkDispatched, acceptTime time.Time, errCode uint, errMsg string) {
 	global.Logger.Warn("Work failed: ", workDispatched, " with code: ", errCode, " , reason: ", errMsg)
 
 	failedWork := commonTypes.WorkFailed{
@@ -56,46 +54,4 @@ func handleFailed(workDispatched *commonTypes.WorkDispatched, acceptTime time.Ti
 			global.Logger.Error("Failed to report failed work with error: ", err.Error())
 		}
 	}
-}
-
-func uploadAllMedia(regResult [][]string) []commonTypes.Media {
-
-	// Collect all unique media URIs
-	mediaUriSet := make(map[string]struct{})
-	for _, rawMediaUriRegRes := range regResult {
-		if _, ok := mediaUriSet[rawMediaUriRegRes[1]]; !ok {
-			mediaUriSet[rawMediaUriRegRes[1]] = struct{}{}
-		}
-	}
-
-	// Upload them all
-	var ipfsUploadWg sync.WaitGroup
-	ipfsUploadResultChannel := make(chan commonTypes.Media, len(mediaUriSet))
-	for uri := range mediaUriSet {
-		uri := uri
-		ipfsUploadWg.Add(1)
-		go func() {
-			media := commonTypes.Media{
-				OriginalURI: uri,
-			}
-			var err error
-			if media.IPFSURI, media.FileSize, media.ContentType, err = utils.UploadURLToIPFS(media.OriginalURI); err != nil {
-				global.Logger.Error("Failed to upload link (", media.OriginalURI, ") onto IPFS: ", err.Error())
-			} else {
-				ipfsUploadResultChannel <- media
-			}
-			ipfsUploadWg.Done()
-		}()
-	}
-
-	// Collect results
-	ipfsUploadWg.Wait()
-	close(ipfsUploadResultChannel)
-	var medias []commonTypes.Media
-	for media := range ipfsUploadResultChannel {
-		medias = append(medias, media)
-	}
-
-	return medias
-
 }

@@ -1,4 +1,4 @@
-package validateAccounts
+package callback
 
 import (
 	"encoding/json"
@@ -6,7 +6,7 @@ import (
 	commonTypes "github.com/Crossbell-Box/OperatorSync/common/types"
 )
 
-func handleSucceeded(mqReply string, isValid bool) {
+func ValidateHandleSucceeded(mqReply string, isValid bool) {
 	succeededResponse := commonTypes.ValidateResponse{
 		IsSucceeded:            true,
 		Code:                   0,
@@ -24,7 +24,7 @@ func handleSucceeded(mqReply string, isValid bool) {
 	}
 }
 
-func handleFailed(mqReply string, errCode uint, errMsg string) {
+func ValidateHandleFailed(mqReply string, errCode uint, errMsg string) {
 	failedResponse := commonTypes.ValidateResponse{
 		IsSucceeded:            false,
 		Code:                   errCode,
