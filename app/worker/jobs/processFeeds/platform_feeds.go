@@ -5,7 +5,6 @@ import (
 	"github.com/Crossbell-Box/OperatorSync/app/worker/global"
 	"github.com/Crossbell-Box/OperatorSync/app/worker/types"
 	"github.com/Crossbell-Box/OperatorSync/app/worker/utils"
-	commonConsts "github.com/Crossbell-Box/OperatorSync/common/consts"
 	commonTypes "github.com/Crossbell-Box/OperatorSync/common/types"
 	"github.com/mmcdole/gofeed"
 	"math"
@@ -39,7 +38,7 @@ func feedsMedium(cccs *types.ConcurrencyChannels, work *commonTypes.WorkDispatch
 
 	global.Logger.Debug("New feeds request for medium")
 
-	rawFeed, errCode, err := makeRequest(
+	rawFeed, errCode, err := utils.FeedRequest(
 		strings.ReplaceAll(collectLink, "{{username}}", work.Username),
 		true,
 	)
@@ -47,16 +46,6 @@ func feedsMedium(cccs *types.ConcurrencyChannels, work *commonTypes.WorkDispatch
 		handleFailed(work, acceptTime, errCode, err.Error())
 		return
 	}
-
-	// Medium feed won't show user's bio
-	//if !strings.Contains(strings.ToLower(rawFeed.Description), strings.ToLower(work.VerifyKey)) {
-	//	handleFailed(
-	//		work, acceptTime,
-	//		commonConsts.ERROR_CODE_ACCOUNT_NOT_VERIFIED,
-	//		"No identity verify string found on this account",
-	//	)
-	//	return
-	//}
 
 	var feeds []commonTypes.RawFeed
 	var minimalInterval time.Duration = math.MaxInt64
@@ -99,80 +88,6 @@ func feedsMedium(cccs *types.ConcurrencyChannels, work *commonTypes.WorkDispatch
 
 }
 
-func feedsGitHub(cccs *types.ConcurrencyChannels, work *commonTypes.WorkDispatched, acceptTime time.Time, collectLink string) {
-	// Refer to https://github.com/candinya.atom
-
-	// Concurrency control
-	cccs.Direct.Request()
-	defer cccs.Direct.Done()
-
-	global.Logger.Debug("New feeds request for github")
-
-	rawFeed, errCode, err := makeRequest(
-		strings.ReplaceAll(collectLink, "{{username}}", work.Username),
-		true,
-	)
-	if err != nil {
-		handleFailed(work, acceptTime, errCode, err.Error())
-		return
-	}
-
-	if !rawFeed.UpdatedParsed.After(work.DropBefore) {
-		// Not updated after last update, drop all
-		handleSucceeded(work, acceptTime, nil, 0)
-		return
-	}
-
-	// GitHub feed won't show user's bio
-	//if !strings.Contains(strings.ToLower(rawFeed.Description), strings.ToLower(work.VerifyKey)) {
-	//	handleFailed(
-	//		work, acceptTime,
-	//		commonConsts.ERROR_CODE_ACCOUNT_NOT_VERIFIED,
-	//		"No identity verify string found on this account",
-	//	)
-	//	return
-	//}
-
-	var feeds []commonTypes.RawFeed
-	var minimalInterval time.Duration = math.MaxInt64
-
-	for index, item := range rawFeed.Items {
-		if item.PublishedParsed.After(work.DropBefore) && item.PublishedParsed.Before(work.DropAfter) {
-			feed := commonTypes.RawFeed{
-				Title:       item.Title,
-				Link:        item.Link,
-				GUID:        item.GUID,
-				Authors:     parseAuthors(item.Authors),
-				PublishedAt: *item.PublishedParsed,
-				UpdatedAt:   *item.UpdatedParsed,
-			}
-
-			rawContent := item.Content
-
-			imgs := imageRegex.FindAllStringSubmatch(rawContent, -1)
-			feed.Media = uploadAllMedia(imgs)
-			for _, media := range feed.Media {
-				rawContent = strings.ReplaceAll(rawContent, media.OriginalURI, media.IPFSURI)
-			}
-
-			feed.Content = rawContent
-
-			feeds = append(feeds, feed)
-			if index > 0 {
-				interv := rawFeed.Items[index-1].PublishedParsed.Sub(*item.PublishedParsed)
-				if interv < 0 {
-					interv = -interv
-				}
-				if interv < minimalInterval {
-					minimalInterval = interv
-				}
-			}
-		}
-	}
-
-	handleSucceeded(work, acceptTime, feeds, minimalInterval)
-}
-
 func feedsTikTok(cccs *types.ConcurrencyChannels, work *commonTypes.WorkDispatched, acceptTime time.Time, collectLink string) {
 	// Refer to https://rsshub.app/tiktok/user/@linustech
 
@@ -182,21 +97,12 @@ func feedsTikTok(cccs *types.ConcurrencyChannels, work *commonTypes.WorkDispatch
 
 	global.Logger.Debug("New feeds request for tiktok")
 
-	rawFeed, errCode, err := makeRequest(
+	rawFeed, errCode, err := utils.FeedRequest(
 		strings.ReplaceAll(collectLink, "{{username}}", work.Username),
 		false,
 	)
 	if err != nil {
 		handleFailed(work, acceptTime, errCode, err.Error())
-		return
-	}
-
-	if !strings.Contains(strings.ToLower(rawFeed.Description), strings.ToLower(work.VerifyKey)) {
-		handleFailed(
-			work, acceptTime,
-			commonConsts.ERROR_CODE_ACCOUNT_NOT_VERIFIED,
-			"No identity verify string found on this account",
-		)
 		return
 	}
 
@@ -224,7 +130,7 @@ func feedsTikTok(cccs *types.ConcurrencyChannels, work *commonTypes.WorkDispatch
 				media := commonTypes.Media{
 					OriginalURI: posterUrl,
 				}
-				if media.IPFSURI, media.FileSize, err = utils.UploadURLToIPFS(media.OriginalURI); err != nil {
+				if media.IPFSURI, media.FileSize, media.ContentType, err = utils.UploadURLToIPFS(media.OriginalURI); err != nil {
 					global.Logger.Error("Failed to upload link (", media.OriginalURI, ") onto IPFS: ", err.Error())
 				} else {
 					rawContent = strings.ReplaceAll(rawContent, media.OriginalURI, media.IPFSURI)
@@ -242,7 +148,7 @@ func feedsTikTok(cccs *types.ConcurrencyChannels, work *commonTypes.WorkDispatch
 				media := commonTypes.Media{
 					OriginalURI: videoUrl,
 				}
-				if media.IPFSURI, media.FileSize, err = utils.UploadURLToIPFS(media.OriginalURI); err != nil {
+				if media.IPFSURI, media.FileSize, media.ContentType, err = utils.UploadURLToIPFS(media.OriginalURI); err != nil {
 					global.Logger.Error("Failed to upload link (", media.OriginalURI, ") onto IPFS: ", err.Error())
 				} else {
 					rawContent = strings.ReplaceAll(rawContent, media.OriginalURI, media.IPFSURI)

@@ -17,17 +17,17 @@ func ProcessFeeds(platformID string, cccs *types.ConcurrencyChannels) func(m *na
 
 		global.Logger.Debug("New work received: ", string(m.Data))
 
+		acceptTime := time.Now()
+
 		var workDispatched commonTypes.WorkDispatched
 
 		if err := json.Unmarshal(m.Data, &workDispatched); err != nil {
-			global.Logger.Error("Failed to parse dispatched work data.")
-			// Even unable to report to failed works
+			global.Logger.Error("Failed to parse dispatched work data.", err.Error())
+			// Even unable to report to failed works cause work cannot be parsed
 			return
 		}
 
-		acceptTime := time.Now()
-
-		collectLink := commonConsts.SUPPORTED_PLATFORM[workDispatched.Platform].FeedLink
+		collectLink := commonConsts.SUPPORTED_PLATFORM[platformID].FeedLink
 
 		collectLink =
 			strings.ReplaceAll(
@@ -43,8 +43,6 @@ func ProcessFeeds(platformID string, cccs *types.ConcurrencyChannels) func(m *na
 		switch platformID {
 		case "medium":
 			feedsMedium(cccs, &workDispatched, acceptTime, collectLink)
-		case "github":
-			feedsGitHub(cccs, &workDispatched, acceptTime, collectLink)
 		case "tiktok":
 			feedsTikTok(cccs, &workDispatched, acceptTime, collectLink)
 		default:

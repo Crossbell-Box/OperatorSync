@@ -12,13 +12,6 @@ import (
 func CheckCharacter(ctx *gin.Context) {
 	// Parse request params
 	reqCharacter := ctx.Param("character")
-	if reqCharacter == "" {
-		ctx.JSON(http.StatusOK, gin.H{
-			"ok":      false,
-			"message": "Please specify character",
-		})
-		return
-	}
 
 	// Check if is in database
 	var character models.Character

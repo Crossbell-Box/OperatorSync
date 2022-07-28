@@ -21,13 +21,13 @@ type response struct {
 	Error   string `json:"error"`
 }
 
-func UploadURLToIPFS(targetUrl string) (string, uint, error) {
+func UploadURLToIPFS(targetUrl string) (string, uint, string, error) {
 	// Get filename
 	global.Logger.Debug("Uploading file ", targetUrl, " to IPFS...")
 
 	reqUrl, err := url.Parse(targetUrl)
 	if err != nil {
-		return "", 0, err
+		return "", 0, "", err
 	}
 	filename := path.Base(reqUrl.Path)
 
@@ -35,7 +35,7 @@ func UploadURLToIPFS(targetUrl string) (string, uint, error) {
 	body, err := HttpRequest(targetUrl, false)
 	if err != nil {
 		global.Logger.Error("Failed to retrieve data from: ", targetUrl)
-		return "", 0, err
+		return "", 0, "", err
 	}
 
 	global.Logger.Debug("File download successfully, uploading...")
@@ -46,41 +46,44 @@ func UploadURLToIPFS(targetUrl string) (string, uint, error) {
 
 	fileWriter, err := bodyWriter.CreateFormFile("file", filename)
 	if err != nil {
-		return "", 0, err
+		return "", 0, "", err
 	}
 
-	fileSize, err := fileWriter.Write(body[:])
+	bodyBytes := body[:]
+	fileSize, err := fileWriter.Write(bodyBytes)
 	if err != nil {
 		global.Logger.Error("Failed to copy buffer data")
 	}
 
+	contentType := http.DetectContentType(bodyBytes)
+
 	// Upload to proxy
 	var resp response
-	contentType := bodyWriter.FormDataContentType()
+	formContentType := bodyWriter.FormDataContentType()
 	_ = bodyWriter.Close() // Ignore error
 	ipfsReq, err := http.NewRequest("POST", config.Config.IPFSEndpoint, bodyBuffer)
 	if err != nil {
 		global.Logger.Error("Failed to initialize request: ", err.Error())
-		return "", 0, err
+		return "", 0, "", err
 	}
-	ipfsReq.Header.Set("Content-Type", contentType)
+	ipfsReq.Header.Set("Content-Type", formContentType)
 	ipfsRes, err := (&http.Client{}).Do(ipfsReq)
 	if err != nil {
 		global.Logger.Error("Failed to do request: ", err.Error())
-		return "", 0, err
+		return "", 0, "", err
 	}
 	err = json.NewDecoder(ipfsRes.Body).Decode(&resp)
 	if err != nil {
 		log.Println("Error decoding JSON:", err)
-		return "", 0, err
+		return "", 0, "", err
 	}
 
 	// Return URL
 	if resp.Status == "ok" {
 		global.Logger.Debug("File (Size: ", fileSize, ") upload succeeded: ", resp.URL)
-		return resp.URL, uint(fileSize), nil
+		return resp.URL, uint(fileSize), contentType, nil
 	} else {
-		return "", 0, fmt.Errorf(resp.Error)
+		return "", 0, "", fmt.Errorf(resp.Error)
 	}
 
 }

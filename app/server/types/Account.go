@@ -4,7 +4,7 @@ import "time"
 
 type Account struct {
 	// Structure related
-	CrossbellCharacter string `json:"crossbell_character" gorm:"index"`
+	CrossbellCharacter string `json:"crossbell_character" gorm:"index;column:crossbell_character"`
 
 	// Metadata
 	Platform string `json:"platform" gorm:"index"` // Platform ID

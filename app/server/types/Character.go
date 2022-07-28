@@ -4,7 +4,7 @@ import "time"
 
 type Character struct {
 	// Structure related
-	CrossbellCharacter string `json:"crossbell_character" gorm:"primarykey"`
+	CrossbellCharacter string `json:"crossbell_character" gorm:"primarykey;column:crossbell_character"`
 
 	// Accounts related
 	AccountLastUpdatedAt time.Time `json:"account_last_updated_at" gorm:"index"`

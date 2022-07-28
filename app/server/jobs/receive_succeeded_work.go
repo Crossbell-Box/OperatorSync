@@ -37,16 +37,18 @@ func handleSucceeded(m *nats.Msg) {
 		// Parse successfully
 		// Parse feeds
 		var feeds []models.Feed
-		for _, rawFeed := range workSucceeded.Feeds {
-			feed := models.Feed{
-				Feed: types.Feed{
-					AccountID:   workSucceeded.AccountID,
-					Platform:    workSucceeded.Platform,
-					CollectedAt: workSucceeded.DispatchAt,
-					RawFeed:     rawFeed,
-				},
+		if len(workSucceeded.Feeds) > 0 {
+			for _, rawFeed := range workSucceeded.Feeds {
+				feed := models.Feed{
+					Feed: types.Feed{
+						AccountID:   workSucceeded.AccountID,
+						Platform:    workSucceeded.Platform,
+						CollectedAt: workSucceeded.DispatchAt,
+						RawFeed:     rawFeed,
+					},
+				}
+				feeds = append(feeds, feed)
 			}
-			feeds = append(feeds, feed)
 		}
 
 		// Find account
@@ -71,62 +73,64 @@ func handleSucceeded(m *nats.Msg) {
 
 		if err := global.DB.Transaction(func(tx *gorm.DB) error {
 			// do some database operations in the transaction (use 'tx' from this point, not 'db')
-			platformSpecifiedFeed := models.Feed{
-				Feed: types.Feed{
-					Platform: workSucceeded.Platform,
-				},
-			}
+			if len(feeds) > 0 {
+				platformSpecifiedFeed := models.Feed{
+					Feed: types.Feed{
+						Platform: workSucceeded.Platform,
+					},
+				}
 
-			// Insert feeds
-			if err := tx.Scopes(models.FeedTable(platformSpecifiedFeed)).Create(&feeds).Error; err != nil {
-				return err
-			}
+				// Insert feeds
+				if err := tx.Scopes(models.FeedTable(platformSpecifiedFeed)).Create(&feeds).Error; err != nil {
+					return err
+				}
 
-			// Insert medias (Can only be processed here because we need feed IDs to identify them)
-			mediaMap := make(map[string]models.Media)
-			for _, feed := range feeds {
-				for _, media := range feed.Media {
-					var singleMedia models.Media
-					var ok bool
-					if singleMedia, ok = mediaMap[media.IPFSURI]; !ok {
-						// Try to find in database
-						if err = global.DB.First(&singleMedia, "ipfs_uri = ?", media.IPFSURI).Error; errors.Is(err, gorm.ErrRecordNotFound) {
-							singleMedia = models.Media{
-								ID:                 0,
-								CrossbellCharacter: account.CrossbellCharacter,
-								Media:              media,
+				// Insert medias (Can only be processed here because we need feed IDs to identify them)
+				mediaMap := make(map[string]models.Media)
+				for _, feed := range feeds {
+					for _, media := range feed.Media {
+						var singleMedia models.Media
+						var ok bool
+						if singleMedia, ok = mediaMap[media.IPFSURI]; !ok {
+							// Try to find in database
+							if err = global.DB.First(&singleMedia, "ipfs_uri = ?", media.IPFSURI).Error; errors.Is(err, gorm.ErrRecordNotFound) {
+								singleMedia = models.Media{
+									ID:                 0,
+									CrossbellCharacter: account.CrossbellCharacter,
+									Media:              media,
+								}
 							}
 						}
+						singleMedia.RelatedFeeds = append(singleMedia.RelatedFeeds, models.FeedRecord{
+							Platform: workSucceeded.Platform,
+							ID:       feed.ID,
+						})
+						mediaMap[media.IPFSURI] = singleMedia
 					}
-					singleMedia.RelatedFeeds = append(singleMedia.RelatedFeeds, models.FeedRecord{
-						Platform: workSucceeded.Platform,
-						ID:       feed.ID,
-					})
-					mediaMap[media.IPFSURI] = singleMedia
 				}
-			}
 
-			var mediaUpdateList []models.Media
-			var mediaCreateList []models.Media
-			for _, singleMedia := range mediaMap {
-				if singleMedia.ID == 0 {
-					mediaCreateList = append(mediaCreateList, singleMedia)
+				var mediaUpdateList []models.Media
+				var mediaCreateList []models.Media
+				for _, singleMedia := range mediaMap {
+					if singleMedia.ID == 0 {
+						mediaCreateList = append(mediaCreateList, singleMedia)
 
-					character.MediaUsage += singleMedia.FileSize
-				} else {
-					mediaUpdateList = append(mediaUpdateList, singleMedia)
+						character.MediaUsage += singleMedia.FileSize
+					} else {
+						mediaUpdateList = append(mediaUpdateList, singleMedia)
+					}
 				}
-			}
 
-			if len(mediaUpdateList) > 0 {
-				if err := tx.Save(&mediaUpdateList).Error; err != nil {
-					return err
+				if len(mediaUpdateList) > 0 {
+					if err := tx.Save(&mediaUpdateList).Error; err != nil {
+						return err
+					}
 				}
-			}
 
-			if len(mediaCreateList) > 0 {
-				if err := tx.Create(&mediaCreateList).Error; err != nil {
-					return err
+				if len(mediaCreateList) > 0 {
+					if err := tx.Create(&mediaCreateList).Error; err != nil {
+						return err
+					}
 				}
 			}
 

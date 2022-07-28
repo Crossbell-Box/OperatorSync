@@ -15,13 +15,6 @@ import (
 func ListAccounts(ctx *gin.Context) {
 	// Parse request params
 	reqCharacter := ctx.Param("character")
-	if reqCharacter == "" {
-		ctx.JSON(http.StatusOK, gin.H{
-			"ok":      false,
-			"message": "Please specify character",
-		})
-		return
-	}
 
 	// Get requests
 	var accounts []models.Account
@@ -57,6 +50,7 @@ func ListAccounts(ctx *gin.Context) {
 	// Get data from database
 	global.DB.
 		Model(&models.Account{}).
+		Where("crossbell_character = ?", reqCharacter).
 		Order("created_at").
 		Find(&accounts)
 

@@ -16,13 +16,6 @@ import (
 func ListMedias(ctx *gin.Context) {
 	// Parse request params
 	reqCharacter := ctx.Param("character")
-	if reqCharacter == "" {
-		ctx.JSON(http.StatusOK, gin.H{
-			"ok":      false,
-			"message": "Please specify character",
-		})
-		return
-	}
 
 	nowTime := time.Now()
 	reqBeforeTimeString := ctx.DefaultQuery("before", nowTime.Format(time.RFC3339))

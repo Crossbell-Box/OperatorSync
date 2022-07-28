@@ -4,6 +4,7 @@ import (
 	"github.com/Crossbell-Box/OperatorSync/app/worker/config"
 	"github.com/Crossbell-Box/OperatorSync/app/worker/global"
 	"github.com/Crossbell-Box/OperatorSync/app/worker/jobs/processFeeds"
+	"github.com/Crossbell-Box/OperatorSync/app/worker/jobs/validateAccounts"
 	"github.com/Crossbell-Box/OperatorSync/app/worker/types"
 	commonConsts "github.com/Crossbell-Box/OperatorSync/common/consts"
 )
@@ -24,7 +25,14 @@ func StartProcessFeeds() error {
 		}
 	}
 
-	//defer sub.Drain() // Ignore errors
+	return nil
+}
+
+func StartValidateAccounts() error {
+	if _, err := global.MQ.Subscribe(commonConsts.MQSETTINGS_ValidateChannelName, validateAccounts.ValidateAccounts); err != nil {
+		global.Logger.Error("Failed to subscribe to MQ validate queue with error: ", err.Error())
+		return err
+	}
 
 	return nil
 }

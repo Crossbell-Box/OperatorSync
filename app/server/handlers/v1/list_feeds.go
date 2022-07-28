@@ -20,13 +20,6 @@ func ListSingleAccountFeeds(ctx *gin.Context) {
 	// Parse request params
 	reqPlatform := ctx.Param("platform")
 	reqUsername := ctx.Param("username")
-	if reqPlatform == "" || reqUsername == "" {
-		ctx.JSON(http.StatusOK, gin.H{
-			"ok":      false,
-			"message": "Please specify platform and username",
-		})
-		return
-	}
 
 	if _, ok := commonConsts.SUPPORTED_PLATFORM[reqPlatform]; !ok {
 		ctx.JSON(http.StatusOK, gin.H{
