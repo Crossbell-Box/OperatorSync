@@ -66,6 +66,8 @@ func handleSucceeded(m *nats.Msg) {
 		account.LastUpdated = workSucceeded.SucceededAt
 		account.UpdateInterval = interv
 		account.NextUpdate = account.LastUpdated.Add(account.UpdateInterval)
+		account.FeedsCount += uint(len(feeds))
+		// NotesCount increase need feeds to be published on chain
 
 		// Update character
 		var character models.Character

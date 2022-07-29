@@ -101,6 +101,8 @@ func BindAccount(ctx *gin.Context) {
 				LastUpdated:          time.Now(),
 				UpdateInterval:       commonConsts.SUPPORTED_PLATFORM[reqPlatform].MinRefreshGap,
 				NextUpdate:           time.Now(),
+				FeedsCount:           0,
+				NotesCount:           0,
 				MediaUsage:           0,
 			}
 			global.DB.Create(&account)

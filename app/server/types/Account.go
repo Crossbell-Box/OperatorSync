@@ -15,5 +15,7 @@ type Account struct {
 	UpdateInterval time.Duration `json:"-"`              // UpdateInterval = [min, (NextUpdate - LastUpdated), max]
 	NextUpdate     time.Time     `json:"-" gorm:"index"` // NextUpdate += UpdateInterval
 
+	FeedsCount uint `json:"feeds_count"` // Recorded feeds
+	NotesCount uint `json:"notes_count"` // On-Chain notes
 	MediaUsage uint `json:"media_usage"`
 }
