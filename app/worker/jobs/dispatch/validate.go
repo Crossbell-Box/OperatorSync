@@ -11,6 +11,7 @@ import (
 	commonTypes "github.com/Crossbell-Box/OperatorSync/common/types"
 	"github.com/nats-io/nats.go"
 	"net/http"
+	"strings"
 )
 
 type crossbellIndexerCharacterRes struct {
@@ -48,7 +49,7 @@ func ValidateAccounts(m *nats.Msg) {
 		return
 	}
 
-	validateString := fmt.Sprintf("Crossbell@%s#%s", crossbellIndexerResponse.Handle, validateReq.CrossbellCharacterID)
+	validateString := strings.ToLower(fmt.Sprintf("Crossbell@%s#%s", crossbellIndexerResponse.Handle, validateReq.CrossbellCharacterID))
 
 	switch validateReq.Platform {
 	case "medium":
