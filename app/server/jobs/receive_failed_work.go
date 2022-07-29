@@ -6,6 +6,7 @@ import (
 	commonConsts "github.com/Crossbell-Box/OperatorSync/common/consts"
 	commonTypes "github.com/Crossbell-Box/OperatorSync/common/types"
 	"github.com/nats-io/nats.go"
+	"time"
 )
 
 func ReceiveFailedWork() error {
@@ -29,5 +30,10 @@ func handleFailed(m *nats.Msg) {
 	} else {
 		global.Logger.Warn("Work failed for: ", workFailed)
 		global.Metrics.Work.Failed.Inc(1)
+
+		// Retry work if still valid
+		if time.Now().Before(workFailed.DropAfter) {
+			_ = DispatchSingleFeedCollectWork(&workFailed.WorkDispatched)
+		}
 	}
 }

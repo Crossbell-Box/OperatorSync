@@ -15,13 +15,13 @@ func StartDispatchFeedCollectWork() {
 		for {
 			select {
 			case <-t.C:
-				dispatchFeedCollectWork()
+				dispatchAllFeedCollectWorks()
 			}
 		}
 	}()
 }
 
-func dispatchFeedCollectWork() {
+func dispatchAllFeedCollectWorks() {
 	global.Logger.Debug("Start dispatching feeds collect works...")
 
 	nowTime := time.Now()
@@ -51,28 +51,39 @@ func dispatchFeedCollectWork() {
 		account.NextUpdate = nowTime.Add(interv)
 
 		// Dispatch work
-		mqChannel := commonConsts.MQSETTINGS_PlatformChannelPrefix + account.Platform
 		work := commonTypes.WorkDispatched{
 			DispatchAt: nowTime,
 			AccountID:  account.ID,
 			Platform:   account.Platform,
 			Username:   account.Username,
 			DropBefore: account.LastUpdated,
-			DropAfter:  account.NextUpdate, // If cannot be peformed before DDL, work fails (cause new work would replace current one)
+			DropAfter:  account.NextUpdate, // If cannot be performed before DDL, work fails (cause new work would replace current one)
 		}
 
-		if workBytes, err := json.Marshal(&work); err != nil {
-			global.Logger.Error("Failed to marshall work: ", work)
-		} else if err = global.MQ.Publish(mqChannel, workBytes); err != nil {
-			global.Logger.Error("Failed to dispatch work: ", work)
+		if err := DispatchSingleFeedCollectWork(&work); err != nil {
+			global.Logger.Error("Failed to dis patch work: ", work)
 		} else {
-			// Dispatched successfully
-			global.Metrics.Work.Dispatched.Inc(1)
+			// Update account
+			global.DB.Save(&account)
 		}
 
-		// Update account
-		global.DB.Save(&account)
 	}
 
 	global.Logger.Debugf("Feeds collect works dispatched for %d accounts.", len(accountsNeedUpdate))
+}
+
+func DispatchSingleFeedCollectWork(work *commonTypes.WorkDispatched) error {
+	mqChannel := commonConsts.MQSETTINGS_PlatformChannelPrefix + work.Platform
+
+	if workBytes, err := json.Marshal(&work); err != nil {
+		global.Logger.Error("Failed to marshall work: ", work)
+		return err
+	} else if err = global.MQ.Publish(mqChannel, workBytes); err != nil {
+		global.Logger.Error("Failed to dispatch work: ", work)
+		return err
+	} else {
+		// Dispatched successfully
+		global.Metrics.Work.Dispatched.Inc(1)
+	}
+	return nil
 }
