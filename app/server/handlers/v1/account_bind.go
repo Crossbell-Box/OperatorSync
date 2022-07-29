@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"github.com/Crossbell-Box/OperatorSync/app/server/consts"
 	"github.com/Crossbell-Box/OperatorSync/app/server/global"
+	"github.com/Crossbell-Box/OperatorSync/app/server/models"
 	"github.com/Crossbell-Box/OperatorSync/app/server/types"
 	"github.com/Crossbell-Box/OperatorSync/app/server/utils"
 	commonConsts "github.com/Crossbell-Box/OperatorSync/common/consts"
@@ -18,7 +19,7 @@ import (
 func BindAccount(ctx *gin.Context) {
 	// Only accept when pass validate
 
-	reqCharacter := ctx.Param("character") // ID
+	reqCharacterID := ctx.Param("character") // ID
 	reqPlatform := ctx.Param("platform")
 	reqUsername := ctx.Param("username")
 
@@ -31,46 +32,48 @@ func BindAccount(ctx *gin.Context) {
 	}
 
 	// Check character -> create if not exist
-	if err := global.DB.First(&types.Character{}, "crossbell_character = ?", reqCharacter).Error; errors.Is(err, gorm.ErrRecordNotFound) {
-		global.Logger.Debug("Character ", reqCharacter, " doesn't exist, creating...")
+	if err := global.DB.First(&types.Character{}, "crossbell_character_id = ?", reqCharacterID).Error; errors.Is(err, gorm.ErrRecordNotFound) {
+		global.Logger.Debugf("Character %s doesn't exist, creating...", reqCharacterID)
 		global.DB.Create(&types.Character{
-			CrossbellCharacter:   reqCharacter,
+			CrossbellCharacterID: reqCharacterID,
 			AccountLastUpdatedAt: time.Now(),
 			MediaUsage:           0,
 		})
 	}
 
-	global.Logger.Debug("Account ", reqCharacter, "- (", reqPlatform, "-", reqUsername, ") bind request received.")
+	global.Logger.Debugf("Account #%s (%s@%s) bind request received.", reqCharacterID, reqUsername, reqPlatform)
 
 	// Check if accounts already exists
-	var account types.Account
+	var account models.Account
+
 	if err := global.DB.First(
 		&account,
-		"crossbell_character = ? AND platform = ? AND username = ?",
-		reqCharacter, reqPlatform, reqUsername,
+		"platform = ? AND username = ?",
+		reqPlatform, reqUsername,
 	).Error; errors.Is(err, gorm.ErrRecordNotFound) {
-		// Yes
-		global.Logger.Debug("Account ", reqCharacter, "- (", reqPlatform, "-", reqUsername, ") not exist, start validating...")
+		// Not exist
+		global.Logger.Debugf("Account #%s (%s@%s) not exist, start validating...", reqCharacterID, reqUsername, reqPlatform)
 
-		if ok, err := utils.ValidateAccount(reqCharacter, reqPlatform, reqUsername); err != nil {
-			global.Logger.Error("Account ", reqCharacter, reqPlatform, reqUsername, " failed to finish account validate process with error: ", err.Error())
+		if ok, err := utils.ValidateAccount(reqCharacterID, reqPlatform, reqUsername); err != nil {
+			global.Logger.Error("Account ", reqCharacterID, "- (", reqPlatform, "-", reqUsername, ") failed to finish account validate process with error: ", err.Error())
 			ctx.JSON(http.StatusOK, gin.H{
 				"ok":      false,
 				"message": "Failed to finish account validate process.",
 			})
 		} else if ok {
-			global.Logger.Debug("Account ", reqCharacter, "- (", reqPlatform, "-", reqUsername, ") added")
+			global.Logger.Debugf("Account #%s (%s@%s) added.", reqCharacterID, reqUsername, reqPlatform)
 			// Update database
-			global.DB.Create(&types.Account{
-				CrossbellCharacter: reqCharacter,
-				Platform:           reqPlatform,
-				Username:           reqUsername,
-				LastUpdated:        time.Now(),
-				UpdateInterval:     0,
-				NextUpdate:         time.Now(),
-			})
+			account.Account = types.Account{
+				CrossbellCharacterID: reqCharacterID,
+				Platform:             reqPlatform,
+				Username:             reqUsername,
+				LastUpdated:          time.Now(),
+				UpdateInterval:       0,
+				NextUpdate:           time.Now(),
+			}
+			global.DB.Create(&account)
 			// Clear cache
-			listAccountsCacheKey := fmt.Sprintf("%s:%s:%s", consts.CACHE_PREFIX, "accounts:list", reqCharacter)
+			listAccountsCacheKey := fmt.Sprintf("%s:%s:%s", consts.CACHE_PREFIX, "accounts:list", reqCharacterID)
 			global.Redis.Del(context.Background(), listAccountsCacheKey)
 			// Response
 			ctx.JSON(http.StatusOK, gin.H{
@@ -79,7 +82,7 @@ func BindAccount(ctx *gin.Context) {
 				"result":  true,
 			})
 		} else {
-			global.Logger.Debug("Account ", reqCharacter, "- (", reqPlatform, "-", reqUsername, ") no necessary validate info found")
+			global.Logger.Debugf("Account #%s (%s@%s) no necessary validate info found.", reqCharacterID, reqUsername, reqPlatform)
 			ctx.JSON(http.StatusOK, gin.H{
 				"ok":      true,
 				"message": "Necessary validate info not found",
@@ -89,14 +92,22 @@ func BindAccount(ctx *gin.Context) {
 
 	} else if err != nil {
 		// Failed
-		global.Logger.Error("Account ", reqCharacter, "- (", reqPlatform, "-", reqUsername, ") failed to retrieve data from database with error: ", err.Error())
+		global.Logger.Errorf("Account #%s (%s@%s) failed to retrieve data from database with error: %s", reqUsername, reqPlatform, reqCharacterID, err.Error())
 		ctx.JSON(http.StatusOK, gin.H{
 			"ok":      false,
 			"message": "Failed to retrieve data from database.",
 		})
+	} else if account.CrossbellCharacterID != reqCharacterID {
+		// Already bind but not this one
+		global.Logger.Errorf("Account (%s@%s) has already been occupied by #%s", reqUsername, reqPlatform, reqCharacterID)
+		ctx.JSON(http.StatusOK, gin.H{
+			"ok":      false,
+			"message": fmt.Sprintf("Account (%s@%s) has already been occupied by #%s, please unbind it first.", reqUsername, reqPlatform, reqCharacterID),
+		})
 	} else {
 		// Already exists
-		global.Logger.Debug("Account ", reqCharacter, "- (", reqPlatform, "-", reqUsername, ") record already exists")
+		global.Logger.Debugf("Account #%s (%s@%s) record already exists.", reqCharacterID, reqUsername, reqPlatform)
+
 		ctx.JSON(http.StatusOK, gin.H{
 			"ok":      true,
 			"message": "Account already added",

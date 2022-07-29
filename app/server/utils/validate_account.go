@@ -6,38 +6,17 @@ import (
 	"github.com/Crossbell-Box/OperatorSync/app/server/global"
 	commonConsts "github.com/Crossbell-Box/OperatorSync/common/consts"
 	commonTypes "github.com/Crossbell-Box/OperatorSync/common/types"
-	"net/http"
 )
-
-type crossbellIndexerCharacterRes struct {
-	//CharacterID uint `json:"characterId"`
-	Handle string `json:"handle"`
-	// Ignore others
-}
 
 func ValidateAccount(crossbellCharacterID string, platform string, username string) (bool, error) {
 	// Convert crossbell character id to handle
 
-	// With character ID https://indexer.crossbell.io/v1/characters/19
-	// With handle https://indexer.crossbell.io/v1/handles/candinya/character
-
-	reqUrl := fmt.Sprintf("https://indexer.crossbell.io/v1/characters/%s", crossbellCharacterID)
-	rawRes, err := (&http.Client{}).Get(reqUrl)
-	if err != nil {
-		global.Logger.Error("Failed to get character info for ", crossbellCharacterID, " : ", err.Error())
-		return false, err
-	}
-
-	var crossbellIndexerResponse crossbellIndexerCharacterRes
-	if err = json.NewDecoder(rawRes.Body).Decode(&crossbellIndexerResponse); err != nil {
-		global.Logger.Error("Failed to parse response data: ", err.Error())
-		return false, err
-	}
+	var err error
 
 	validateRequest := commonTypes.ValidateRequest{
-		Platform:           platform,
-		Username:           username,
-		CrossbellCharacter: crossbellIndexerResponse.Handle,
+		Platform:             platform,
+		Username:             username,
+		CrossbellCharacterID: crossbellCharacterID,
 	}
 
 	var validateRequestBytes []byte

@@ -29,8 +29,8 @@ type Media struct {
 	CreatedAt time.Time `gorm:"index" json:"-"`
 
 	// Structure related
-	CrossbellCharacter string          `gorm:"index" json:"crossbell_character"`
-	RelatedFeeds       FeedRecordArray `gorm:"type:text" json:"related_feeds"`
+	CrossbellCharacterID string          `gorm:"index" json:"crossbell_character_id"`
+	RelatedFeeds         FeedRecordArray `gorm:"type:text" json:"related_feeds"`
 
 	commonTypes.Media
 }

@@ -15,7 +15,7 @@ import (
 
 func ListMedias(ctx *gin.Context) {
 	// Parse request params
-	reqCharacter := ctx.Param("character")
+	reqCharacterID := ctx.Param("character")
 
 	nowTime := time.Now()
 	reqBeforeTimeString := ctx.DefaultQuery("before", nowTime.Format(time.RFC3339))
@@ -48,7 +48,7 @@ func ListMedias(ctx *gin.Context) {
 	var medias []models.Media
 
 	// Use redis hash, and clear entire key when medias update
-	cacheBaseKey := fmt.Sprintf("%s:%s:%s", consts.CACHE_PREFIX, "medias", reqCharacter)
+	cacheBaseKey := fmt.Sprintf("%s:%s:%s", consts.CACHE_PREFIX, "medias", reqCharacterID)
 	cacheQueryKey := fmt.Sprintf("%d:", reqLimit)
 
 	// Check cache
@@ -84,7 +84,7 @@ func ListMedias(ctx *gin.Context) {
 
 	global.DB.
 		Order("created_at DESC").
-		Where("crossbell_character = ? AND created_at < ?", reqCharacter, reqBeforeTime).
+		Where("crossbell_character_id = ? AND created_at < ?", reqCharacterID, reqBeforeTime).
 		Limit(int(reqLimit)).
 		Find(&medias)
 

@@ -14,13 +14,13 @@ import (
 
 func ListAccounts(ctx *gin.Context) {
 	// Parse request params
-	reqCharacter := ctx.Param("character")
+	reqCharacterID := ctx.Param("character")
 
 	// Get requests
 	var accounts []models.Account
 
 	// Use redis cache
-	cacheKey := fmt.Sprintf("%s:%s:%s", consts.CACHE_PREFIX, "accounts:list", reqCharacter)
+	cacheKey := fmt.Sprintf("%s:%s:%s", consts.CACHE_PREFIX, "accounts:list", reqCharacterID)
 
 	// Get data from cache
 	getCacheCtx, cancelGetCacheCtx := context.WithTimeout(context.Background(), 1*time.Second)
@@ -50,7 +50,7 @@ func ListAccounts(ctx *gin.Context) {
 	// Get data from database
 	global.DB.
 		Model(&models.Account{}).
-		Where("crossbell_character = ?", reqCharacter).
+		Where("crossbell_character_id = ?", reqCharacterID).
 		Order("created_at").
 		Find(&accounts)
 

@@ -17,7 +17,7 @@ import (
 func UnbindAccount(ctx *gin.Context) {
 	// Only accept when fails validate
 
-	reqCharacter := ctx.Param("character")
+	reqCharacterID := ctx.Param("character")
 	reqPlatform := ctx.Param("platform")
 	reqUsername := ctx.Param("username")
 
@@ -29,47 +29,44 @@ func UnbindAccount(ctx *gin.Context) {
 		return
 	}
 
-	global.Logger.Debug("Account ", reqCharacter, reqPlatform, reqUsername, " bind request received.")
+	global.Logger.Debugf("Account #%s (%s@%s) unbind request received.", reqCharacterID, reqUsername, reqPlatform)
 
 	// Check if accounts already exists
 	var account types.Account
 	if err := global.DB.First(
 		&account,
-		"crossbell_character = ? AND platform = ? AND username = ?",
-		reqCharacter, reqPlatform, reqUsername,
+		"crossbell_character_id = ? AND platform = ? AND username = ?",
+		reqCharacterID, reqPlatform, reqUsername,
 	).Error; errors.Is(err, gorm.ErrRecordNotFound) {
-		// Yes
-		global.Logger.Debug("Account ", reqCharacter, reqPlatform, reqUsername, " not exist")
-
 		// No exist
-		global.Logger.Debug("Account ", reqCharacter, reqPlatform, reqUsername, " record already exists")
+		global.Logger.Debugf("Account #%s (%s@%s) not exist", reqCharacterID, reqUsername, reqPlatform)
+
 		ctx.JSON(http.StatusOK, gin.H{
 			"ok":      true,
 			"message": "Account not exist (might already unbind)",
 			"result":  true,
 		})
-
 	} else if err != nil {
 		// Failed
-		global.Logger.Error("Account ", reqCharacter, reqPlatform, reqUsername, "failed to retrieve data from database with error: ", err.Error())
+		global.Logger.Errorf("Account #%s (%s@%s) failed to retrieve data from database with error: %s", reqUsername, reqPlatform, reqCharacterID, err.Error())
 		ctx.JSON(http.StatusOK, gin.H{
 			"ok":      false,
 			"message": "Failed to retrieve data from database.",
 		})
 	} else {
 
-		if ok, err := utils.ValidateAccount(reqCharacter, reqPlatform, reqUsername); err != nil {
-			global.Logger.Error("Account ", reqCharacter, reqPlatform, reqUsername, " failed to finish account validate process with error: ", err.Error())
+		if ok, err := utils.ValidateAccount(reqCharacterID, reqPlatform, reqUsername); err != nil {
+			global.Logger.Errorf("Account (%s@%s) has already been occupied by #%s", reqUsername, reqPlatform, reqCharacterID)
 			ctx.JSON(http.StatusOK, gin.H{
 				"ok":      false,
 				"message": "Failed to finish account validate process.",
 			})
 		} else if !ok {
-			global.Logger.Debug("Account ", reqCharacter, reqPlatform, reqUsername, " unbind")
+			global.Logger.Debugf("Account #%s (%s@%s) unbind.", reqCharacterID, reqUsername, reqPlatform)
 			// Update database
 			global.DB.Delete(&account)
 			// Clear cache
-			listAccountsCacheKey := fmt.Sprintf("%s:%s:%s", consts.CACHE_PREFIX, "accounts:list", reqCharacter)
+			listAccountsCacheKey := fmt.Sprintf("%s:%s:%s", consts.CACHE_PREFIX, "accounts:list", reqCharacterID)
 			global.Redis.Del(context.Background(), listAccountsCacheKey)
 			// Response
 			ctx.JSON(http.StatusOK, gin.H{
@@ -78,7 +75,7 @@ func UnbindAccount(ctx *gin.Context) {
 				"result":  true,
 			})
 		} else {
-			global.Logger.Debug("Account ", reqCharacter, reqPlatform, reqUsername, " validate information still exists")
+			global.Logger.Debugf("Account #%s (%s@%s) validate information still exists.", reqCharacterID, reqUsername, reqPlatform)
 			ctx.JSON(http.StatusOK, gin.H{
 				"ok":      true,
 				"message": "Account validate information still exists, please remove it.",

@@ -2,7 +2,6 @@ package jobs
 
 import (
 	"encoding/json"
-	"fmt"
 	"github.com/Crossbell-Box/OperatorSync/app/server/global"
 	"github.com/Crossbell-Box/OperatorSync/app/server/models"
 	commonConsts "github.com/Crossbell-Box/OperatorSync/common/consts"
@@ -56,7 +55,6 @@ func dispatchFeedCollectWork() {
 		work := commonTypes.WorkDispatched{
 			DispatchAt: nowTime,
 			AccountID:  account.ID,
-			VerifyKey:  fmt.Sprintf("Crossbell@%s", account.CrossbellCharacter), // TODO: confirm style
 			Platform:   account.Platform,
 			Username:   account.Username,
 			DropBefore: account.LastUpdated,

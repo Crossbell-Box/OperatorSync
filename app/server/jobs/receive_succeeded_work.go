@@ -69,7 +69,7 @@ func handleSucceeded(m *nats.Msg) {
 
 		// Update character
 		var character models.Character
-		global.DB.First(&character, "crossbell_character = ?", account.CrossbellCharacter)
+		global.DB.First(&character, "crossbell_character_id = ?", account.CrossbellCharacterID)
 
 		if err := global.DB.Transaction(func(tx *gorm.DB) error {
 			// do some database operations in the transaction (use 'tx' from this point, not 'db')
@@ -95,9 +95,9 @@ func handleSucceeded(m *nats.Msg) {
 							// Try to find in database
 							if err = global.DB.First(&singleMedia, "ipfs_uri = ?", media.IPFSURI).Error; errors.Is(err, gorm.ErrRecordNotFound) {
 								singleMedia = models.Media{
-									ID:                 0,
-									CrossbellCharacter: account.CrossbellCharacter,
-									Media:              media,
+									ID:                   0,
+									CrossbellCharacterID: account.CrossbellCharacterID,
+									Media:                media,
 								}
 							}
 						}
@@ -151,9 +151,9 @@ func handleSucceeded(m *nats.Msg) {
 		} else {
 			// Succeeded
 			// Clear cache
-			accountsCacheKey := fmt.Sprintf("%s:%s:%s", consts.CACHE_PREFIX, "accounts", account.CrossbellCharacter)
+			accountsCacheKey := fmt.Sprintf("%s:%s:%s", consts.CACHE_PREFIX, "accounts", account.CrossbellCharacterID)
 			feedsCacheKey := fmt.Sprintf("%s:%s:%d", consts.CACHE_PREFIX, "feeds", account.ID)
-			mediasCacheKey := fmt.Sprintf("%s:%s:%s", consts.CACHE_PREFIX, "medias", account.CrossbellCharacter)
+			mediasCacheKey := fmt.Sprintf("%s:%s:%s", consts.CACHE_PREFIX, "medias", account.CrossbellCharacterID)
 			clearCacheCtx := context.Background()
 			global.Redis.Del(clearCacheCtx, accountsCacheKey) // To flush account update time
 			global.Redis.Del(clearCacheCtx, feedsCacheKey)    // To flush cached feeds

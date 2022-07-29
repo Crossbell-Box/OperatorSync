@@ -11,11 +11,11 @@ import (
 
 func CheckCharacter(ctx *gin.Context) {
 	// Parse request params
-	reqCharacter := ctx.Param("character")
+	reqCharacterID := ctx.Param("character")
 
 	// Check if is in database
 	var character models.Character
-	if err := global.DB.First(&character, "crossbell_character = ?", reqCharacter).Error; errors.Is(err, gorm.ErrRecordNotFound) {
+	if err := global.DB.First(&character, "crossbell_character_id = ?", reqCharacterID).Error; errors.Is(err, gorm.ErrRecordNotFound) {
 		ctx.JSON(http.StatusOK, gin.H{
 			"ok":      false,
 			"message": "Character not enabled",
