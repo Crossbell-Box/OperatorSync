@@ -11,7 +11,7 @@ import (
 func Account(mqReply string, username string, validateString string) {
 
 	// RSSHub will index userinfo, so we need to parse their feeds
-	// Sorry tiktok server :pray:
+	// Sorry TikTok server :pray:
 
 	if rawFeed, errCode, err := utils.RSSFeedRequest(
 		strings.ReplaceAll(commonConsts.SUPPORTED_PLATFORM["tiktok"].FeedLink, "{{username}}", username),
