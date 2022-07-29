@@ -10,6 +10,8 @@ import (
 
 func Account(mqReply string, username string, validateString string) {
 
+	global.Logger.Debug("Validate string: ", validateString)
+
 	// RSSHub will index userinfo, so we need to parse their feeds
 	// Sorry TikTok server :pray:
 

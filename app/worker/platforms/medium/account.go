@@ -20,6 +20,8 @@ func init() {
 
 func Account(mqReply string, username string, validateString string) {
 
+	global.Logger.Debug("Validate string: ", validateString)
+
 	// Get HTTP Page
 	pageContent, err := utils.HttpRequest(fmt.Sprintf("https://medium.com/@%s", username), true)
 	if err != nil {
