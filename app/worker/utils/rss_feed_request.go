@@ -5,7 +5,7 @@ import (
 	"github.com/mmcdole/gofeed"
 )
 
-func FeedRequest(url string, withProxy bool) (*gofeed.Feed, uint, error) {
+func RSSFeedRequest(url string, withProxy bool) (*gofeed.Feed, uint, error) {
 	feedsBody, err := HttpRequest(url, withProxy)
 	if err != nil {
 		return nil, consts.ERROR_CODE_HTTP_REQUEST_FAILED, err

@@ -18,13 +18,13 @@ var SUPPORTED_PLATFORM = map[string]platform{
 	"medium": {
 		Name:          "Medium",
 		FeedLink:      "https://medium.com/feed/@{{username}}",
-		MinRefreshGap: 12 * time.Hour,     // Half of a day
-		MaxRefreshGap: 7 * 24 * time.Hour, // One week
+		MinRefreshGap: 3 * time.Hour,
+		MaxRefreshGap: 7 * 24 * time.Hour,
 	},
 	"tiktok": {
 		Name:          "TikTok",
 		FeedLink:      "{{rsshub_stateless}}/tiktok/user/@{{username}}",
-		MinRefreshGap: 1 * time.Hour,  // 1 Hour
-		MaxRefreshGap: 24 * time.Hour, // 1 Day
+		MinRefreshGap: 30 * time.Minute,
+		MaxRefreshGap: 24 * time.Hour,
 	},
 }

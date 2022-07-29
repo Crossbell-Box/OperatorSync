@@ -36,26 +36,57 @@ func BindAccount(ctx *gin.Context) {
 		global.Logger.Debugf("Character %s doesn't exist, creating...", reqCharacterID)
 		global.DB.Create(&types.Character{
 			CrossbellCharacterID: reqCharacterID,
-			AccountLastUpdatedAt: time.Now(),
 			MediaUsage:           0,
 		})
 	}
 
 	global.Logger.Debugf("Account #%s (%s@%s) bind request received.", reqCharacterID, reqUsername, reqPlatform)
 
-	// Check if accounts already exists
 	var account models.Account
 
+	// Check if already bind by others
 	if err := global.DB.First(
 		&account,
 		"platform = ? AND username = ?",
 		reqPlatform, reqUsername,
+	).Error; !errors.Is(err, gorm.ErrRecordNotFound) && account.CrossbellCharacterID != reqCharacterID {
+		// Already bind but not this one
+		global.Logger.Debugf("Account (%s@%s) has already been occupied by #%s", reqUsername, reqPlatform, reqCharacterID)
+		ctx.JSON(http.StatusOK, gin.H{
+			"ok":      true,
+			"message": fmt.Sprintf("Account (%s@%s) has already been occupied by #%s, please unbind it first.", reqUsername, reqPlatform, reqCharacterID),
+			"result":  false,
+		})
+		return
+	}
+
+	// Check if already bind account on this platform
+	if err := global.DB.First(
+		&account,
+		"crossbell_character_id = ? AND platform = ?",
+		reqCharacterID, reqPlatform,
+	).Error; !errors.Is(err, gorm.ErrRecordNotFound) {
+		// Already bind but not this one
+		global.Logger.Debugf("Account #%s already has an account (%s) on platform %s", reqCharacterID, reqUsername, reqPlatform)
+		ctx.JSON(http.StatusOK, gin.H{
+			"ok":      true,
+			"message": fmt.Sprintf("Account #%s already has an account (%s) on platform %s", reqCharacterID, reqUsername, reqPlatform),
+			"result":  false,
+		})
+		return
+	}
+
+	// Check if accounts already exists
+	if err := global.DB.First(
+		&account,
+		"crossbell_character_id = ? AND platform = ? AND username = ?",
+		reqCharacterID, reqPlatform, reqUsername,
 	).Error; errors.Is(err, gorm.ErrRecordNotFound) {
 		// Not exist
 		global.Logger.Debugf("Account #%s (%s@%s) not exist, start validating...", reqCharacterID, reqUsername, reqPlatform)
 
 		if ok, err := utils.ValidateAccount(reqCharacterID, reqPlatform, reqUsername); err != nil {
-			global.Logger.Error("Account ", reqCharacterID, "- (", reqPlatform, "-", reqUsername, ") failed to finish account validate process with error: ", err.Error())
+			global.Logger.Errorf("Account #%s (%s@%s) failed to finish account validate process with error: %s", reqUsername, reqPlatform, reqCharacterID, err.Error())
 			ctx.JSON(http.StatusOK, gin.H{
 				"ok":      false,
 				"message": "Failed to finish account validate process.",
@@ -68,8 +99,9 @@ func BindAccount(ctx *gin.Context) {
 				Platform:             reqPlatform,
 				Username:             reqUsername,
 				LastUpdated:          time.Now(),
-				UpdateInterval:       0,
+				UpdateInterval:       commonConsts.SUPPORTED_PLATFORM[reqPlatform].MinRefreshGap,
 				NextUpdate:           time.Now(),
+				MediaUsage:           0,
 			}
 			global.DB.Create(&account)
 			// Clear cache
@@ -96,13 +128,6 @@ func BindAccount(ctx *gin.Context) {
 		ctx.JSON(http.StatusOK, gin.H{
 			"ok":      false,
 			"message": "Failed to retrieve data from database.",
-		})
-	} else if account.CrossbellCharacterID != reqCharacterID {
-		// Already bind but not this one
-		global.Logger.Errorf("Account (%s@%s) has already been occupied by #%s", reqUsername, reqPlatform, reqCharacterID)
-		ctx.JSON(http.StatusOK, gin.H{
-			"ok":      false,
-			"message": fmt.Sprintf("Account (%s@%s) has already been occupied by #%s, please unbind it first.", reqUsername, reqPlatform, reqCharacterID),
 		})
 	} else {
 		// Already exists

@@ -91,9 +91,9 @@ func handleSucceeded(m *nats.Msg) {
 					for _, media := range feed.Media {
 						var singleMedia models.Media
 						var ok bool
-						if singleMedia, ok = mediaMap[media.IPFSURI]; !ok {
+						if singleMedia, ok = mediaMap[media.IPFSUri]; !ok {
 							// Try to find in database
-							if err = global.DB.First(&singleMedia, "ipfs_uri = ?", media.IPFSURI).Error; errors.Is(err, gorm.ErrRecordNotFound) {
+							if err = global.DB.First(&singleMedia, "ipfs_uri = ?", media.IPFSUri).Error; errors.Is(err, gorm.ErrRecordNotFound) {
 								singleMedia = models.Media{
 									ID:                   0,
 									CrossbellCharacterID: account.CrossbellCharacterID,
@@ -105,7 +105,7 @@ func handleSucceeded(m *nats.Msg) {
 							Platform: workSucceeded.Platform,
 							ID:       feed.ID,
 						})
-						mediaMap[media.IPFSURI] = singleMedia
+						mediaMap[media.IPFSUri] = singleMedia
 					}
 				}
 
@@ -115,6 +115,7 @@ func handleSucceeded(m *nats.Msg) {
 					if singleMedia.ID == 0 {
 						mediaCreateList = append(mediaCreateList, singleMedia)
 
+						account.MediaUsage += singleMedia.FileSize
 						character.MediaUsage += singleMedia.FileSize
 					} else {
 						mediaUpdateList = append(mediaUpdateList, singleMedia)
@@ -158,6 +159,9 @@ func handleSucceeded(m *nats.Msg) {
 			global.Redis.Del(clearCacheCtx, accountsCacheKey) // To flush account update time
 			global.Redis.Del(clearCacheCtx, feedsCacheKey)    // To flush cached feeds
 			global.Redis.Del(clearCacheCtx, mediasCacheKey)   // To flush cached media list
+
+			// Post feeds On Chain
+			// TODO : On Chain Queue (Use NATS JetStream)
 
 			// Update metrics
 			global.Metrics.Work.Succeeded.Inc(1)

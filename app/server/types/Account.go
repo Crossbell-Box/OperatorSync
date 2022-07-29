@@ -14,4 +14,6 @@ type Account struct {
 	LastUpdated    time.Time     `json:"-"`              // Only update when new data found
 	UpdateInterval time.Duration `json:"-"`              // UpdateInterval = [min, (NextUpdate - LastUpdated), max]
 	NextUpdate     time.Time     `json:"-" gorm:"index"` // NextUpdate += UpdateInterval
+
+	MediaUsage uint `json:"media_usage"`
 }

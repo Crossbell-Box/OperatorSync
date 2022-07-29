@@ -16,3 +16,8 @@ type Feed struct {
 	// Raw feed
 	commonTypes.RawFeed
 }
+
+type OnChainData struct {
+	IPFSUri     string `json:"ipfs_uri,omitempty"`
+	Transaction string `json:"transaction,omitempty"`
+}

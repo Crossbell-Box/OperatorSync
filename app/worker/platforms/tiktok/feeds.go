@@ -33,7 +33,7 @@ func Feeds(cccs *types.ConcurrencyChannels, work *commonTypes.WorkDispatched, ac
 
 	global.Logger.Debug("New feeds request for tiktok")
 
-	rawFeed, errCode, err := utils.FeedRequest(
+	rawFeed, errCode, err := utils.RSSFeedRequest(
 		strings.ReplaceAll(collectLink, "{{username}}", work.Username),
 		false,
 	)
@@ -66,10 +66,10 @@ func Feeds(cccs *types.ConcurrencyChannels, work *commonTypes.WorkDispatched, ac
 				media := commonTypes.Media{
 					OriginalURI: posterUrl,
 				}
-				if media.IPFSURI, media.FileSize, media.ContentType, err = utils.UploadURLToIPFS(media.OriginalURI); err != nil {
+				if media.IPFSUri, media.FileSize, media.ContentType, err = utils.UploadURLToIPFS(media.OriginalURI); err != nil {
 					global.Logger.Error("Failed to upload link (", media.OriginalURI, ") onto IPFS: ", err.Error())
 				} else {
-					rawContent = strings.ReplaceAll(rawContent, media.OriginalURI, media.IPFSURI)
+					rawContent = strings.ReplaceAll(rawContent, media.OriginalURI, media.IPFSUri)
 					feed.Media = append(feed.Media, media)
 				}
 
@@ -84,10 +84,10 @@ func Feeds(cccs *types.ConcurrencyChannels, work *commonTypes.WorkDispatched, ac
 				media := commonTypes.Media{
 					OriginalURI: videoUrl,
 				}
-				if media.IPFSURI, media.FileSize, media.ContentType, err = utils.UploadURLToIPFS(media.OriginalURI); err != nil {
+				if media.IPFSUri, media.FileSize, media.ContentType, err = utils.UploadURLToIPFS(media.OriginalURI); err != nil {
 					global.Logger.Error("Failed to upload link (", media.OriginalURI, ") onto IPFS: ", err.Error())
 				} else {
-					rawContent = strings.ReplaceAll(rawContent, media.OriginalURI, media.IPFSURI)
+					rawContent = strings.ReplaceAll(rawContent, media.OriginalURI, media.IPFSUri)
 					feed.Media = append(feed.Media, media)
 				}
 

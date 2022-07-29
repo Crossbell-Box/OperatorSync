@@ -31,7 +31,7 @@ func Feeds(cccs *types.ConcurrencyChannels, work *commonTypes.WorkDispatched, ac
 
 	global.Logger.Debug("New feeds request for medium")
 
-	rawFeed, errCode, err := utils.FeedRequest(
+	rawFeed, errCode, err := utils.RSSFeedRequest(
 		strings.ReplaceAll(collectLink, "{{username}}", work.Username),
 		true,
 	)
@@ -59,7 +59,7 @@ func Feeds(cccs *types.ConcurrencyChannels, work *commonTypes.WorkDispatched, ac
 			imgs := imageRegex.FindAllStringSubmatch(rawContent, -1)
 			feed.Media = utils.UploadAllMedia(imgs)
 			for _, media := range feed.Media {
-				rawContent = strings.ReplaceAll(rawContent, media.OriginalURI, media.IPFSURI)
+				rawContent = strings.ReplaceAll(rawContent, media.OriginalURI, media.IPFSUri)
 			}
 
 			feed.Content = rawContent

@@ -12,6 +12,7 @@ type Feed struct {
 	CreatedAt time.Time `gorm:"index" json:"-"`
 
 	types.Feed
+	types.OnChainData
 }
 
 const feedPrefix = "feed_"
