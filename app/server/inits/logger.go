@@ -19,7 +19,7 @@ func Logger() error {
 		logger, err = zap.NewProduction()
 	}
 	if err != nil {
-		return fmt.Errorf("failed to initialize logger: %w", err)
+		return fmt.Errorf("failed to initialize logger: %v", err)
 	}
 
 	// Flush logs

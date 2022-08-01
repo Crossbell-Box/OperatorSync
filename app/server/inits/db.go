@@ -26,13 +26,13 @@ func DB() error {
 	// Connect to database
 	global.DB, err = gorm.Open(postgres.Open(config.Config.DBConnString), &gormConfig)
 	if err != nil {
-		return fmt.Errorf("failed to connect to database: %w", err)
+		return fmt.Errorf("failed to connect to database: %v", err)
 	}
 
 	// Run migrations
 	err = mig()
 	if err != nil {
-		return fmt.Errorf("failed to run migrations: %w", err)
+		return fmt.Errorf("failed to run migrations: %v", err)
 	}
 
 	return nil

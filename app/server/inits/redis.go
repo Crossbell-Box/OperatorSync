@@ -13,7 +13,7 @@ func Redis() error {
 	// Parse connect string
 	redisConfig, err := redis.ParseURL(config.Config.RedisConnString)
 	if err != nil {
-		return fmt.Errorf("failed to parse redis connection string: %w", err)
+		return fmt.Errorf("failed to parse redis connection string: %v", err)
 	}
 
 	// Connect to server
@@ -24,7 +24,7 @@ func Redis() error {
 	// Try connection
 	err = global.Redis.Ping(ctx).Err()
 	if err != nil {
-		return fmt.Errorf("failed to connect to redis: %w", err)
+		return fmt.Errorf("failed to connect to redis: %v", err)
 	}
 
 	return nil

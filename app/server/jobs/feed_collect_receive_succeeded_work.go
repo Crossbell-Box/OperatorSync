@@ -15,10 +15,10 @@ import (
 	"gorm.io/gorm"
 )
 
-func ReceiveSucceededWork() error {
-	_, err := global.MQ.Subscribe(commonConsts.MQSETTINGS_SucceededChannelName, handleSucceeded)
+func FeedCollectStartReceiveSucceededWork() error {
+	_, err := global.MQ.Subscribe(commonConsts.MQSETTINGS_SucceededChannelName, feedCollectHandleSucceeded)
 	if err != nil {
-		global.Logger.Error("Failed to subscribe to MQ succeeded queue with error: ", err.Error())
+		global.Logger.Error("Failed to subscribe to MQ Feeds Collect succeeded queue with error: ", err.Error())
 		return err
 	}
 
@@ -27,8 +27,8 @@ func ReceiveSucceededWork() error {
 	return nil
 }
 
-func handleSucceeded(m *nats.Msg) {
-	global.Logger.Debug("New succeeded work received: ", string(m.Data))
+func feedCollectHandleSucceeded(m *nats.Msg) {
+	global.Logger.Debug("New succeeded Collect work received: ", string(m.Data))
 
 	var workSucceeded commonTypes.WorkSucceeded
 	if err := json.Unmarshal(m.Data, &workSucceeded); err != nil {
@@ -76,14 +76,13 @@ func handleSucceeded(m *nats.Msg) {
 		if err := global.DB.Transaction(func(tx *gorm.DB) error {
 			// do some database operations in the transaction (use 'tx' from this point, not 'db')
 			if len(feeds) > 0 {
-				platformSpecifiedFeed := models.Feed{
+
+				// Insert feeds
+				if err := tx.Scopes(models.FeedTable(models.Feed{
 					Feed: types.Feed{
 						Platform: workSucceeded.Platform,
 					},
-				}
-
-				// Insert feeds
-				if err := tx.Scopes(models.FeedTable(platformSpecifiedFeed)).Create(&feeds).Error; err != nil {
+				})).Create(&feeds).Error; err != nil {
 					return err
 				}
 
@@ -163,7 +162,7 @@ func handleSucceeded(m *nats.Msg) {
 			global.Redis.Del(clearCacheCtx, mediasCacheKey)   // To flush cached media list
 
 			// Post feeds On Chain
-			// TODO : On Chain Queue (Use NATS JetStream)
+			feedOnChainDispatchWork(&account, feeds)
 
 			// Update metrics
 			global.Metrics.Work.Succeeded.Inc(1)

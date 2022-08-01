@@ -1,6 +1,7 @@
 package jobs
 
 import (
+	"fmt"
 	"github.com/Crossbell-Box/OperatorSync/app/worker/config"
 	"github.com/Crossbell-Box/OperatorSync/app/worker/global"
 	"github.com/Crossbell-Box/OperatorSync/app/worker/jobs/dispatch"
@@ -8,7 +9,7 @@ import (
 	commonConsts "github.com/Crossbell-Box/OperatorSync/common/consts"
 )
 
-func StartProcessFeeds() error {
+func FeedCollectStartProcess() error {
 
 	cccs := &types.ConcurrencyChannels{
 		Stateful:  types.NewCtrl(config.Config.ConcurrencyStateful),
@@ -27,9 +28,21 @@ func StartProcessFeeds() error {
 	return nil
 }
 
-func StartValidateAccounts() error {
+func AccountValidateStartProcess() error {
 	if _, err := global.MQ.Subscribe(commonConsts.MQSETTINGS_ValidateChannelName, dispatch.ValidateAccounts); err != nil {
 		global.Logger.Error("Failed to subscribe to MQ validate queue with error: ", err.Error())
+		return err
+	}
+
+	return nil
+}
+
+func OnChainFeedsStartProcess() error {
+	if _, err := global.MQJS.Subscribe(
+		fmt.Sprintf("%s.%s", commonConsts.MQSETTINGS_OnChainStreamName, commonConsts.MQSETTINGS_OnChainDispatchSubjectName),
+		dispatch.OnChain,
+	); err != nil {
+		global.Logger.Error("Failed to subscribe to MQ Feeds OnChain dispatch queue with error: ", err.Error())
 		return err
 	}
 

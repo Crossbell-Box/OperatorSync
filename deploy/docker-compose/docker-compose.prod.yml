@@ -19,7 +19,8 @@ services:
       - redis_storage:/data
   # Both related
   mq:
-    image: nats
+    image: nats:alpine
+    command: "-js"
     restart: unless-stopped
     env_file: ../env/mq.env
     networks:

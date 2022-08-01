@@ -10,4 +10,8 @@ const (
 
 	MQSETTINGS_ValidateChannelName    = "validate"
 	MQSETTINGS_ValidateRequestTimeOut = 3 * time.Second
+
+	MQSETTINGS_OnChainStreamName          = "onchain"
+	MQSETTINGS_OnChainDispatchSubjectName = "dispatch"
+	MQSETTINGS_OnChainResponseSubjectName = "response"
 )

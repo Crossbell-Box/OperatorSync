@@ -13,7 +13,8 @@ services:
     env_file: ../env/redis.env
   # Both related
   mq:
-    image: nats
+    image: nats:alpine
+    command: "-js"
     ports:
       - 127.0.0.1:4222:4222
       - 127.0.0.1:8222:8222

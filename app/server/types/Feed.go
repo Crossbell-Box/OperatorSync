@@ -18,6 +18,6 @@ type Feed struct {
 }
 
 type OnChainData struct {
-	IPFSUri     string `json:"ipfs_uri,omitempty"`
-	Transaction string `json:"transaction,omitempty"`
+	IPFSUri     string `json:"ipfs_uri" gorm:"column:ipfs_uri"`
+	Transaction string `json:"transaction"`
 }

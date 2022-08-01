@@ -9,20 +9,18 @@ import (
 	"time"
 )
 
-func ReceiveFailedWork() error {
-	_, err := global.MQ.Subscribe(commonConsts.MQSETTINGS_FailedChannelName, handleFailed)
+func FeedCollectStartReceiveFailedWork() error {
+	_, err := global.MQ.Subscribe(commonConsts.MQSETTINGS_FailedChannelName, feedCollectHandleFailed)
 	if err != nil {
-		global.Logger.Error("Failed to subscribe to MQ failed queue with error: ", err.Error())
+		global.Logger.Error("Failed to subscribe to MQ Feeds Collect failed queue with error: ", err.Error())
 		return err
 	}
-
-	//defer sub.Drain() // Ignore errors
 
 	return nil
 }
 
-func handleFailed(m *nats.Msg) {
-	global.Logger.Warn("New failed work received: ", string(m.Data))
+func feedCollectHandleFailed(m *nats.Msg) {
+	global.Logger.Warn("New failed Collect work received: ", string(m.Data))
 
 	var workFailed commonTypes.WorkFailed
 	if err := json.Unmarshal(m.Data, &workFailed); err != nil {

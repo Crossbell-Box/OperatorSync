@@ -6,7 +6,7 @@ type serverConfig struct {
 	DBConnString    string // Postgres Database
 	RedisConnString string // Redis
 
-	DisableFlushWorkDispatch bool // Works on cluster mode
+	IsMainServer bool // Works on cluster mode
 
 	commonConfig.Config
 }

@@ -9,7 +9,7 @@ import (
 	"time"
 )
 
-func StartDispatchFeedCollectWork() {
+func FeedCollectStartDispatchWork() {
 	go func() {
 		t := time.NewTicker(10 * time.Second)
 		for {
