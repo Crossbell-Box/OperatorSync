@@ -42,7 +42,7 @@ func feedOnChainHandleRespond(m *nats.Msg) {
 	}
 
 	// Validate response
-	if workRespond.FeedID == 0 || workRespond.IPFSUri == "" || workRespond.Transaction == "" {
+	if workRespond.Platform == "" || workRespond.FeedID == 0 || workRespond.IPFSUri == "" {
 		global.Logger.Error("Respond data is invalid")
 		if err := m.Nak(); err != nil {
 			global.Logger.Error("Failed to report work Nak status")
