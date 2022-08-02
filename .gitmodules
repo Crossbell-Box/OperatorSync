@@ -1,0 +1,3 @@
+[submodule "Crossbell-Contracts"]
+	path = Crossbell-Contracts
+	url = https://github.com/Crossbell-Box/Crossbell-Contracts.git
