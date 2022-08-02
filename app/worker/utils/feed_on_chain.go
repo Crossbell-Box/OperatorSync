@@ -3,14 +3,14 @@ package utils
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/Crossbell-Box/OperatorSync/app/server/global"
 	"github.com/Crossbell-Box/OperatorSync/app/worker/chain"
+	"github.com/Crossbell-Box/OperatorSync/app/worker/global"
 	"github.com/Crossbell-Box/OperatorSync/app/worker/types"
 	commonConsts "github.com/Crossbell-Box/OperatorSync/common/consts"
 	commonTypes "github.com/Crossbell-Box/OperatorSync/common/types"
 )
 
-func FeedOnChain(work *commonTypes.OnChainDispatched) (string, string, error) {
+func FeedOnChain(work *commonTypes.OnChainRequest) (string, string, error) {
 	// Step 1: Parse feeds to note metadata
 	metadata := types.NoteMetadata{
 		Type: "note",

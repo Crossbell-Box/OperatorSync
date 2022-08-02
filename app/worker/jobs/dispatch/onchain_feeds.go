@@ -10,20 +10,13 @@ import (
 )
 
 func OnChain(m *nats.Msg) {
-	global.Logger.Debug("New OnChain Dispatched received: ", string(m.Data))
-
-	// Report received progress
-	if err := m.InProgress(); err != nil {
-		global.Logger.Error("Failed to report work progress")
-	}
+	global.Logger.Debug("New OnChain request received: ", string(m.Data))
 
 	// Parse request
-	var workDispatched commonTypes.OnChainDispatched
+	var workDispatched commonTypes.OnChainRequest
 	if err := json.Unmarshal(m.Data, &workDispatched); err != nil {
-		global.Logger.Error("Unable to parse dispatched: ", string(m.Data))
-		if err := m.Nak(); err != nil {
-			global.Logger.Error("Failed to report work Nak status")
-		}
+		global.Logger.Error("Unable to parse request: ", string(m.Data))
+		// Even unable to callback
 		return
 	}
 
@@ -31,21 +24,9 @@ func OnChain(m *nats.Msg) {
 	ipfsUri, tx, err := utils.FeedOnChain(&workDispatched)
 	if err != nil {
 		global.Logger.Error("Unable to finish onchain request: ", string(m.Data))
-		if err := m.Nak(); err != nil {
-			global.Logger.Error("Failed to report work Nak status")
-		}
+		callback.OnChainHandleFailed(m.Reply, workDispatched.Platform, workDispatched.FeedID, err.Error())
 		return
 	}
 
-	// Report uploaded progress
-	if err := m.InProgress(); err != nil {
-		global.Logger.Error("Failed to report work progress")
-	}
-
-	callback.OnChainHandleSucceed(workDispatched.Platform, workDispatched.FeedID, ipfsUri, tx)
-
-	// Report finish progress
-	if err := m.Ack(); err != nil {
-		global.Logger.Error("Failed to report work Ack status")
-	}
+	callback.OnChainHandleSucceed(m.Reply, workDispatched.Platform, workDispatched.FeedID, ipfsUri, tx)
 }

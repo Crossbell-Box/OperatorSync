@@ -14,4 +14,5 @@ type Account struct {
 	DeletedAt gorm.DeletedAt `gorm:"index" json:"-"`
 
 	types.Account
+	types.OnChainStatusManageForAccount
 }

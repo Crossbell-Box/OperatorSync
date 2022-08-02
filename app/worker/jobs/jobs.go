@@ -1,7 +1,6 @@
 package jobs
 
 import (
-	"fmt"
 	"github.com/Crossbell-Box/OperatorSync/app/worker/config"
 	"github.com/Crossbell-Box/OperatorSync/app/worker/global"
 	"github.com/Crossbell-Box/OperatorSync/app/worker/jobs/dispatch"
@@ -38,10 +37,7 @@ func AccountValidateStartProcess() error {
 }
 
 func OnChainFeedsStartProcess() error {
-	if _, err := global.MQJS.Subscribe(
-		fmt.Sprintf("%s.%s", commonConsts.MQSETTINGS_OnChainStreamName, commonConsts.MQSETTINGS_OnChainDispatchSubjectName),
-		dispatch.OnChain,
-	); err != nil {
+	if _, err := global.MQ.Subscribe(commonConsts.MQSETTINGS_OnChainChannelName, dispatch.OnChain); err != nil {
 		global.Logger.Error("Failed to subscribe to MQ Feeds OnChain dispatch queue with error: ", err.Error())
 		return err
 	}

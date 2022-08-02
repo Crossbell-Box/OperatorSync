@@ -7,18 +7,12 @@ import (
 	"github.com/Crossbell-Box/OperatorSync/app/worker/jobs/callback"
 	"github.com/Crossbell-Box/OperatorSync/app/worker/platforms/medium"
 	"github.com/Crossbell-Box/OperatorSync/app/worker/platforms/tiktok"
+	"github.com/Crossbell-Box/OperatorSync/app/worker/utils"
 	commonConsts "github.com/Crossbell-Box/OperatorSync/common/consts"
 	commonTypes "github.com/Crossbell-Box/OperatorSync/common/types"
 	"github.com/nats-io/nats.go"
-	"net/http"
 	"strings"
 )
-
-type crossbellIndexerCharacterRes struct {
-	//CharacterID uint `json:"characterId"`
-	Handle string `json:"handle"`
-	// Ignore others
-}
 
 func ValidateAccounts(m *nats.Msg) {
 	global.Logger.Debug("New validate request received: ", string(m.Data))
@@ -31,25 +25,12 @@ func ValidateAccounts(m *nats.Msg) {
 		return
 	}
 
-	// With character ID https://indexer.crossbell.io/v1/characters/19
-	// With handle https://indexer.crossbell.io/v1/handles/candinya/character
-
-	reqUrl := fmt.Sprintf("https://indexer.crossbell.io/v1/characters/%s", validateReq.CrossbellCharacterID)
-	rawRes, err := (&http.Client{}).Get(reqUrl)
+	handle, err := utils.GetCrossbellHandleFromID(validateReq.CrossbellCharacterID)
 	if err != nil {
-		global.Logger.Error("Failed to get character info for ", validateReq.CrossbellCharacterID, " : ", err.Error())
-		callback.ValidateHandleFailed(m.Reply, commonConsts.ERROR_CODE_HTTP_REQUEST_FAILED, "Failed to get character info")
-		return
+		callback.ValidateHandleFailed(m.Reply, commonConsts.ERROR_CODE_HTTP_REQUEST_FAILED, err.Error())
 	}
 
-	var crossbellIndexerResponse crossbellIndexerCharacterRes
-	if err = json.NewDecoder(rawRes.Body).Decode(&crossbellIndexerResponse); err != nil {
-		global.Logger.Error("Failed to parse response data: ", err.Error())
-		callback.ValidateHandleFailed(m.Reply, commonConsts.ERROR_CODE_FAILED_TO_PARSE_JSON, "Failed to parse response data")
-		return
-	}
-
-	validateString := strings.ToLower(fmt.Sprintf("Crossbell@%s#%s", crossbellIndexerResponse.Handle, validateReq.CrossbellCharacterID))
+	validateString := strings.ToLower(fmt.Sprintf("Crossbell@%s#%s", handle, validateReq.CrossbellCharacterID))
 
 	switch validateReq.Platform {
 	case "medium":

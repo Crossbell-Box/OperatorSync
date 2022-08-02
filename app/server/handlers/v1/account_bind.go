@@ -107,6 +107,9 @@ func BindAccount(ctx *gin.Context) {
 				NotesCount:           0,
 				MediaUsage:           0,
 			}
+			account.OnChainStatusManageForAccount = types.OnChainStatusManageForAccount{
+				IsOnChainPaused: false,
+			}
 			global.DB.Create(&account)
 			// Clear cache
 			listAccountsCacheKey := fmt.Sprintf("%s:%s:%s", consts.CACHE_PREFIX, "accounts:list", reqCharacterID)

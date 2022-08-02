@@ -7,18 +7,15 @@ import (
 )
 
 func ValidateHandleSucceeded(mqReply string, isValid bool) {
-	succeededResponse := commonTypes.ValidateResponse{
+	if succeededResponseBytes, err := json.Marshal(&commonTypes.ValidateResponse{
 		IsSucceeded:            true,
 		Code:                   0,
 		Message:                "",
 		IsValidateStringExists: isValid,
-	}
-
-	if succeededResponseBytes, err := json.Marshal(&succeededResponse); err != nil {
-		global.Logger.Error("Failed to marshall succeeded validate request: ", succeededResponse)
+	}); err != nil {
+		global.Logger.Errorf("Failed to marshall succeeded validate request with error: %s", err.Error())
 	} else {
-		err = global.MQ.Publish(mqReply, succeededResponseBytes)
-		if err != nil {
+		if err := global.MQ.Publish(mqReply, succeededResponseBytes); err != nil {
 			global.Logger.Error("Failed to report succeeded validate request with error: ", err.Error())
 		}
 	}

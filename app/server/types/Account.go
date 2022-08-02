@@ -19,3 +19,9 @@ type Account struct {
 	NotesCount uint `json:"notes_count"` // On-Chain notes
 	MediaUsage uint `json:"media_usage"`
 }
+
+type OnChainStatusManageForAccount struct {
+	IsOnChainPaused     bool      `json:"is_onchain_paused"`
+	OnChainPausedAt     time.Time `json:"onchain_paused_at"`
+	OnChainPauseMessage string    `json:"onchain_pause_message"`
+}

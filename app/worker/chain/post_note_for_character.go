@@ -1,8 +1,8 @@
 package chain
 
 import (
-	"github.com/Crossbell-Box/OperatorSync/app/server/global"
 	crossbellContract "github.com/Crossbell-Box/OperatorSync/app/worker/chain/contract"
+	"github.com/Crossbell-Box/OperatorSync/app/worker/global"
 	"math/big"
 	"strconv"
 )

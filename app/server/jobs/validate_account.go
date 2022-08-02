@@ -12,16 +12,13 @@ func ValidateAccount(crossbellCharacterID string, platform string, username stri
 	// Convert crossbell character id to handle
 
 	var err error
+	var validateRequestBytes []byte
 
-	validateRequest := commonTypes.ValidateRequest{
+	if validateRequestBytes, err = json.Marshal(&commonTypes.ValidateRequest{
 		Platform:             platform,
 		Username:             username,
 		CrossbellCharacterID: crossbellCharacterID,
-	}
-
-	var validateRequestBytes []byte
-
-	if validateRequestBytes, err = json.Marshal(&validateRequest); err != nil {
+	}); err != nil {
 		global.Logger.Error("Failed to parse validate request to bytes: ", err.Error())
 		return false, err
 	}
