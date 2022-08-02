@@ -60,6 +60,21 @@ func Config() error {
 	if config.Config.DevelopmentMode {
 		log.Println("Configurations: ", config.Config)
 	}
+	if crossbellChainIDStr, exist := os.LookupEnv("CROSSBELL_CHAIN_ID"); !exist {
+		config.Config.CrossbellChainID = 3737 // Default
+	} else if config.Config.CrossbellChainID, err = strconv.ParseInt(crossbellChainIDStr, 10, 64); err != nil || config.Config.ConcurrencyDirect <= 0 {
+		log.Println("Invalid Crossbell chain ID settings, using default value (3737)")
+		config.Config.CrossbellChainID = 3737 // Default
+	}
+
+	if config.Config.CrossbellJsonRPC, exist = os.LookupEnv("CROSSBELL_JSON_RPC"); !exist {
+		log.Println("No Crossbell JSON RPC endpoint found, use default")
+		config.Config.CrossbellJsonRPC = "https://rpc.crossbell.io" // Default
+	}
+
+	if config.Config.EthereumPrivateKey, exist = os.LookupEnv("ETHEREUM_PRIVATE_KEY"); !exist {
+		return fmt.Errorf("please specify ethereum private key for on-chain requests")
+	}
 
 	return nil
 

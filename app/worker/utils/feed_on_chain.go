@@ -3,6 +3,7 @@ package utils
 import (
 	"encoding/json"
 	"github.com/Crossbell-Box/OperatorSync/app/server/global"
+	"github.com/Crossbell-Box/OperatorSync/app/worker/chain"
 	"github.com/Crossbell-Box/OperatorSync/app/worker/types"
 	commonTypes "github.com/Crossbell-Box/OperatorSync/common/types"
 )
@@ -34,18 +35,22 @@ func FeedOnChain(work *commonTypes.OnChainDispatched) (string, string, error) {
 	// Step 2: Upload note metadata to IPFS, get IPFS Uri as note ContentUri
 	metaBytes, err := json.Marshal(&metadata)
 	if err != nil {
-		global.Logger.Error("Failed to parse metadata to json with error: %s", err.Error())
+		global.Logger.Errorf("Failed to parse metadata to json with error: %s", err.Error())
 		return "", "", err
 	}
 	ipfsUri, _, err := UploadBytesToIPFS(metaBytes, "metadata.json")
 	if err != nil {
-		global.Logger.Error("Failed to upload metadata to IPFS with error: %s", err.Error())
+		global.Logger.Errorf("Failed to upload metadata to IPFS with error: %s", err.Error())
 		return "", "", err
 	}
 
 	// Step 3: Upload note to Crossbell Chain with ContentUri
-	// TODO : Upload note to Crossbell
+	tx, err := chain.PostNoteForCharacter(work.CrossbellCharacterID, ipfsUri)
+	if err != nil {
+		global.Logger.Errorf("Failed to post note to Crossbell chain for character #%s with error: %s", work.CrossbellCharacterID, err.Error())
+		return ipfsUri, tx, err // Transaction might be invalid
+	}
 
 	// Step 4: Return Transaction hash and done!
-	return ipfsUri, "tx", nil
+	return ipfsUri, tx, nil
 }
