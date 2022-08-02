@@ -6,8 +6,8 @@ import (
 	"fmt"
 	"github.com/Crossbell-Box/OperatorSync/app/server/consts"
 	"github.com/Crossbell-Box/OperatorSync/app/server/global"
+	"github.com/Crossbell-Box/OperatorSync/app/server/jobs"
 	"github.com/Crossbell-Box/OperatorSync/app/server/types"
-	"github.com/Crossbell-Box/OperatorSync/app/server/utils"
 	commonConsts "github.com/Crossbell-Box/OperatorSync/common/consts"
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
@@ -55,7 +55,7 @@ func UnbindAccount(ctx *gin.Context) {
 		})
 	} else {
 
-		if ok, err := utils.ValidateAccount(reqCharacterID, reqPlatform, reqUsername); err != nil {
+		if ok, err := jobs.ValidateAccount(reqCharacterID, reqPlatform, reqUsername); err != nil {
 			global.Logger.Errorf("Account (%s@%s) has already been occupied by #%s", reqUsername, reqPlatform, reqCharacterID)
 			ctx.JSON(http.StatusOK, gin.H{
 				"ok":      false,
