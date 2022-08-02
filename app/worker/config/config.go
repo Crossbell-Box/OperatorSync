@@ -19,9 +19,10 @@ type workerConfig struct {
 	ConcurrencyDirect    int
 
 	// Crossbell chain related
-	CrossbellChainID   int64
-	CrossbellJsonRPC   string
-	EthereumPrivateKey string
+	CrossbellChainID         int64
+	CrossbellJsonRPC         string
+	CrossbellContractAddress string
+	EthereumPrivateKey       string
 
 	commonConfig.Config
 }

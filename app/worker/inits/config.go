@@ -3,6 +3,8 @@ package inits
 import (
 	"fmt"
 	"github.com/Crossbell-Box/OperatorSync/app/worker/config"
+	"github.com/Crossbell-Box/OperatorSync/app/worker/consts"
+	commonConsts "github.com/Crossbell-Box/OperatorSync/common/consts"
 	"log"
 	"net/url"
 	"os"
@@ -30,29 +32,29 @@ func Config() error {
 	}
 
 	if config.Config.IPFSEndpoint, exist = os.LookupEnv("IPFS_ENDPOINT"); !exist {
-		config.Config.IPFSEndpoint = "https://ipfs-relay.crossbell.io/upload"
+		config.Config.IPFSEndpoint = consts.CONFIG_DEFAULT_IPFS_ENDPOINT
 	}
 	if config.Config.MQConnString, exist = os.LookupEnv("MQ_CONNECTION_STRING"); !exist {
-		config.Config.MQConnString = "nats://localhost:4222"
+		config.Config.MQConnString = commonConsts.CONFIG_DEFAULT_MQ_CONNECTION_STRING
 	}
 
 	if concurrencyStatefulStr, exist := os.LookupEnv("CONCURRENCY_CONTROL_STATEFUL"); !exist {
-		config.Config.ConcurrencyStateful = 10 // Default
+		config.Config.ConcurrencyStateful = consts.CONFIG_DEFAULT_CONCURRENCY_CONTROL_STATEFUL // Default
 	} else if config.Config.ConcurrencyStateful, err = strconv.Atoi(concurrencyStatefulStr); err != nil || config.Config.ConcurrencyStateful <= 0 {
 		log.Println("Invalid stateful concurrency control settings, using default value")
-		config.Config.ConcurrencyStateful = 10 // Default
+		config.Config.ConcurrencyStateful = consts.CONFIG_DEFAULT_CONCURRENCY_CONTROL_STATEFUL // Default
 	}
 	if concurrencyStatelessStr, exist := os.LookupEnv("CONCURRENCY_CONTROL_STATELESS"); !exist {
-		config.Config.ConcurrencyStateless = 50 // Default
+		config.Config.ConcurrencyStateless = consts.CONFIG_DEFAULT_CONCURRENCY_CONTROL_STATELESS // Default
 	} else if config.Config.ConcurrencyStateless, err = strconv.Atoi(concurrencyStatelessStr); err != nil || config.Config.ConcurrencyStateless <= 0 {
 		log.Println("Invalid stateless concurrency control settings, using default value")
-		config.Config.ConcurrencyStateless = 50 // Default
+		config.Config.ConcurrencyStateless = consts.CONFIG_DEFAULT_CONCURRENCY_CONTROL_STATELESS // Default
 	}
 	if concurrencyDirectStr, exist := os.LookupEnv("CONCURRENCY_CONTROL_DIRECT"); !exist {
-		config.Config.ConcurrencyDirect = 100 // Default
+		config.Config.ConcurrencyDirect = consts.CONFIG_DEFAULT_CONCURRENCY_CONTROL_DIRECT // Default
 	} else if config.Config.ConcurrencyDirect, err = strconv.Atoi(concurrencyDirectStr); err != nil || config.Config.ConcurrencyDirect <= 0 {
 		log.Println("Invalid direct concurrency control settings, using default value")
-		config.Config.ConcurrencyDirect = 100 // Default
+		config.Config.ConcurrencyDirect = consts.CONFIG_DEFAULT_CONCURRENCY_CONTROL_DIRECT // Default
 	}
 
 	config.Config.DevelopmentMode = !strings.Contains(strings.ToLower(os.Getenv("MODE")), "prod")
@@ -61,15 +63,20 @@ func Config() error {
 		log.Println("Configurations: ", config.Config)
 	}
 	if crossbellChainIDStr, exist := os.LookupEnv("CROSSBELL_CHAIN_ID"); !exist {
-		config.Config.CrossbellChainID = 3737 // Default
+		config.Config.CrossbellChainID = consts.CONFIG_DEFAULT_CROSSBELL_CHAIN_ID // Default
 	} else if config.Config.CrossbellChainID, err = strconv.ParseInt(crossbellChainIDStr, 10, 64); err != nil || config.Config.ConcurrencyDirect <= 0 {
 		log.Println("Invalid Crossbell chain ID settings, using default value (3737)")
-		config.Config.CrossbellChainID = 3737 // Default
+		config.Config.CrossbellChainID = consts.CONFIG_DEFAULT_CROSSBELL_CHAIN_ID // Default
 	}
 
 	if config.Config.CrossbellJsonRPC, exist = os.LookupEnv("CROSSBELL_JSON_RPC"); !exist {
 		log.Println("No Crossbell JSON RPC endpoint found, use default")
-		config.Config.CrossbellJsonRPC = "https://rpc.crossbell.io" // Default
+		config.Config.CrossbellJsonRPC = consts.CONFIG_DEFAULT_CROSSBELL_JSON_RPC // Default
+	}
+
+	if config.Config.CrossbellContractAddress, exist = os.LookupEnv("CROSSBELL_CONTRACT_ADDRESS"); !exist {
+		log.Println("No Crossbell contract address found, use default")
+		config.Config.CrossbellContractAddress = consts.CONFIG_DEFAULT_CROSSBELL_CONTRACT_ADDRESS // Default
 	}
 
 	if config.Config.EthereumPrivateKey, exist = os.LookupEnv("ETHEREUM_PRIVATE_KEY"); !exist {

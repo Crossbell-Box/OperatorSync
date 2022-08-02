@@ -2,23 +2,28 @@ package utils
 
 import (
 	"encoding/json"
+	"fmt"
 	"github.com/Crossbell-Box/OperatorSync/app/server/global"
 	"github.com/Crossbell-Box/OperatorSync/app/worker/chain"
 	"github.com/Crossbell-Box/OperatorSync/app/worker/types"
+	commonConsts "github.com/Crossbell-Box/OperatorSync/common/consts"
 	commonTypes "github.com/Crossbell-Box/OperatorSync/common/types"
 )
 
 func FeedOnChain(work *commonTypes.OnChainDispatched) (string, string, error) {
 	// Step 1: Parse feeds to note metadata
 	metadata := types.NoteMetadata{
-		Type:    "note",
+		Type: "note",
+		Authors: append(
+			work.Authors,
+			fmt.Sprintf("csb://account:%s@%s", work.Username, work.Platform),
+		),
 		Title:   work.Title,
 		Content: work.Content,
 		Tags:    work.Categories,
-		//Attachments: nil,
 		Sources: []string{
 			"OperatorSync",
-			work.Platform,
+			commonConsts.SUPPORTED_PLATFORM[work.Platform].Name,
 		},
 	}
 

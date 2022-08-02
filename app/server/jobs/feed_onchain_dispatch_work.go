@@ -16,6 +16,7 @@ func feedOnChainDispatchWork(account *models.Account, feeds []models.Feed) {
 			FeedID:               feed.ID,
 			CrossbellCharacterID: account.CrossbellCharacterID,
 			Platform:             feed.Platform,
+			Username:             account.Username,
 			RawFeed:              feed.RawFeed,
 		}); err != nil {
 			global.Logger.Errorf("Failed to parse OnChain work for feed %s#%d with error: %s", feed.Platform, feed.ID, err.Error())

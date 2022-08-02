@@ -2,6 +2,8 @@ package chain
 
 import (
 	"github.com/Crossbell-Box/OperatorSync/app/server/global"
+	crossbellContract "github.com/Crossbell-Box/OperatorSync/app/worker/chain/contract"
+	"math/big"
 	"strconv"
 )
 
@@ -12,12 +14,21 @@ func PostNoteForCharacter(characterIdStr string, metadataUri string) (string, er
 		return "", err
 	}
 
-	// Prepare instance
-	client, auth, err := Prepare()
+	// Prepare contract instance
+	contractInstance, operatorAuth, err := Prepare()
 	if err != nil {
-		global.Logger.Errorf("Failed to prepare eth client")
+		global.Logger.Errorf("Failed to prepare eth contract instance")
 		return "", err
 	}
 
-	return "", nil
+	tx, err := contractInstance.PostNote(operatorAuth, crossbellContract.DataTypesPostNoteData{
+		CharacterId: big.NewInt(characterId),
+		ContentUri:  metadataUri,
+	})
+	if err != nil {
+		global.Logger.Errorf("Failed to create transaction")
+		return "", err
+	}
+
+	return tx.Hash().Hex(), nil
 }

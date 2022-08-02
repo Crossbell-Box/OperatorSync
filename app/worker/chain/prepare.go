@@ -4,44 +4,56 @@ import (
 	"context"
 	"crypto/ecdsa"
 	"fmt"
+	crossbellContract "github.com/Crossbell-Box/OperatorSync/app/worker/chain/contract"
 	"github.com/Crossbell-Box/OperatorSync/app/worker/config"
 	"github.com/Crossbell-Box/OperatorSync/app/worker/global"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
+	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"math/big"
 )
 
 var (
-	initialized bool
-	client      *ethclient.Client
-	auth        *bind.TransactOpts
+	//!\\ Internal variables, please do not use them outside
+	_initialized bool
+	_client      *ethclient.Client
+	_auth        *bind.TransactOpts
+	_instance    *crossbellContract.Contract
 )
 
 func init() {
 	// Package initialization
-	initialized = false
+	_initialized = false
 }
 
-func Prepare() (*ethclient.Client, *bind.TransactOpts, error) {
-	if initialized {
+func Prepare() (*crossbellContract.Contract, *bind.TransactOpts, error) {
+	if _initialized {
 		// Already initialized, just update gas price
-		if gasPrice, err := client.SuggestGasPrice(context.Background()); err != nil {
+		if gasPrice, err := _client.SuggestGasPrice(context.Background()); err != nil {
 			global.Logger.Errorf("Failed to get eth gas price with error: %s", err.Error())
 			// Keep current gas price
 		} else {
 			// Update gas price
-			auth.GasPrice = gasPrice
+			_auth.GasPrice = gasPrice
 		}
 
-		return client, auth, nil
+		return _instance, _auth, nil
 	}
+
+	global.Logger.Debug("Start initializing Crossbell contract instance...")
 
 	var err error
 
-	client, err = ethclient.Dial(config.Config.CrossbellJsonRPC)
+	_client, err = ethclient.Dial(config.Config.CrossbellJsonRPC)
 	if err != nil {
 		global.Logger.Errorf("Failed to connect to Crossbell JSON RPC with error: %s", err.Error())
+		return nil, nil, err
+	}
+
+	_instance, err = crossbellContract.NewContract(common.HexToAddress(config.Config.CrossbellContractAddress), _client)
+	if err != nil {
+		global.Logger.Errorf("Failed to create Crossbell Contract instance with error: %s", err.Error())
 		return nil, nil, err
 	}
 
@@ -59,29 +71,29 @@ func Prepare() (*ethclient.Client, *bind.TransactOpts, error) {
 	}
 
 	fromAddress := crypto.PubkeyToAddress(*publicKeyECDSA)
-	nonce, err := client.PendingNonceAt(context.Background(), fromAddress)
+	nonce, err := _client.PendingNonceAt(context.Background(), fromAddress)
 	if err != nil {
 		global.Logger.Errorf("Failed to get nonce with error: %s", err.Error())
 		return nil, nil, err
 	}
 
-	gasPrice, err := client.SuggestGasPrice(context.Background())
+	gasPrice, err := _client.SuggestGasPrice(context.Background())
 	if err != nil {
 		global.Logger.Errorf("Failed to get eth gas price with error: %s", err.Error())
 		return nil, nil, err
 	}
 
-	auth, err = bind.NewKeyedTransactorWithChainID(privateKey, big.NewInt(config.Config.CrossbellChainID))
+	_auth, err = bind.NewKeyedTransactorWithChainID(privateKey, big.NewInt(config.Config.CrossbellChainID))
 	if err != nil {
 		global.Logger.Errorf("Failed to bind ethereum key with error: %s", err.Error())
 		return nil, nil, err
 	}
-	auth.Nonce = big.NewInt(int64(nonce))
-	auth.Value = big.NewInt(0)     // in wei
-	auth.GasLimit = uint64(300000) // in units
-	auth.GasPrice = gasPrice
+	_auth.Nonce = big.NewInt(int64(nonce))
+	_auth.Value = big.NewInt(0)     // in wei
+	_auth.GasLimit = uint64(300000) // in units
+	_auth.GasPrice = gasPrice
 
 	global.Logger.Debug("Crossbell Ethereum account initialized successfully")
-	initialized = true
-	return client, auth, nil
+	_initialized = true
+	return _instance, _auth, nil
 }
