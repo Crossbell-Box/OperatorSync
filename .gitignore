@@ -25,3 +25,6 @@ build/
 # Deployment environment variables
 deploy/env/*
 !deploy/env/.example/
+
+# macOS
+.DS_Store
