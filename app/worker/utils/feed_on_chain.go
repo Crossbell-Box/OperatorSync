@@ -50,7 +50,7 @@ func FeedOnChain(work *commonTypes.OnChainRequest) (string, string, error) {
 	}
 
 	// Step 3: Upload note to Crossbell Chain with ContentUri
-	tx, err := chain.PostNoteForCharacter(work.CrossbellCharacterID, ipfsUri)
+	tx, err := chain.PostNoteForCharacter(work.CrossbellCharacterID, ipfsUri, work.Link)
 	if err != nil {
 		global.Logger.Errorf("Failed to post note to Crossbell chain for character #%s with error: %s", work.CrossbellCharacterID, err.Error())
 		return ipfsUri, tx, err // Transaction might be invalid
