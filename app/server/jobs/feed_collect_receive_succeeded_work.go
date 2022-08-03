@@ -13,6 +13,7 @@ import (
 	commonTypes "github.com/Crossbell-Box/OperatorSync/common/types"
 	"github.com/nats-io/nats.go"
 	"gorm.io/gorm"
+	"sort"
 )
 
 func FeedCollectStartReceiveSucceededWork() error {
@@ -36,7 +37,7 @@ func feedCollectHandleSucceeded(m *nats.Msg) {
 	} else {
 		// Parse successfully
 		// Parse feeds
-		var feeds []models.Feed
+		var feeds models.FeedsArray
 		if len(workSucceeded.Feeds) > 0 {
 			for _, rawFeed := range workSucceeded.Feeds {
 				feed := models.Feed{
@@ -47,9 +48,15 @@ func feedCollectHandleSucceeded(m *nats.Msg) {
 						RawFeed:     rawFeed,
 					},
 				}
+				for _, media := range rawFeed.Media {
+					feed.MediaIPFSUris = append(feed.MediaIPFSUris, media.IPFSUri)
+				}
 				feeds = append(feeds, feed)
 			}
 		}
+
+		// Sort feeds by publish time (ASC)
+		sort.Sort(feeds)
 
 		// Find account
 		var account models.Account
@@ -102,7 +109,7 @@ func feedCollectHandleSucceeded(m *nats.Msg) {
 								}
 							}
 						}
-						singleMedia.RelatedFeeds = append(singleMedia.RelatedFeeds, models.FeedRecord{
+						singleMedia.RelatedFeeds = append(singleMedia.RelatedFeeds, models.MediaFeedRecord{
 							Platform: workSucceeded.Platform,
 							ID:       feed.ID,
 						})

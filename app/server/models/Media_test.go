@@ -5,8 +5,8 @@ import (
 )
 
 func TestFeedRecordArray(t *testing.T) {
-	fa := FeedRecordArray{}
-	fa = append(fa, FeedRecord{
+	fa := MediaFeedRecordArray{}
+	fa = append(fa, MediaFeedRecord{
 		Platform: "test",
 		ID:       1,
 	})

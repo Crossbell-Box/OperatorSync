@@ -10,6 +10,7 @@ import (
 )
 
 func FeedCollectStartDispatchWork() {
+	global.Logger.Debug("Feed Collect work start dispatching...")
 	go func() {
 		t := time.NewTicker(10 * time.Second)
 		for {

@@ -7,18 +7,18 @@ import (
 	"time"
 )
 
-type FeedRecord struct {
+type MediaFeedRecord struct {
 	Platform string `json:"platform"`
 	ID       uint   `json:"id"`
 }
 
-type FeedRecordArray []FeedRecord
+type MediaFeedRecordArray []MediaFeedRecord
 
-func (fa *FeedRecordArray) Scan(src interface{}) error {
+func (fa *MediaFeedRecordArray) Scan(src interface{}) error {
 	return json.Unmarshal([]byte(src.(string)), fa)
 }
 
-func (fa FeedRecordArray) Value() (driver.Value, error) {
+func (fa MediaFeedRecordArray) Value() (driver.Value, error) {
 	val, err := json.Marshal(&fa)
 	return string(val), err
 }
@@ -29,8 +29,8 @@ type Media struct {
 	CreatedAt time.Time `gorm:"index" json:"-"`
 
 	// Structure related
-	CrossbellCharacterID string          `gorm:"index" json:"crossbell_character_id"`
-	RelatedFeeds         FeedRecordArray `gorm:"type:text" json:"related_feeds"`
+	CrossbellCharacterID string               `gorm:"index" json:"crossbell_character_id"`
+	RelatedFeeds         MediaFeedRecordArray `gorm:"type:text" json:"related_feeds"`
 
 	commonTypes.Media
 }

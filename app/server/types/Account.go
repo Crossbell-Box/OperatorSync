@@ -21,7 +21,7 @@ type Account struct {
 }
 
 type OnChainStatusManageForAccount struct {
-	IsOnChainPaused     bool      `json:"is_onchain_paused"`
+	IsOnChainPaused     bool      `json:"is_onchain_paused" gorm:"index;column:is_onchain_paused"`
 	OnChainPausedAt     time.Time `json:"onchain_paused_at"`
 	OnChainPauseMessage string    `json:"onchain_pause_message"`
 }

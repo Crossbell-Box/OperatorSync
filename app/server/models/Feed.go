@@ -22,3 +22,15 @@ func FeedTable(f Feed) func(tx *gorm.DB) *gorm.DB {
 		return tx.Table(feedPrefix + f.Platform)
 	}
 }
+
+type FeedsArray []Feed
+
+func (feeds FeedsArray) Len() int {
+	return len(feeds)
+}
+func (feeds FeedsArray) Swap(i, j int) {
+	feeds[i], feeds[j] = feeds[j], feeds[i]
+}
+func (feeds FeedsArray) Less(i, j int) bool {
+	return feeds[i].PublishedAt.Before(feeds[j].PublishedAt)
+}

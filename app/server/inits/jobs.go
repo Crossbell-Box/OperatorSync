@@ -18,6 +18,7 @@ func Jobs() error {
 	if config.Config.IsMainServer {
 		// Start dispatch flush works
 		jobs.FeedCollectStartDispatchWork()
+		jobs.ResumePausedAccounts()
 	}
 
 	return nil

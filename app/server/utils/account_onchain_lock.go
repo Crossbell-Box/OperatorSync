@@ -7,7 +7,6 @@ import (
 )
 
 func IsAccountOnChainPaused(account *models.Account) bool {
-	//  TODO: If OnChain process failed some, how to handle & how to resolve
 	return account.IsOnChainPaused
 }
 
