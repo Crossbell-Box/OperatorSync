@@ -31,6 +31,18 @@ func BindAccount(ctx *gin.Context) {
 		return
 	}
 
+	// User selectable start time
+	nowTimeStr := time.Now().Format(time.RFC3339)
+	startFromStr := ctx.DefaultQuery("from", nowTimeStr)
+	startFromTime, err := time.Parse(startFromStr, time.RFC3339)
+	if err != nil {
+		ctx.JSON(http.StatusOK, gin.H{
+			"ok":      false,
+			"message": fmt.Sprintf("Failed to parse time with error (%s), please use RFC3339 format (%s)", err.Error(), nowTimeStr),
+		})
+		return
+	}
+
 	// Check character -> create if not exist
 	if err := global.DB.First(&types.Character{}, "crossbell_character_id = ?", reqCharacterID).Error; errors.Is(err, gorm.ErrRecordNotFound) {
 		global.Logger.Debugf("Character %s doesn't exist, creating...", reqCharacterID)
@@ -100,7 +112,7 @@ func BindAccount(ctx *gin.Context) {
 				CrossbellCharacterID: reqCharacterID,
 				Platform:             reqPlatform,
 				Username:             reqUsername,
-				LastUpdated:          time.Now(),
+				LastUpdated:          startFromTime,
 				UpdateInterval:       commonConsts.SUPPORTED_PLATFORM[reqPlatform].MinRefreshGap,
 				NextUpdate:           time.Now(),
 				FeedsCount:           0,
