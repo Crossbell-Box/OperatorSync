@@ -191,8 +191,10 @@ func feedCollectHandleSucceeded(m *nats.Msg) {
 			global.Redis.Del(clearCacheCtx, feedsCacheKey)    // To flush cached feeds
 			global.Redis.Del(clearCacheCtx, mediasCacheKey)   // To flush cached media list
 
-			// Post feeds On Chain
-			feedOnChainDispatchWork(&account, feeds)
+			if len(feeds) > 0 {
+				// Post feeds On Chain
+				feedOnChainDispatchWork(&account, feeds)
+			}
 
 			// Update metrics
 			global.Metrics.Work.Succeeded.Inc(1)
