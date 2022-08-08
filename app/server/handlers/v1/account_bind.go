@@ -34,7 +34,7 @@ func BindAccount(ctx *gin.Context) {
 	// User selectable start time
 	nowTimeStr := time.Now().Format(time.RFC3339)
 	startFromStr := ctx.DefaultQuery("from", nowTimeStr)
-	startFromTime, err := time.Parse(startFromStr, time.RFC3339)
+	startFromTime, err := time.Parse(time.RFC3339, startFromStr)
 	if err != nil {
 		ctx.JSON(http.StatusOK, gin.H{
 			"ok":      false,
