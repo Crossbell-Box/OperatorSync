@@ -48,7 +48,6 @@ func BindAccount(ctx *gin.Context) {
 		global.Logger.Debugf("Character %s doesn't exist, creating...", reqCharacterID)
 		global.DB.Create(&types.Character{
 			CrossbellCharacterID: reqCharacterID,
-			MediaUsage:           0,
 		})
 	}
 
@@ -117,7 +116,7 @@ func BindAccount(ctx *gin.Context) {
 				NextUpdate:           time.Now(),
 				FeedsCount:           0,
 				NotesCount:           0,
-				MediaUsage:           0,
+				MediaUsage:           nil,
 			}
 			account.OnChainStatusManageForAccount = types.OnChainStatusManageForAccount{
 				IsOnChainPaused: false,

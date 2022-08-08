@@ -77,8 +77,8 @@ func feedCollectHandleSucceeded(m *nats.Msg) {
 		// NotesCount increase need feeds to be published on chain
 
 		// Update character
-		var character models.Character
-		global.DB.First(&character, "crossbell_character_id = ?", account.CrossbellCharacterID)
+		//var character models.Character
+		//global.DB.First(&character, "crossbell_character_id = ?", account.CrossbellCharacterID)
 
 		if err := global.DB.Transaction(func(tx *gorm.DB) error {
 			// do some database operations in the transaction (use 'tx' from this point, not 'db')
@@ -119,12 +119,17 @@ func feedCollectHandleSucceeded(m *nats.Msg) {
 
 				var mediaUpdateList []models.Media
 				var mediaCreateList []models.Media
+				mediaTypedUsageInc := make(map[string]uint)
 				for _, singleMedia := range mediaMap {
 					if singleMedia.ID == 0 {
 						mediaCreateList = append(mediaCreateList, singleMedia)
 
-						account.MediaUsage += singleMedia.FileSize
-						character.MediaUsage += singleMedia.FileSize
+						// Record ContentType with increment
+						if _, ok := mediaTypedUsageInc[singleMedia.ContentType]; ok {
+							mediaTypedUsageInc[singleMedia.ContentType] += singleMedia.FileSize
+						} else {
+							mediaTypedUsageInc[singleMedia.ContentType] = singleMedia.FileSize
+						}
 					} else {
 						mediaUpdateList = append(mediaUpdateList, singleMedia)
 					}
@@ -141,6 +146,24 @@ func feedCollectHandleSucceeded(m *nats.Msg) {
 						return err
 					}
 				}
+
+				// Save increments to Account
+				//// Find already exist ContentTypes
+				for index, mediaUsageWithTypeInAccount := range account.MediaUsage {
+					if increment, ok := mediaTypedUsageInc[mediaUsageWithTypeInAccount.ContentType]; ok {
+						// Already exists, add to record
+						account.MediaUsage[index].Usage += increment
+						// Delete key
+						delete(mediaTypedUsageInc, mediaUsageWithTypeInAccount.ContentType)
+					}
+				}
+				//// Create new ContentTypes
+				for contentType, increment := range mediaTypedUsageInc {
+					account.MediaUsage = append(account.MediaUsage, types.MediaTypeRecord{
+						ContentType: contentType,
+						Usage:       increment,
+					})
+				}
 			}
 
 			// Update account
@@ -148,10 +171,10 @@ func feedCollectHandleSucceeded(m *nats.Msg) {
 				return err
 			}
 
-			// Update character
-			if err := tx.Save(&character).Error; err != nil {
-				return err
-			}
+			//// Update character
+			//if err := tx.Save(&character).Error; err != nil {
+			//	return err
+			//}
 
 			// return nil will commit the whole transaction
 			return nil
