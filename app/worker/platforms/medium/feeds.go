@@ -1,6 +1,7 @@
 package medium
 
 import (
+	"fmt"
 	"github.com/Crossbell-Box/OperatorSync/app/worker/global"
 	"github.com/Crossbell-Box/OperatorSync/app/worker/jobs/callback"
 	"github.com/Crossbell-Box/OperatorSync/app/worker/types"
@@ -57,6 +58,23 @@ func Feeds(cccs *types.ConcurrencyChannels, work *commonTypes.WorkDispatched, ac
 			rawContent := item.Content
 
 			imgs := imageRegex.FindAllStringSubmatch(rawContent, -1)
+			// Remove tracker
+			var trackers []int
+			for imgIndex, img := range imgs {
+				if strings.Contains(img[1], "https://medium.com/_/stat") {
+					rawContent = strings.ReplaceAll(
+						rawContent,
+						fmt.Sprintf("<img src=\"%s\" width=\"1\" height=\"1\" alt=\"\">", img[1]),
+						"",
+					)
+					trackers = append(trackers, imgIndex)
+				}
+			}
+			for i := len(trackers) - 1; i >= 0; i-- {
+				trackerIndex := trackers[i]
+				imgs = append(imgs[:trackerIndex], imgs[trackerIndex+1:]...)
+			}
+
 			feed.Media = utils.UploadAllMedia(imgs)
 			for _, media := range feed.Media {
 				rawContent = strings.ReplaceAll(rawContent, media.OriginalURI, media.IPFSUri)

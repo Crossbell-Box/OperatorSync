@@ -66,7 +66,7 @@ func Feeds(cccs *types.ConcurrencyChannels, work *commonTypes.WorkDispatched, ac
 				media := commonTypes.Media{
 					OriginalURI: posterUrl,
 				}
-				if media.FileName, media.IPFSUri, media.FileSize, media.ContentType, err = utils.UploadURLToIPFS(media.OriginalURI); err != nil {
+				if media.FileName, media.IPFSUri, media.FileSize, media.ContentType, media.AdditionalProps, err = utils.UploadURLToIPFS(media.OriginalURI); err != nil {
 					global.Logger.Error("Failed to upload link (", media.OriginalURI, ") onto IPFS: ", err.Error())
 				} else {
 					rawContent = strings.ReplaceAll(rawContent, media.OriginalURI, media.IPFSUri)
@@ -84,7 +84,7 @@ func Feeds(cccs *types.ConcurrencyChannels, work *commonTypes.WorkDispatched, ac
 				media := commonTypes.Media{
 					OriginalURI: videoUrl,
 				}
-				if media.FileName, media.IPFSUri, media.FileSize, media.ContentType, err = utils.UploadURLToIPFS(media.OriginalURI); err != nil {
+				if media.FileName, media.IPFSUri, media.FileSize, media.ContentType, media.AdditionalProps, err = utils.UploadURLToIPFS(media.OriginalURI); err != nil {
 					global.Logger.Error("Failed to upload link (", media.OriginalURI, ") onto IPFS: ", err.Error())
 				} else {
 					rawContent = strings.ReplaceAll(rawContent, media.OriginalURI, media.IPFSUri)

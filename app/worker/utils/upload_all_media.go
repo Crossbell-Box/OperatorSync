@@ -27,7 +27,7 @@ func UploadAllMedia(regResult [][]string) []types.Media {
 				OriginalURI: uri,
 			}
 			var err error
-			if media.FileName, media.IPFSUri, media.FileSize, media.ContentType, err = UploadURLToIPFS(media.OriginalURI); err != nil {
+			if media.FileName, media.IPFSUri, media.FileSize, media.ContentType, media.AdditionalProps, err = UploadURLToIPFS(media.OriginalURI); err != nil {
 				global.Logger.Error("Failed to upload link (", media.OriginalURI, ") onto IPFS: ", err.Error())
 			} else {
 				ipfsUploadResultChannel <- media

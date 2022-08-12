@@ -8,6 +8,7 @@ import (
 	"github.com/Crossbell-Box/OperatorSync/app/worker/types"
 	commonConsts "github.com/Crossbell-Box/OperatorSync/common/consts"
 	commonTypes "github.com/Crossbell-Box/OperatorSync/common/types"
+	"strconv"
 )
 
 func FeedOnChain(work *commonTypes.OnChainRequest) (string, string, error) {
@@ -25,16 +26,51 @@ func FeedOnChain(work *commonTypes.OnChainRequest) (string, string, error) {
 			"OperatorSync",
 			commonConsts.SUPPORTED_PLATFORM[work.Platform].Name,
 		},
+		ContentWarning: work.ContentWarning,
+	}
+
+	if ValidateUri(work.Link) {
+		metadata.ExternalUrls = []string{work.Link}
 	}
 
 	for _, media := range work.Media {
-		metadata.Attachments = append(metadata.Attachments, types.NoteAttachment{
+		// Append basic info
+		attachment := types.NoteAttachment{
 			Name:    media.FileName,
 			Address: media.IPFSUri,
 			//Content:  "",
 			MimeType: media.ContentType,
 			FileSize: media.FileSize,
-		})
+			Alt:      media.FileName, // Just use filename for now
+		}
+
+		// Append additional props
+		var additionalProps map[string]string
+		err := json.Unmarshal([]byte(media.AdditionalProps), &additionalProps)
+		if err != nil {
+			global.Logger.Errorf("Failed to parse additional props for media #%s with error: %s", media.IPFSUri, err.Error())
+		} else {
+			// If has "width" and "height"
+			if mediaWidthStr, ok := additionalProps["width"]; ok {
+				mediaWidth, err := strconv.Atoi(mediaWidthStr)
+				if err != nil {
+					global.Logger.Errorf("Failed to parse width of media #%s with error: %s", media.IPFSUri, err.Error())
+				} else {
+					attachment.Width = uint(mediaWidth)
+				}
+			}
+			if mediaHeightStr, ok := additionalProps["height"]; ok {
+				mediaHeight, err := strconv.Atoi(mediaHeightStr)
+				if err != nil {
+					global.Logger.Errorf("Failed to parse height of media #%s with error: %s", media.IPFSUri, err.Error())
+				} else {
+					attachment.Width = uint(mediaHeight)
+				}
+			}
+		}
+
+		// Append to array
+		metadata.Attachments = append(metadata.Attachments, attachment)
 	}
 
 	// Step 2: Upload note metadata to IPFS, get IPFS Uri as note ContentUri
@@ -50,7 +86,7 @@ func FeedOnChain(work *commonTypes.OnChainRequest) (string, string, error) {
 	}
 
 	// Step 3: Upload note to Crossbell Chain with ContentUri
-	tx, err := chain.PostNoteForCharacter(work.CrossbellCharacterID, ipfsUri, work.Link)
+	tx, err := chain.PostNoteForCharacter(work.CrossbellCharacterID, ipfsUri)
 	if err != nil {
 		global.Logger.Errorf("Failed to post note to Crossbell chain for character #%s with error: %s", work.CrossbellCharacterID, err.Error())
 		return ipfsUri, tx, err // Transaction might be invalid

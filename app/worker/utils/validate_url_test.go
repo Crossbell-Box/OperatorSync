@@ -1,4 +1,4 @@
-package chain
+package utils
 
 import (
 	"testing"

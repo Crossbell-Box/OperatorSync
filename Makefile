@@ -4,9 +4,9 @@ dev: dev-start
 prod: prod-start
 
 .PHONY : build
-build: build/contract build/executable
+build: build/executable
 
-clean: clean-build clean-docker
+clean: clean-build
 
 build-docker:
 	docker build . -f deploy/dockerfile/server.Dockerfile -t rss3/crossbell-operator-sync:server

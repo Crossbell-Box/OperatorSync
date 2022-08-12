@@ -6,11 +6,17 @@ import (
 	"fmt"
 	"github.com/Crossbell-Box/OperatorSync/app/worker/config"
 	"github.com/Crossbell-Box/OperatorSync/app/worker/global"
+	"image"
+	_ "image/gif"  // Add GIF support
+	_ "image/jpeg" // Add JPEG support
+	_ "image/png"  // Add PNG support
 	"log"
 	"mime/multipart"
 	"net/http"
 	"net/url"
 	"path"
+	"strconv"
+	"strings"
 )
 
 type response struct {
@@ -21,13 +27,17 @@ type response struct {
 	Error   string `json:"error"`
 }
 
-func UploadURLToIPFS(targetUrl string) (string, string, uint, string, error) {
+func UploadURLToIPFS(targetUrl string) (string, string, uint, string, string, error) {
 	// Get filename
 	global.Logger.Debug("Uploading file ", targetUrl, " to IPFS...")
 
+	if targetUrl == "" {
+		return "", "", 0, "", "", fmt.Errorf("empty uri")
+	}
+
 	reqUrl, err := url.Parse(targetUrl)
 	if err != nil {
-		return "", "", 0, "", err
+		return "", "", 0, "", "", err
 	}
 	filename := path.Base(reqUrl.Path)
 
@@ -35,21 +45,48 @@ func UploadURLToIPFS(targetUrl string) (string, string, uint, string, error) {
 	body, err := HttpRequest(targetUrl, false)
 	if err != nil {
 		global.Logger.Error("Failed to retrieve data from: ", targetUrl)
-		return "", "", 0, "", err
+		return "", "", 0, "", "", err
 	}
 
 	bodyBytes := body[:]
+
+	// Detect content-type
 	contentType := http.DetectContentType(bodyBytes)
 
+	// Upload to IPFS
 	global.Logger.Debug("File download successfully, uploading...")
 
 	ipfsUri, fileSize, err := UploadBytesToIPFS(bodyBytes, filename)
 	if err != nil {
 		global.Logger.Errorf("Failed to upload data to IPFS with error: %s", err.Error())
-		return "", "", 0, "", err
+		return "", "", 0, "", "", err
 	}
 
-	return filename, ipfsUri, fileSize, contentType, nil
+	// Attach additional props
+	additionalProps := make(map[string]string)
+
+	if strings.Contains(contentType, "image/") {
+		// Is image
+		imgConfig, format, err := image.DecodeConfig(bytes.NewReader(bodyBytes))
+		if err != nil {
+			// Unable to handle this
+			global.Logger.Errorf("Failed to decode image with error: %s", err.Error())
+		} else {
+			additionalProps["format"] = format
+			additionalProps["width"] = strconv.Itoa(imgConfig.Width)
+			additionalProps["height"] = strconv.Itoa(imgConfig.Height)
+		}
+
+	}
+
+	additionalPropsBytes, err := json.Marshal(&additionalProps)
+	if err != nil {
+		global.Logger.Errorf("Failed to parse additional props with error: %s", err.Error())
+		additionalPropsBytes = nil
+	}
+
+	// Return response
+	return filename, ipfsUri, fileSize, contentType, string(additionalPropsBytes), nil
 
 }
 
