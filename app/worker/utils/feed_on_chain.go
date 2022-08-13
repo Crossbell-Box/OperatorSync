@@ -27,6 +27,7 @@ func FeedOnChain(work *commonTypes.OnChainRequest) (string, string, error) {
 			commonConsts.SUPPORTED_PLATFORM[work.Platform].Name,
 		},
 		ContentWarning: work.ContentWarning,
+		DatePublished:  work.PublishedAt.Format("2022-01-01T00:00:00Z"),
 	}
 
 	if ValidateUri(work.Link) {

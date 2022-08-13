@@ -30,4 +30,5 @@ type NoteMetadata struct {
 	Attributes     []NodeAttributes `json:"attributes,omitempty"`
 	ExternalUrls   []string         `json:"external_urls,omitempty"`
 	ContentWarning string           `json:"content_warning,omitempty"` // 'nsfw' | 'sensitive' | 'spoiler'
+	DatePublished  string           `json:"date_published,omitempty"`  // ISO8601
 }
