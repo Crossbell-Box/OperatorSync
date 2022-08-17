@@ -85,7 +85,7 @@ func Feeds(cccs *types.ConcurrencyChannels, work *commonTypes.WorkDispatched, ac
 					OriginalURI: videoUrl,
 					FileName:    feed.Title,
 				}
-				if media.IPFSUri, media.AdditionalProps, err = utils.UploadURIToLivePeer(media.OriginalURI, media.FileName); err != nil {
+				if media.IPFSUri, media.FileSize, media.ContentType, media.AdditionalProps, err = utils.UploadURIToLivePeer(media.OriginalURI, media.FileName); err != nil {
 					global.Logger.Error("Failed to upload video (", media.OriginalURI, ") onto LivePeer: ", err.Error())
 				} else {
 					rawContent = strings.ReplaceAll(rawContent, media.OriginalURI, media.IPFSUri)
