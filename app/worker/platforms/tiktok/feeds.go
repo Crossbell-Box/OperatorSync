@@ -67,7 +67,7 @@ func Feeds(cccs *types.ConcurrencyChannels, work *commonTypes.WorkDispatched, ac
 					OriginalURI: posterUrl,
 				}
 				if media.FileName, media.IPFSUri, media.FileSize, media.ContentType, media.AdditionalProps, err = utils.UploadURLToIPFS(media.OriginalURI); err != nil {
-					global.Logger.Error("Failed to upload link (", media.OriginalURI, ") onto IPFS: ", err.Error())
+					global.Logger.Error("Failed to upload poster (", media.OriginalURI, ") onto IPFS: ", err.Error())
 				} else {
 					rawContent = strings.ReplaceAll(rawContent, media.OriginalURI, media.IPFSUri)
 					feed.Media = append(feed.Media, media)
@@ -80,12 +80,13 @@ func Feeds(cccs *types.ConcurrencyChannels, work *commonTypes.WorkDispatched, ac
 
 				videoUrl := videoRegex.FindStringSubmatch(rawContent)[1]
 
-				// Upload to IPFS
+				// Upload to LivePeer, not IPFS
 				media := commonTypes.Media{
 					OriginalURI: videoUrl,
+					FileName:    feed.Title,
 				}
-				if media.FileName, media.IPFSUri, media.FileSize, media.ContentType, media.AdditionalProps, err = utils.UploadURLToIPFS(media.OriginalURI); err != nil {
-					global.Logger.Error("Failed to upload link (", media.OriginalURI, ") onto IPFS: ", err.Error())
+				if media.IPFSUri, media.AdditionalProps, err = utils.UploadURIToLivePeer(media.OriginalURI, media.FileName); err != nil {
+					global.Logger.Error("Failed to upload video (", media.OriginalURI, ") onto LivePeer: ", err.Error())
 				} else {
 					rawContent = strings.ReplaceAll(rawContent, media.OriginalURI, media.IPFSUri)
 					feed.Media = append(feed.Media, media)

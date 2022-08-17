@@ -34,6 +34,10 @@ func Config() error {
 	if config.Config.IPFSEndpoint, exist = os.LookupEnv("IPFS_ENDPOINT"); !exist {
 		config.Config.IPFSEndpoint = consts.CONFIG_DEFAULT_IPFS_ENDPOINT
 	}
+	if config.Config.IPFSEndpoint, exist = os.LookupEnv("LIVEPEER_API_KEY"); !exist {
+		return fmt.Errorf("please specify livepeer api key")
+	}
+
 	if config.Config.MQConnString, exist = os.LookupEnv("MQ_CONNECTION_STRING"); !exist {
 		config.Config.MQConnString = commonConsts.CONFIG_DEFAULT_MQ_CONNECTION_STRING
 	}
