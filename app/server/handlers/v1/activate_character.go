@@ -20,14 +20,22 @@ func ActivateCharacter(ctx *gin.Context) {
 		character.CrossbellCharacterID = reqCharacterID
 
 		// Save into database
-		global.DB.Create(&character)
+		if err := global.DB.Create(&character).Error; err != nil {
+			// Handle error
+			global.Logger.Errorf("Failed to save character into database with error: %s", err.Error())
+			ctx.JSON(http.StatusOK, gin.H{
+				"ok":      false,
+				"message": "Failed to activate character",
+			})
+		} else {
+			// Return
+			ctx.JSON(http.StatusOK, gin.H{
+				"ok":      true,
+				"message": "Character activated successfully",
+				"result":  character,
+			})
+		}
 
-		// Return
-		ctx.JSON(http.StatusOK, gin.H{
-			"ok":      true,
-			"message": "Character activated successfully",
-			"result":  character,
-		})
 	} else {
 		ctx.JSON(http.StatusOK, gin.H{
 			"ok":      true,
