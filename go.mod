@@ -10,7 +10,7 @@ require (
 	github.com/mmcdole/gofeed v1.1.3
 	github.com/nats-io/nats.go v1.16.0
 	github.com/rcrowley/go-metrics v0.0.0-20201227073835-cf1acfcdf475
-	go.uber.org/zap v1.22.0
+	go.uber.org/zap v1.23.0
 	gorm.io/driver/postgres v1.3.9
 	gorm.io/gorm v1.23.8
 )
