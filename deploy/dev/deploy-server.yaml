@@ -31,6 +31,9 @@ spec:
           envFrom:
             - secretRef:
                 name: operatorsync-server
+          env:
+            - name: MAIN_SERVER
+              value: 'true'
           ports:
             - containerPort: 8080
               protocol: TCP

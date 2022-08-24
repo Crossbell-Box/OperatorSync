@@ -1,11 +1,11 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: operatorsync-server
+  name: operatorsync-server-main
   namespace: crossbell
 spec:
   progressDeadlineSeconds: 600
-  replicas: 2
+  replicas: 1
   revisionHistoryLimit: 10
   selector:
     matchLabels:
@@ -30,7 +30,7 @@ spec:
           command: ["server"]
           env:
             - name: MAIN_SERVER
-              value: 'false'
+              value: 'true'
           envFrom:
             - secretRef:
                 name: operatorsync-server
