@@ -7,7 +7,7 @@ import (
 	"github.com/Crossbell-Box/OperatorSync/app/server/consts"
 	"github.com/Crossbell-Box/OperatorSync/app/server/global"
 	"github.com/Crossbell-Box/OperatorSync/app/server/jobs"
-	"github.com/Crossbell-Box/OperatorSync/app/server/types"
+	"github.com/Crossbell-Box/OperatorSync/app/server/models"
 	commonConsts "github.com/Crossbell-Box/OperatorSync/common/consts"
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
@@ -32,7 +32,7 @@ func UnbindAccount(ctx *gin.Context) {
 	global.Logger.Debugf("Account #%s (%s@%s) unbind request received.", reqCharacterID, reqUsername, reqPlatform)
 
 	// Check if accounts already exists
-	var account types.Account
+	var account models.Account
 	if err := global.DB.First(
 		&account,
 		"crossbell_character_id = ? AND platform = ? AND username = ?",

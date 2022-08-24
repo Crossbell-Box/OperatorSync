@@ -11,6 +11,7 @@ func ListEndpoints(ctx *gin.Context) {
 		"GET  /healthcheck": "Status and healthcheck",
 
 		"GET    /v1/:character":                                    "Check character status",
+		"POST   /v1/:character":                                    "Activate character",
 		"GET    /v1/:character/account":                            "List accounts of a specified character",
 		"POST   /v1/:character/account/bind/:platform/:username":   "Bind new platform account",
 		"DELETE /v1/:character/account/unbind/:platform/:username": "Unbind platform account",
