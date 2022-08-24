@@ -1,0 +1,45 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: rsshub-stateful
+  namespace: crossbell
+spec:
+  type: ClusterIP
+  selector:
+    app: rsshub-stateful
+  ports:
+    - name: http
+      protocol: TCP
+      port: 1200
+      targetPort: 1200
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: rsshub-stateless
+  namespace: crossbell
+spec:
+  type: ClusterIP
+  selector:
+    app: rsshub-stateless
+  ports:
+    - name: http
+      protocol: TCP
+      port: 1200
+      targetPort: 1200
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: opsync
+  namespace: crossbell
+spec:
+  type: ClusterIP
+  selector:
+    app: operatorsync
+    tier: server
+  ports:
+    - name: http
+      protocol: TCP
+      port: 8080
+      targetPort: 8080

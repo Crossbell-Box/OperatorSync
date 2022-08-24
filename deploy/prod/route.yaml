@@ -1,0 +1,37 @@
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRoute
+metadata:
+  name: opsync
+  namespace: crossbell
+spec:
+  entryPoints:
+  - web
+  routes:
+  - kind: Rule
+    match: Host(`opsync.crossbell.io`)
+    services:
+    - name: opsync
+      port: 8080
+#     middlewares:
+#       - name: cors-allow-all
+# ---
+# apiVersion: traefik.containo.us/v1alpha1
+# kind: Middleware
+# metadata:
+#   name: cors-allow-all
+#   namespace: crossbell
+# spec:
+#   headers:
+#     # https://doc.traefik.io/traefik/middlewares/http/headers/#accesscontrolallowcredentials
+#     accessControlAllowMethods:
+#       - "GET"
+#       - "POST"
+#       - "PUT"
+#       - "DELETE"
+#       - "OPTIONS"
+#     accessControlAllowOriginList:
+#       - "*"
+#     accessControlAllowHeaders:
+#       - "*"
+#     accessControlMaxAge: 100
+#     addVaryHeader: true
