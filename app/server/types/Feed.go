@@ -8,7 +8,7 @@ import (
 
 type Feed struct {
 	// Structure related
-	AccountID uint `gorm:"index"`
+	AccountID uint `json:"-" gorm:"index"`
 
 	// Feed Metadata
 	Platform    string    `json:"platform" gorm:"-"` // For table splitting
