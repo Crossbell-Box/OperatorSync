@@ -183,7 +183,7 @@ func feedCollectHandleSucceeded(m *nats.Msg) {
 		} else {
 			// Succeeded
 			// Clear cache
-			accountsCacheKey := fmt.Sprintf("%s:%s:%s", consts.CACHE_PREFIX, "accounts", account.CrossbellCharacterID)
+			accountsCacheKey := fmt.Sprintf("%s:%s:%s", consts.CACHE_PREFIX, "accounts:list", account.CrossbellCharacterID)
 			feedsCacheKey := fmt.Sprintf("%s:%s:%d", consts.CACHE_PREFIX, "feeds", account.ID)
 			mediasCacheKey := fmt.Sprintf("%s:%s:%s", consts.CACHE_PREFIX, "medias", account.CrossbellCharacterID)
 			clearCacheCtx := context.Background()
