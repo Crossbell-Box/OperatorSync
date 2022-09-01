@@ -50,8 +50,13 @@ func ForceSyncAccount(ctx *gin.Context) {
 			"message": "Failed to retrieve data from database.",
 		})
 	} else {
-		// Set next_update to now
-		account.NextUpdate = time.Now()
+		// Check if eligible to sync now
+		earliestNextUpdate := account.LastUpdated.Add(commonConsts.SUPPORTED_PLATFORM[reqPlatform].MinRefreshGap)
+		if earliestNextUpdate.Before(time.Now()) {
+			account.NextUpdate = time.Now()
+		} else {
+			account.NextUpdate = earliestNextUpdate
+		}
 
 		// Save account
 		global.DB.Save(&account)
