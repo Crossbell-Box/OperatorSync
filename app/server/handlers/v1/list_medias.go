@@ -95,12 +95,15 @@ func ListMedias(ctx *gin.Context) {
 	})
 
 	// Set cache
-	setCacheCtx := context.Background()
-	if mediasBytes, err := json.Marshal(&medias); err != nil {
-		// WTF?
-		global.Logger.Error("Failed to parse medias")
-	} else {
-		global.Redis.HSet(setCacheCtx, cacheBaseKey, cacheQueryKey, mediasBytes)
-	}
+	/*
+		setCacheCtx := context.Background()
+		if mediasBytes, err := json.Marshal(&medias); err != nil {
+			// WTF?
+			global.Logger.Error("Failed to parse medias")
+		} else {
+			global.Redis.HSet(setCacheCtx, cacheBaseKey, cacheQueryKey, mediasBytes)
+		}
+
+	*/
 
 }

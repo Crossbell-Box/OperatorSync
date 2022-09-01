@@ -54,15 +54,6 @@ func ListAccounts(ctx *gin.Context) {
 		Order("created_at").
 		Find(&accounts)
 
-	// Set cache
-	setCacheCtx := context.Background()
-	if accountsBytes, err := json.Marshal(&accounts); err != nil {
-		// WTF?
-		global.Logger.Error("Failed to parse accounts")
-	} else {
-		global.Redis.Set(setCacheCtx, cacheKey, accountsBytes, consts.ACCOUNT_LIST_CACHE_EXPIRE)
-	}
-
 	// Parse accounts update interval to seconds
 	for i, _ := range accounts {
 		accounts[i].UpdateInterval = accounts[i].UpdateInterval / 1_000_000_000
@@ -74,5 +65,17 @@ func ListAccounts(ctx *gin.Context) {
 		"message": "Records found",
 		"result":  accounts,
 	})
+
+	// Set cache
+	/*
+		setCacheCtx := context.Background()
+		if accountsBytes, err := json.Marshal(&accounts); err != nil {
+			// WTF?
+			global.Logger.Error("Failed to parse accounts")
+		} else {
+			global.Redis.Set(setCacheCtx, cacheKey, accountsBytes, consts.ACCOUNT_LIST_CACHE_EXPIRE)
+		}
+
+	*/
 
 }

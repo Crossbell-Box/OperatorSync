@@ -121,12 +121,15 @@ func ListSingleAccountFeeds(ctx *gin.Context) {
 	})
 
 	// Set cache
-	setCacheCtx := context.Background()
-	if feedsBytes, err := json.Marshal(&feeds); err != nil {
-		// WTF?
-		global.Logger.Error("Failed to parse feeds")
-	} else {
-		global.Redis.HSet(setCacheCtx, cacheBaseKey, cacheQueryKey, feedsBytes)
-	}
+	/*
+		setCacheCtx := context.Background()
+		if feedsBytes, err := json.Marshal(&feeds); err != nil {
+			// WTF?
+			global.Logger.Error("Failed to parse feeds")
+		} else {
+			global.Redis.HSet(setCacheCtx, cacheBaseKey, cacheQueryKey, feedsBytes)
+		}
+
+	*/
 
 }
