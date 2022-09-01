@@ -36,6 +36,12 @@ func ActivateCharacter(ctx *gin.Context) {
 			})
 		}
 
+	} else if err != nil {
+		global.Logger.Errorf("Failed to retrieve character info from database with error: %s", err.Error())
+		ctx.JSON(http.StatusOK, gin.H{
+			"ok":      false,
+			"message": "Failed to retrieve character info from database",
+		})
 	} else {
 		ctx.JSON(http.StatusOK, gin.H{
 			"ok":      true,
