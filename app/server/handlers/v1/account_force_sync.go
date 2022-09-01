@@ -21,6 +21,7 @@ func ForceSyncAccount(ctx *gin.Context) {
 		ctx.JSON(http.StatusOK, gin.H{
 			"ok":      false,
 			"message": "Platform not supported",
+			"result":  nil,
 		})
 		return
 	}
@@ -40,7 +41,7 @@ func ForceSyncAccount(ctx *gin.Context) {
 		ctx.JSON(http.StatusOK, gin.H{
 			"ok":      true,
 			"message": "Account not exist",
-			"result":  true,
+			"result":  nil,
 		})
 	} else if err != nil {
 		// Failed
@@ -48,6 +49,7 @@ func ForceSyncAccount(ctx *gin.Context) {
 		ctx.JSON(http.StatusOK, gin.H{
 			"ok":      false,
 			"message": "Failed to retrieve data from database.",
+			"result":  nil,
 		})
 	} else {
 		// Check if eligible to sync now
@@ -61,11 +63,14 @@ func ForceSyncAccount(ctx *gin.Context) {
 		// Save account
 		global.DB.Save(&account)
 
+		// Parse accounts update interval to seconds
+		account.UpdateInterval = account.UpdateInterval / 1_000_000_000
+
 		// Response
 		ctx.JSON(http.StatusOK, gin.H{
 			"ok":      true,
 			"message": "Account pending to sync",
-			"result":  true,
+			"result":  account,
 		})
 	}
 }
