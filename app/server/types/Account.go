@@ -11,9 +11,9 @@ type Account struct {
 	Username string `json:"username" gorm:"index"`
 
 	// Update related fields
-	LastUpdated    time.Time     `json:"-"`              // Only update when new data found
-	UpdateInterval time.Duration `json:"-"`              // UpdateInterval = [min, (NextUpdate - LastUpdated), max]
-	NextUpdate     time.Time     `json:"-" gorm:"index"` // NextUpdate += UpdateInterval
+	LastUpdated    time.Time     `json:"last_updated"`             // Only update when new data found
+	UpdateInterval time.Duration `json:"update_interval"`          // UpdateInterval = [min, (NextUpdate - LastUpdated), max]
+	NextUpdate     time.Time     `json:"next_update" gorm:"index"` // NextUpdate += UpdateInterval
 
 	FeedsCount uint                 `json:"feeds_count"` // Recorded feeds
 	NotesCount uint                 `json:"notes_count"` // On-Chain notes
