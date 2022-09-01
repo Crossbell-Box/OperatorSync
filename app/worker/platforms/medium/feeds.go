@@ -7,7 +7,6 @@ import (
 	"github.com/Crossbell-Box/OperatorSync/app/worker/types"
 	"github.com/Crossbell-Box/OperatorSync/app/worker/utils"
 	commonTypes "github.com/Crossbell-Box/OperatorSync/common/types"
-	"math"
 	"regexp"
 	"strings"
 	"time"
@@ -42,7 +41,7 @@ func Feeds(cccs *types.ConcurrencyChannels, work *commonTypes.WorkDispatched, ac
 	}
 
 	var feeds []commonTypes.RawFeed
-	var minimalInterval time.Duration = math.MaxInt64
+	var minimalInterval time.Duration = time.Now().Sub(work.DropBefore)
 
 	for index, item := range rawFeed.Items {
 		if item.PublishedParsed.After(work.DropBefore) && item.PublishedParsed.Before(work.DropAfter) {
