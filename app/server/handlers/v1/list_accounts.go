@@ -63,6 +63,11 @@ func ListAccounts(ctx *gin.Context) {
 		global.Redis.Set(setCacheCtx, cacheKey, accountsBytes, consts.ACCOUNT_LIST_CACHE_EXPIRE)
 	}
 
+	// Parse accounts update interval to seconds
+	for i, _ := range accounts {
+		accounts[i].UpdateInterval = accounts[i].UpdateInterval / 1_000_000_000
+	}
+
 	// Respond
 	ctx.JSON(http.StatusOK, gin.H{
 		"ok":      true,
