@@ -41,8 +41,10 @@ func Feeds(cccs *types.ConcurrencyChannels, work *commonTypes.WorkDispatched, ac
 		return
 	}
 
+	maxFeedIndex := len(rawFeed.Items) - 1
+
 	var feeds []commonTypes.RawFeed
-	var minimalInterval time.Duration = time.Now().Sub(work.DropBefore)
+	var minimalInterval time.Duration = work.DropAfter.Sub(work.DropBefore)
 
 	for index, item := range rawFeed.Items {
 		if item.PublishedParsed.After(work.DropBefore) && item.PublishedParsed.Before(work.DropAfter) {
@@ -98,14 +100,17 @@ func Feeds(cccs *types.ConcurrencyChannels, work *commonTypes.WorkDispatched, ac
 			feeds = append(feeds, feed)
 
 			// Calc interval
-			if index > 0 {
-				interv := item.PublishedParsed.Sub(*rawFeed.Items[index-1].PublishedParsed)
-				if interv < 0 {
-					interv = -interv
-				}
-				if interv < minimalInterval {
-					minimalInterval = interv
-				}
+			var interv time.Duration
+			if index < maxFeedIndex {
+				interv = item.PublishedParsed.Sub(*rawFeed.Items[index+1].PublishedParsed)
+			} else {
+				interv = item.PublishedParsed.Sub(work.DropBefore)
+			}
+			if interv < 0 {
+				interv = -interv
+			}
+			if interv < minimalInterval {
+				minimalInterval = interv
 			}
 		}
 	}

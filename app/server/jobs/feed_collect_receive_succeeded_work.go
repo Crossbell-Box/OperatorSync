@@ -14,6 +14,7 @@ import (
 	"github.com/nats-io/nats.go"
 	"gorm.io/gorm"
 	"sort"
+	"time"
 )
 
 func FeedCollectStartReceiveSucceededWork() error {
@@ -63,7 +64,13 @@ func feedCollectHandleSucceeded(m *nats.Msg) {
 		global.DB.First(&account, workSucceeded.AccountID)
 
 		// Update account
-		interv := workSucceeded.NewInterval
+		var interv time.Duration
+		if len(feeds) > 0 {
+			interv = workSucceeded.NewInterval
+		} else {
+			// workSucceeded.NewInterval == account.NextUpdate - account.LastUpdated
+			interv = workSucceeded.SucceededAt.Sub(account.LastUpdated) // So we can double the interval as nothing found since then
+		}
 		platform := commonConsts.SUPPORTED_PLATFORM[workSucceeded.Platform]
 		if interv < platform.MinRefreshGap {
 			interv = platform.MinRefreshGap
