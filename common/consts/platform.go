@@ -3,10 +3,11 @@ package consts
 import "time"
 
 type platform = struct {
-	Name          string
-	FeedLink      string
-	MinRefreshGap time.Duration
-	MaxRefreshGap time.Duration
+	Name               string
+	FeedLink           string
+	MinRefreshGap      time.Duration
+	MaxRefreshGap      time.Duration
+	IsMediaAttachments bool
 }
 
 // FeedLink replace rule:
@@ -16,15 +17,17 @@ type platform = struct {
 
 var SUPPORTED_PLATFORM = map[string]platform{
 	"medium": {
-		Name:          "Medium",
-		FeedLink:      "https://medium.com/feed/@{{username}}",
-		MinRefreshGap: 3 * time.Hour,
-		MaxRefreshGap: 7 * 24 * time.Hour,
+		Name:               "Medium",
+		FeedLink:           "https://medium.com/feed/@{{username}}",
+		MinRefreshGap:      3 * time.Hour,
+		MaxRefreshGap:      7 * 24 * time.Hour,
+		IsMediaAttachments: false,
 	},
 	"tiktok": {
-		Name:          "TikTok",
-		FeedLink:      "{{rsshub_stateless}}/tiktok/user/@{{username}}",
-		MinRefreshGap: 30 * time.Minute,
-		MaxRefreshGap: 24 * time.Hour,
+		Name:               "TikTok",
+		FeedLink:           "{{rsshub_stateless}}/tiktok/user/@{{username}}",
+		MinRefreshGap:      30 * time.Minute,
+		MaxRefreshGap:      24 * time.Hour,
+		IsMediaAttachments: true,
 	},
 }
