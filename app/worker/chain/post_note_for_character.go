@@ -31,7 +31,7 @@ func PostNoteForCharacter(characterIdStr string, metadataUri string) (string, er
 		},
 	)
 	if err != nil {
-		global.Logger.Errorf("Failed to create transaction")
+		global.Logger.Errorf("Failed to create transaction: %s", err.Error())
 		return "", err
 	}
 
