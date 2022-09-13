@@ -6,7 +6,7 @@ require (
 	github.com/ethereum/go-ethereum v1.10.23
 	github.com/gin-gonic/gin v1.8.1
 	github.com/go-redis/redis/v9 v9.0.0-beta.2
-	github.com/lib/pq v1.10.6
+	github.com/lib/pq v1.10.7
 	github.com/mmcdole/gofeed v1.1.3
 	github.com/nats-io/nats.go v1.16.0
 	github.com/rcrowley/go-metrics v0.0.0-20201227073835-cf1acfcdf475
