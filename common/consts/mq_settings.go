@@ -9,8 +9,8 @@ const (
 	MQSETTINGS_FailedChannelName     = "cos_failed"
 
 	MQSETTINGS_ValidateChannelName    = "validate"
-	MQSETTINGS_ValidateRequestTimeOut = 3 * time.Second
+	MQSETTINGS_ValidateRequestTimeOut = 10 * time.Second
 
 	MQSETTINGS_OnChainChannelName    = "onchain"
-	MQSETTINGS_OnChainRequestTimeOut = 10 * time.Second
+	MQSETTINGS_OnChainRequestTimeOut = 3 * time.Minute
 )
