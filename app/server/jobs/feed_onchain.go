@@ -27,7 +27,7 @@ func feedOnChainDispatchWork(account *models.Account, feeds []models.Feed) {
 			// `feed` is read-only and cannot change its value
 			feeds[index].IPFSUri = ipfsUri
 			feeds[index].Transaction = tx
-			account.FeedsCount++
+			account.NotesCount++
 		}
 
 	}
