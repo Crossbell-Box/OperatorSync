@@ -4,13 +4,14 @@ import "time"
 
 // `cos` means Crossbell Operator Sync
 const (
-	MQSETTINGS_PlatformChannelPrefix = "cos_platform_"
-	MQSETTINGS_SucceededChannelName  = "cos_succeeded"
-	MQSETTINGS_FailedChannelName     = "cos_failed"
+	MQSETTINGS_FeedCollectDispatchQueueName  = "cos_feed_collect"
+	MQSETTINGS_FeedCollectSucceededQueueName = "cos_feed_succeeded"
+	MQSETTINGS_FeedCollectFailedQueueName    = "cos_feed_failed"
+	MQSETTINGS_FeedCollectDispatchTimeOut    = 5 * time.Second
 
-	MQSETTINGS_ValidateChannelName    = "validate"
+	MQSETTINGS_ValidateRPCQueueName   = "cos_validate"
 	MQSETTINGS_ValidateRequestTimeOut = 10 * time.Second
 
-	MQSETTINGS_OnChainChannelName    = "onchain"
+	MQSETTINGS_OnChainRPCQueueName   = "cos_onchain"
 	MQSETTINGS_OnChainRequestTimeOut = 3 * time.Minute
 )

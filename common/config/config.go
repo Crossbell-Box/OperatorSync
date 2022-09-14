@@ -1,6 +1,6 @@
 package config
 
 type Config struct {
-	MQConnString    string // NATS MQ
+	MQConnString    string // RabbitMQ
 	DevelopmentMode bool
 }

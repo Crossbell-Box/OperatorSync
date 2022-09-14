@@ -10,35 +10,45 @@ import (
 	"github.com/Crossbell-Box/OperatorSync/app/worker/utils"
 	commonConsts "github.com/Crossbell-Box/OperatorSync/common/consts"
 	commonTypes "github.com/Crossbell-Box/OperatorSync/common/types"
-	"github.com/nats-io/nats.go"
+	amqp "github.com/rabbitmq/amqp091-go"
 	"strings"
 )
 
-func ValidateAccounts(m *nats.Msg) {
-	global.Logger.Debug("New validate request received: ", string(m.Data))
+func ValidateAccounts(ch *amqp.Channel, d *amqp.Delivery) {
+	global.Logger.Debug("New validate request received: ", string(d.Body))
 
 	var validateReq commonTypes.ValidateRequest
 
-	if err := json.Unmarshal(m.Data, &validateReq); err != nil {
+	if err := json.Unmarshal(d.Body, &validateReq); err != nil {
 		global.Logger.Error("Failed to parse validate request.", err.Error())
-		callback.ValidateHandleFailed(m.Reply, commonConsts.ERROR_CODE_FAILED_TO_PARSE_JSON, "Failed to parse validate request")
+		callback.ValidateHandleFailed(ch, d, commonConsts.ERROR_CODE_FAILED_TO_PARSE_JSON, "Failed to parse validate request")
 		return
 	}
 
 	handle, err := utils.GetCrossbellHandleFromID(validateReq.CrossbellCharacterID)
 	if err != nil {
-		callback.ValidateHandleFailed(m.Reply, commonConsts.ERROR_CODE_HTTP_REQUEST_FAILED, err.Error())
+		callback.ValidateHandleFailed(ch, d, commonConsts.ERROR_CODE_HTTP_REQUEST_FAILED, err.Error())
 	}
 
 	validateString := strings.ToLower(fmt.Sprintf("Crossbell@%s", handle))
 
+	var (
+		isSucceeded bool
+		code        uint
+		msg         string
+		isValid     bool
+	)
+
 	switch validateReq.Platform {
 	case "medium":
-		medium.Account(m.Reply, validateReq.Username, validateString)
+		isSucceeded, code, msg, isValid = medium.Account(validateReq.Username, validateString)
 	case "tiktok":
-		tiktok.Account(m.Reply, validateReq.Username, validateString)
+		isSucceeded, code, msg, isValid = tiktok.Account(validateReq.Username, validateString)
 	default:
-		callback.ValidateHandleFailed(m.Reply, commonConsts.ERROR_CODE_UNSUPPORTED_PLATFORM, "Unsupported platform")
+		callback.ValidateHandleFailed(ch, d, commonConsts.ERROR_CODE_UNSUPPORTED_PLATFORM, "Unsupported platform")
+		return
 	}
+
+	callback.ValidateHandleResponse(ch, d, isSucceeded, code, msg, isValid)
 
 }

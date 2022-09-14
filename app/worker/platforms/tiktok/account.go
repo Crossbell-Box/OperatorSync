@@ -3,13 +3,12 @@ package tiktok
 import (
 	"github.com/Crossbell-Box/OperatorSync/app/worker/config"
 	"github.com/Crossbell-Box/OperatorSync/app/worker/global"
-	"github.com/Crossbell-Box/OperatorSync/app/worker/jobs/callback"
 	"github.com/Crossbell-Box/OperatorSync/app/worker/utils"
 	commonConsts "github.com/Crossbell-Box/OperatorSync/common/consts"
 	"strings"
 )
 
-func Account(mqReply string, username string, validateString string) {
+func Account(username string, validateString string) (bool, uint, string, bool) {
 
 	global.Logger.Debug("Validate string: ", validateString)
 
@@ -34,14 +33,14 @@ func Account(mqReply string, username string, validateString string) {
 		true,
 	); err != nil {
 		global.Logger.Error("Failed to collect tiktok feeds of user ", username, " for account validate with error: ", err.Error())
-		callback.ValidateHandleFailed(mqReply, errCode, err.Error())
+		return false, errCode, err.Error(), false
 	} else {
 		if strings.Contains(strings.ToLower(rawFeed.Description), validateString) {
 			global.Logger.Debug("Account verify succeeded")
-			callback.ValidateHandleSucceeded(mqReply, true)
+			return true, 0, "", true
 		} else {
 			global.Logger.Debug("No validate string found: ", rawFeed.Description)
-			callback.ValidateHandleSucceeded(mqReply, false)
+			return true, 0, "", false
 		}
 	}
 

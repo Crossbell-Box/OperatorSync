@@ -10,31 +10,70 @@ import (
 	"github.com/Crossbell-Box/OperatorSync/app/server/models"
 	"github.com/Crossbell-Box/OperatorSync/app/server/types"
 	commonConsts "github.com/Crossbell-Box/OperatorSync/common/consts"
+	commonGlobal "github.com/Crossbell-Box/OperatorSync/common/global"
 	commonTypes "github.com/Crossbell-Box/OperatorSync/common/types"
-	"github.com/nats-io/nats.go"
+	amqp "github.com/rabbitmq/amqp091-go"
 	"gorm.io/gorm"
 	"sort"
 	"time"
 )
 
 func FeedCollectStartReceiveSucceededWork() error {
-	_, err := global.MQ.Subscribe(commonConsts.MQSETTINGS_SucceededChannelName, feedCollectHandleSucceeded)
+
+	// Prepare channel
+
+	ch, err := commonGlobal.MQ.Channel()
+	if err != nil {
+		global.Logger.Error("Failed to open MQ Feeds Collect succeeded channel with error: ", err.Error())
+		return err
+	}
+
+	// Prepare queue
+
+	q, err := ch.QueueDeclare(
+		commonConsts.MQSETTINGS_FeedCollectSucceededQueueName,
+		false,
+		false,
+		false,
+		false,
+		nil,
+	)
+	if err != nil {
+		global.Logger.Error("Failed to prepare MQ Feeds Collect succeeded queue with error: ", err.Error())
+		return err
+	}
+
+	deliveries, err := ch.Consume(
+		q.Name,
+		"",
+		true,
+		false,
+		false,
+		false,
+		nil,
+	)
 	if err != nil {
 		global.Logger.Error("Failed to subscribe to MQ Feeds Collect succeeded queue with error: ", err.Error())
 		return err
 	}
 
-	//defer sub.Drain() // Ignore errors
+	global.Logger.Debug("Feed Collect start listen on succeeded works...")
+
+	go func() {
+		for d := range deliveries {
+			feedCollectHandleSucceeded(&d)
+		}
+	}()
 
 	return nil
 }
 
-func feedCollectHandleSucceeded(m *nats.Msg) {
-	global.Logger.Debug("New succeeded Collect work received: ", string(m.Data))
+func feedCollectHandleSucceeded(d *amqp.Delivery) {
+	global.Logger.Debug("New succeeded Collect work received: ", string(d.Body))
 
 	var workSucceeded commonTypes.WorkSucceeded
-	if err := json.Unmarshal(m.Data, &workSucceeded); err != nil {
-		global.Logger.Error("Unable to parse succeeded work: ", string(m.Data))
+	if err := json.Unmarshal(d.Body, &workSucceeded); err != nil {
+		global.Logger.Error("Unable to parse succeeded work: ", string(d.Body))
 	} else {
 		// Parse successfully
 		// Parse feeds

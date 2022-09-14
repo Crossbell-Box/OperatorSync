@@ -1,8 +1,10 @@
 package main
 
 import (
+	"github.com/Crossbell-Box/OperatorSync/app/server/config"
 	"github.com/Crossbell-Box/OperatorSync/app/server/global"
 	"github.com/Crossbell-Box/OperatorSync/app/server/inits"
+	commonInits "github.com/Crossbell-Box/OperatorSync/common/inits"
 	"log"
 )
 
@@ -33,7 +35,7 @@ func main() {
 	}
 
 	// Initialize MQ
-	if err := inits.MQ(); err != nil {
+	if err := commonInits.MQ(config.Config.MQConnString); err != nil {
 		global.Logger.Fatal("Failed to load MQ: ", err.Error())
 	}
 

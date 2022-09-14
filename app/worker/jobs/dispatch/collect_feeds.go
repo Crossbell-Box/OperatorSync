@@ -10,47 +10,60 @@ import (
 	"github.com/Crossbell-Box/OperatorSync/app/worker/types"
 	commonConsts "github.com/Crossbell-Box/OperatorSync/common/consts"
 	commonTypes "github.com/Crossbell-Box/OperatorSync/common/types"
-	"github.com/nats-io/nats.go"
+	amqp "github.com/rabbitmq/amqp091-go"
 	"strings"
 	"time"
 )
 
-func ProcessFeeds(platformID string, cccs *types.ConcurrencyChannels) func(m *nats.Msg) {
-	return func(m *nats.Msg) {
+func ProcessFeeds(cccs *types.ConcurrencyChannels, ch *amqp.Channel, qSucceededName string, qFailedName string, d *amqp.Delivery) {
 
-		global.Logger.Debug("New work received: ", string(m.Data))
+	global.Logger.Debug("New work received: ", string(d.Body))
 
-		acceptTime := time.Now()
+	acceptTime := time.Now()
 
-		var workDispatched commonTypes.WorkDispatched
+	var workDispatched commonTypes.WorkDispatched
 
-		if err := json.Unmarshal(m.Data, &workDispatched); err != nil {
-			global.Logger.Error("Failed to parse dispatched work data.", err.Error())
-			// Even unable to report to failed works cause work cannot be parsed
-			return
-		}
+	if err := json.Unmarshal(d.Body, &workDispatched); err != nil {
+		global.Logger.Error("Failed to parse dispatched work data.", err.Error())
+		// Even unable to report to failed works cause work cannot be parsed
+		return
+	}
 
-		collectLink := commonConsts.SUPPORTED_PLATFORM[platformID].FeedLink
+	collectLink := commonConsts.SUPPORTED_PLATFORM[workDispatched.Platform].FeedLink
 
-		collectLink =
+	collectLink =
+		strings.ReplaceAll(
 			strings.ReplaceAll(
-				strings.ReplaceAll(
-					collectLink,
-					"{{rsshub_stateful}}",
-					config.Config.RSSHubEndpointStateful,
-				),
-				"{{rsshub_stateless}}",
-				config.Config.RSSHubEndpointStateless,
-			)
+				collectLink,
+				"{{rsshub_stateful}}",
+				config.Config.RSSHubEndpointStateful,
+			),
+			"{{rsshub_stateless}}",
+			config.Config.RSSHubEndpointStateless,
+		)
 
-		switch platformID {
-		case "medium":
-			medium.Feeds(cccs, &workDispatched, acceptTime, collectLink)
-		case "tiktok":
-			tiktok.Feeds(cccs, &workDispatched, acceptTime, collectLink)
-		default:
-			// Unable to handle
-			callback.FeedsHandleFailed(&workDispatched, acceptTime, commonConsts.ERROR_CODE_UNSUPPORTED_PLATFORM, "Unsupported platform")
-		}
+	var (
+		isSucceeded bool
+		feeds       []commonTypes.RawFeed
+		newInterval time.Duration
+		errCode     uint
+		errMsg      string
+	)
+
+	switch workDispatched.Platform {
+	case "medium":
+		isSucceeded, feeds, newInterval, errCode, errMsg = medium.Feeds(cccs, &workDispatched, collectLink)
+	case "tiktok":
+		isSucceeded, feeds, newInterval, errCode, errMsg = tiktok.Feeds(cccs, &workDispatched, collectLink)
+	default:
+		// Unable to handle
+		callback.FeedsHandleFailed(ch, qFailedName, &workDispatched, acceptTime, commonConsts.ERROR_CODE_UNSUPPORTED_PLATFORM, "Unsupported platform")
+		return
+	}
+
+	if isSucceeded {
+		callback.FeedsHandleSucceeded(ch, qSucceededName, &workDispatched, acceptTime, feeds, newInterval)
+	} else {
+		callback.FeedsHandleFailed(ch, qFailedName, &workDispatched, acceptTime, errCode, errMsg)
 	}
 }

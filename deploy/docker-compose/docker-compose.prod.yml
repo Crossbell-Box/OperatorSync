@@ -19,8 +19,7 @@ services:
       - redis_storage:/data
   # Both related
   mq:
-    image: nats:alpine
-    command: "-js"
+    image: rabbitmq
     restart: unless-stopped
     env_file: ../env/mq.env
     networks:
