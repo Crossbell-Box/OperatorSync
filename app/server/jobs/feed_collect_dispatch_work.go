@@ -99,7 +99,7 @@ func dispatchAllFeedCollectWorks(ch *amqp.Channel, queueName string) {
 }
 
 func DispatchSingleFeedCollectWork(ch *amqp.Channel, work *commonTypes.WorkDispatched, queueName string) error {
-	ctx, cancel := context.WithTimeout(context.Background(), commonConsts.MQSETTINGS_FeedCollectDispatchTimeOut)
+	ctx, cancel := context.WithTimeout(context.Background(), commonConsts.MQSETTINGS_PublishTimeOut)
 	defer cancel()
 
 	if workBytes, err := json.Marshal(&work); err != nil {

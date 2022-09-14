@@ -32,7 +32,7 @@ func ValidateHandleResponse(ch *amqp.Channel, d *amqp.Delivery, isSucceeded bool
 	if responseBytes, err := json.Marshal(&response); err != nil {
 		global.Logger.Errorf("Failed to marshall validate respond %v with error: %s", response, err.Error())
 	} else {
-		ctx, cancel := context.WithTimeout(context.Background(), commonConsts.MQSETTINGS_ValidateRequestTimeOut)
+		ctx, cancel := context.WithTimeout(context.Background(), commonConsts.MQSETTINGS_PublishTimeOut)
 		defer cancel()
 
 		err = ch.PublishWithContext(

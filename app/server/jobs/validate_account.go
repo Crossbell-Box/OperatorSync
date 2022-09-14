@@ -10,6 +10,7 @@ import (
 	commonTypes "github.com/Crossbell-Box/OperatorSync/common/types"
 	"github.com/google/uuid"
 	amqp "github.com/rabbitmq/amqp091-go"
+	"time"
 )
 
 var (
@@ -80,7 +81,7 @@ func ValidateAccount(crossbellCharacterID string, platform string, username stri
 	corrId := uuid.NewString()
 
 	// Prepare ctx
-	ctx, cancel := context.WithTimeout(context.Background(), commonConsts.MQSETTINGS_ValidateRequestTimeOut)
+	ctx, cancel := context.WithTimeout(context.Background(), commonConsts.MQSETTINGS_PublishTimeOut)
 	defer cancel()
 
 	// Request validate
@@ -104,7 +105,14 @@ func ValidateAccount(crossbellCharacterID string, platform string, username stri
 
 	// Receive validate response
 	global.Logger.Debug("Waiting validate response from MQ...")
-	for d := range deliveries {
+	timeout := time.After(commonConsts.MQSETTINGS_ValidateRequestTimeOut)
+	select {
+	case <-timeout:
+		// Timeout
+		global.Logger.Errorf("Validate request timeout...")
+		return false, fmt.Errorf("validate request timeout")
+
+	case d := <-deliveries:
 		if corrId == d.CorrelationId {
 			validateResponseBytes = d.Body
 			break

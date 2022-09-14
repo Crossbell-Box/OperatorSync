@@ -29,7 +29,7 @@ func FeedsHandleSucceeded(ch *amqp.Channel, qSucceededName string, workDispatche
 	if succeededWorkBytes, err := json.Marshal(&succeededWork); err != nil {
 		global.Logger.Error("Failed to marshall succeeded work: ", succeededWork)
 	} else {
-		ctx, cancel := context.WithTimeout(context.Background(), commonConsts.MQSETTINGS_FeedCollectDispatchTimeOut)
+		ctx, cancel := context.WithTimeout(context.Background(), commonConsts.MQSETTINGS_PublishTimeOut)
 		defer cancel()
 
 		err = ch.PublishWithContext(
@@ -65,7 +65,7 @@ func FeedsHandleFailed(ch *amqp.Channel, qFailedName string, workDispatched *com
 	if failedWorkBytes, err := json.Marshal(&failedWork); err != nil {
 		global.Logger.Error("Failed to marshall failed work: ", failedWork)
 	} else {
-		ctx, cancel := context.WithTimeout(context.Background(), commonConsts.MQSETTINGS_FeedCollectDispatchTimeOut)
+		ctx, cancel := context.WithTimeout(context.Background(), commonConsts.MQSETTINGS_PublishTimeOut)
 		defer cancel()
 
 		err = ch.PublishWithContext(

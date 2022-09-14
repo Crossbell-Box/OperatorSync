@@ -13,6 +13,7 @@ import (
 	commonTypes "github.com/Crossbell-Box/OperatorSync/common/types"
 	"github.com/google/uuid"
 	amqp "github.com/rabbitmq/amqp091-go"
+	"time"
 )
 
 func feedOnChainDispatchWork(account *models.Account, feeds []models.Feed) {
@@ -118,7 +119,7 @@ func OneFeedOnChain(account *models.Account, feed *models.Feed) (string, string,
 	corrId := uuid.NewString()
 
 	// Prepare ctx
-	ctx, cancel := context.WithTimeout(context.Background(), commonConsts.MQSETTINGS_OnChainRequestTimeOut)
+	ctx, cancel := context.WithTimeout(context.Background(), commonConsts.MQSETTINGS_PublishTimeOut)
 	defer cancel()
 
 	// Request validate
@@ -143,12 +144,22 @@ func OneFeedOnChain(account *models.Account, feed *models.Feed) (string, string,
 
 	// Receive validate response
 	global.Logger.Debug("Waiting onchain response from MQ...")
-	for d := range deliveries {
+
+	// Set timeout
+	timeout := time.After(commonConsts.MQSETTINGS_OnChainRequestTimeOut)
+	select {
+	case <-timeout:
+		// Timeout
+		global.Logger.Errorf("OnChain request timeout...")
+		return "", "", fmt.Errorf("onchain request timeout")
+
+	case d := <-deliveries:
 		if corrId == d.CorrelationId {
 			onChainResponseBytes = d.Body
 			break
 		}
 	}
+
 	// Process response
 	global.Logger.Debug("Successfully received onchain response")
 	var workRespond commonTypes.OnChainRespond
