@@ -27,6 +27,7 @@ func feedOnChainDispatchWork(account *models.Account, feeds []models.Feed) {
 			// `feed` is read-only and cannot change its value
 			feeds[index].IPFSUri = ipfsUri
 			feeds[index].Transaction = tx
+			account.FeedsCount++
 		}
 
 	}
@@ -39,6 +40,9 @@ func feedOnChainDispatchWork(account *models.Account, feeds []models.Feed) {
 	})).Save(&feeds).Error; err != nil {
 		global.Logger.Error("Failed to save updated feeds", feeds)
 	}
+
+	// Update account
+	global.DB.Save(account)
 }
 
 func OneFeedOnChain(account *models.Account, feed *models.Feed) (string, string, error) {
