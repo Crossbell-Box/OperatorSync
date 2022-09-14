@@ -32,7 +32,7 @@ func BindAccount(ctx *gin.Context) {
 	}
 
 	// User selectable start time
-	nowTimeStr := time.Now().Format(time.RFC3339)
+	nowTimeStr := time.Unix(0, 0).Format(time.RFC3339)
 	startFromStr := ctx.DefaultQuery("from", nowTimeStr)
 	startFromTime, err := time.Parse(time.RFC3339, startFromStr)
 	if err != nil {
