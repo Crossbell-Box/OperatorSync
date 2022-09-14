@@ -105,6 +105,8 @@ func ValidateAccount(crossbellCharacterID string, platform string, username stri
 
 	// Receive validate response
 	global.Logger.Debug("Waiting validate response from MQ...")
+
+	// Set timeout
 	timeout := time.After(commonConsts.MQSETTINGS_ValidateRequestTimeOut)
 	select {
 	case <-timeout:
