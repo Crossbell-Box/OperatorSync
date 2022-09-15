@@ -19,15 +19,15 @@ var SUPPORTED_PLATFORM = map[string]platform{
 	"medium": {
 		Name:               "Medium",
 		FeedLink:           "https://medium.com/feed/@{{username}}",
-		MinRefreshGap:      3 * time.Hour,
-		MaxRefreshGap:      7 * 24 * time.Hour,
+		MinRefreshGap:      10 * time.Minute,
+		MaxRefreshGap:      3 * time.Hour,
 		IsMediaAttachments: false,
 	},
 	"tiktok": {
 		Name:               "TikTok",
 		FeedLink:           "{{rsshub_stateless}}/tiktok/user/@{{username}}",
-		MinRefreshGap:      30 * time.Minute,
-		MaxRefreshGap:      24 * time.Hour,
+		MinRefreshGap:      10 * time.Minute,
+		MaxRefreshGap:      3 * time.Hour,
 		IsMediaAttachments: true,
 	},
 }
