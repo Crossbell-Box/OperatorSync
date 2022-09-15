@@ -40,8 +40,11 @@ func FeedsHandleSucceeded(ch *amqp.Channel, qSucceededName string, workDispatche
 			false,
 			amqp.Publishing{
 				DeliveryMode: amqp.Persistent,
-				ContentType:  "text/json",
-				Body:         succeededWorkBytes,
+				ContentType:  "application/json",
+				Headers: amqp.Table{
+					commonConsts.MQSETTINGS_FeedCollectIdentifierField: commonConsts.MQSETTINGS_FeedCollectSucceededIdentifier,
+				},
+				Body: succeededWorkBytes,
 			},
 		)
 		if err != nil {
@@ -76,8 +79,11 @@ func FeedsHandleFailed(ch *amqp.Channel, qFailedName string, workDispatched *com
 			false,
 			amqp.Publishing{
 				DeliveryMode: amqp.Persistent,
-				ContentType:  "text/json",
-				Body:         failedWorkBytes,
+				ContentType:  "application/json",
+				Headers: amqp.Table{
+					commonConsts.MQSETTINGS_FeedCollectIdentifierField: commonConsts.MQSETTINGS_FeedCollectFailedIdentifier,
+				},
+				Body: failedWorkBytes,
 			},
 		)
 		if err != nil {

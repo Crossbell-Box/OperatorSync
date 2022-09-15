@@ -8,10 +8,7 @@ import (
 func Jobs() error {
 
 	// Start listening to FeedCollect works response
-	if err := jobs.FeedCollectStartReceiveSucceededWork(); err != nil {
-		return err
-	}
-	if err := jobs.FeedCollectStartReceiveFailedWork(); err != nil {
+	if err := jobs.FeedCollectStartRetrieveWork(); err != nil {
 		return err
 	}
 

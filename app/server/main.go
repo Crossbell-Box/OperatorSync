@@ -39,6 +39,11 @@ func main() {
 		global.Logger.Fatal("Failed to load MQ: ", err.Error())
 	}
 
+	// Initialize RPC Client
+	if err := inits.RPC(); err != nil {
+		global.Logger.Fatal("Failed to connect to worker RPC: ", err.Error())
+	}
+
 	// Initialize metrics
 	if err := inits.Metrics(); err != nil {
 		global.Logger.Fatal("Failed to load metrics: ", err.Error())

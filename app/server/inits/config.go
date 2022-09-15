@@ -23,6 +23,12 @@ func Config() error {
 	if config.Config.MQConnString, exist = os.LookupEnv("MQ_CONNECTION_STRING"); !exist {
 		config.Config.MQConnString = commonConsts.CONFIG_DEFAULT_MQ_CONNECTION_STRING
 	}
+	if config.Config.WorkerRPCEndpoint, exist = os.LookupEnv("WORKER_RPC_ENDPOINT"); !exist {
+		config.Config.WorkerRPCEndpoint = consts.CONFIG_DEFAULT_WORKER_RPC_ENDPOINT
+	}
+	if config.Config.WorkerRPCPort, exist = os.LookupEnv("WORKER_RPC_PORT"); !exist {
+		config.Config.WorkerRPCPort = commonConsts.CONFIG_DEFAULT_WORKER_RPC_PORT
+	}
 	config.Config.IsMainServer = strings.Contains(strings.ToLower(os.Getenv("MAIN_SERVER")), "t")
 
 	config.Config.DevelopmentMode = !strings.Contains(strings.ToLower(os.Getenv("MODE")), "prod")

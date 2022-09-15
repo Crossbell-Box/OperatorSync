@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"github.com/Crossbell-Box/OperatorSync/app/worker/config"
 	"github.com/Crossbell-Box/OperatorSync/app/worker/global"
-	"github.com/Crossbell-Box/OperatorSync/app/worker/jobs/callback"
+	"github.com/Crossbell-Box/OperatorSync/app/worker/mq/jobs/callback"
 	"github.com/Crossbell-Box/OperatorSync/app/worker/platforms/medium"
 	"github.com/Crossbell-Box/OperatorSync/app/worker/platforms/tiktok"
 	"github.com/Crossbell-Box/OperatorSync/app/worker/types"
@@ -15,7 +15,7 @@ import (
 	"time"
 )
 
-func ProcessFeeds(cccs *types.ConcurrencyChannels, ch *amqp.Channel, qSucceededName string, qFailedName string, d *amqp.Delivery) {
+func ProcessFeeds(cccs *types.ConcurrencyChannels, ch *amqp.Channel, qRetrieveName string, d *amqp.Delivery) {
 
 	global.Logger.Debug("New work received: ", string(d.Body))
 
@@ -57,13 +57,13 @@ func ProcessFeeds(cccs *types.ConcurrencyChannels, ch *amqp.Channel, qSucceededN
 		isSucceeded, feeds, newInterval, errCode, errMsg = tiktok.Feeds(cccs, &workDispatched, collectLink)
 	default:
 		// Unable to handle
-		callback.FeedsHandleFailed(ch, qFailedName, &workDispatched, acceptTime, commonConsts.ERROR_CODE_UNSUPPORTED_PLATFORM, "Unsupported platform")
+		callback.FeedsHandleFailed(ch, qRetrieveName, &workDispatched, acceptTime, commonConsts.ERROR_CODE_UNSUPPORTED_PLATFORM, "Unsupported platform")
 		return
 	}
 
 	if isSucceeded {
-		callback.FeedsHandleSucceeded(ch, qSucceededName, &workDispatched, acceptTime, feeds, newInterval)
+		callback.FeedsHandleSucceeded(ch, qRetrieveName, &workDispatched, acceptTime, feeds, newInterval)
 	} else {
-		callback.FeedsHandleFailed(ch, qFailedName, &workDispatched, acceptTime, errCode, errMsg)
+		callback.FeedsHandleFailed(ch, qRetrieveName, &workDispatched, acceptTime, errCode, errMsg)
 	}
 }

@@ -113,7 +113,7 @@ func DispatchSingleFeedCollectWork(ch *amqp.Channel, work *commonTypes.WorkDispa
 		false,
 		amqp.Publishing{
 			DeliveryMode: amqp.Persistent,
-			ContentType:  "text/json",
+			ContentType:  "application/json",
 			Body:         workBytes,
 		},
 	); err != nil {

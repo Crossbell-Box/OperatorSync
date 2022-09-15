@@ -18,20 +18,20 @@ import (
 	"time"
 )
 
-func FeedCollectStartReceiveSucceededWork() error {
+func FeedCollectStartRetrieveWork() error {
 
 	// Prepare channel
 
 	ch, err := commonGlobal.MQ.Channel()
 	if err != nil {
-		global.Logger.Error("Failed to open MQ Feeds Collect succeeded channel with error: ", err.Error())
+		global.Logger.Error("Failed to open MQ Feeds Collect retrieve channel with error: ", err.Error())
 		return err
 	}
 
 	// Prepare queue
 
 	q, err := ch.QueueDeclare(
-		commonConsts.MQSETTINGS_FeedCollectSucceededQueueName,
+		commonConsts.MQSETTINGS_FeedCollectRetrieveQueueName,
 		false,
 		false,
 		false,
@@ -39,7 +39,7 @@ func FeedCollectStartReceiveSucceededWork() error {
 		nil,
 	)
 	if err != nil {
-		global.Logger.Error("Failed to prepare MQ Feeds Collect succeeded queue with error: ", err.Error())
+		global.Logger.Error("Failed to prepare MQ Feeds Collect retrieve queue with error: ", err.Error())
 		return err
 	}
 
@@ -53,15 +53,22 @@ func FeedCollectStartReceiveSucceededWork() error {
 		nil,
 	)
 	if err != nil {
-		global.Logger.Error("Failed to subscribe to MQ Feeds Collect succeeded queue with error: ", err.Error())
+		global.Logger.Error("Failed to subscribe to MQ Feeds Collect retrieve queue with error: ", err.Error())
 		return err
 	}
 
-	global.Logger.Debug("Feed Collect start listen on succeeded works...")
+	global.Logger.Debug("Feed Collect start listen on retrieve works...")
 
 	go func() {
 		for d := range deliveries {
-			feedCollectHandleSucceeded(&d)
+			switch d.Headers[commonConsts.MQSETTINGS_FeedCollectIdentifierField] {
+			case commonConsts.MQSETTINGS_FeedCollectSucceededIdentifier:
+				feedCollectHandleSucceeded(&d)
+			case commonConsts.MQSETTINGS_FeedCollectFailedIdentifier:
+				feedCollectHandleFailed(&d)
+			default:
+				global.Logger.Errorf("Undefined message received: %v", d)
+			}
 		}
 	}()
 
@@ -245,5 +252,17 @@ func feedCollectHandleSucceeded(d *amqp.Delivery) {
 			// Update metrics
 			global.Metrics.Work.Succeeded.Inc(1)
 		}
+	}
+}
+
+func feedCollectHandleFailed(d *amqp.Delivery) {
+	global.Logger.Warn("New failed Collect work received: ", string(d.Body))
+
+	var workFailed commonTypes.WorkFailed
+	if err := json.Unmarshal(d.Body, &workFailed); err != nil {
+		global.Logger.Error("Unable to parse failed work: ", string(d.Body))
+	} else {
+		global.Logger.Warn("Work failed for: ", workFailed)
+		global.Metrics.Work.Failed.Inc(1)
 	}
 }

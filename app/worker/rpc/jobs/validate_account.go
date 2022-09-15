@@ -1,33 +1,22 @@
-package dispatch
+package jobs
 
 import (
-	"encoding/json"
 	"fmt"
 	"github.com/Crossbell-Box/OperatorSync/app/worker/global"
-	"github.com/Crossbell-Box/OperatorSync/app/worker/jobs/callback"
 	"github.com/Crossbell-Box/OperatorSync/app/worker/platforms/medium"
 	"github.com/Crossbell-Box/OperatorSync/app/worker/platforms/tiktok"
 	"github.com/Crossbell-Box/OperatorSync/app/worker/utils"
 	commonConsts "github.com/Crossbell-Box/OperatorSync/common/consts"
 	commonTypes "github.com/Crossbell-Box/OperatorSync/common/types"
-	amqp "github.com/rabbitmq/amqp091-go"
 	"strings"
 )
 
-func ValidateAccounts(ch *amqp.Channel, d *amqp.Delivery) {
-	global.Logger.Debug("New validate request received: ", string(d.Body))
-
-	var validateReq commonTypes.ValidateRequest
-
-	if err := json.Unmarshal(d.Body, &validateReq); err != nil {
-		global.Logger.Error("Failed to parse validate request.", err.Error())
-		callback.ValidateHandleFailed(ch, d, commonConsts.ERROR_CODE_FAILED_TO_PARSE_JSON, "Failed to parse validate request")
-		return
-	}
+func ValidateAccounts(validateReq *commonTypes.ValidateRequest) *commonTypes.ValidateResponse {
+	global.Logger.Debug("New validate request received: ", validateReq)
 
 	handle, err := utils.GetCrossbellHandleFromID(validateReq.CrossbellCharacterID)
 	if err != nil {
-		callback.ValidateHandleFailed(ch, d, commonConsts.ERROR_CODE_HTTP_REQUEST_FAILED, err.Error())
+		return ValidateHandleFailed(commonConsts.ERROR_CODE_HTTP_REQUEST_FAILED, err.Error())
 	}
 
 	validateString := strings.ToLower(fmt.Sprintf("Crossbell@%s", handle))
@@ -45,10 +34,28 @@ func ValidateAccounts(ch *amqp.Channel, d *amqp.Delivery) {
 	case "tiktok":
 		isSucceeded, code, msg, isValid = tiktok.Account(validateReq.Username, validateString)
 	default:
-		callback.ValidateHandleFailed(ch, d, commonConsts.ERROR_CODE_UNSUPPORTED_PLATFORM, "Unsupported platform")
-		return
+		return ValidateHandleFailed(commonConsts.ERROR_CODE_UNSUPPORTED_PLATFORM, "Unsupported platform")
 	}
 
-	callback.ValidateHandleResponse(ch, d, isSucceeded, code, msg, isValid)
+	return ValidateHandleResponse(isSucceeded, code, msg, isValid)
 
+}
+
+func ValidateHandleFailed(errCode uint, errMsg string) *commonTypes.ValidateResponse {
+	return ValidateHandleResponse(
+		false,
+		errCode,
+		errMsg,
+		false,
+	)
+
+}
+
+func ValidateHandleResponse(isSucceeded bool, code uint, msg string, isValid bool) *commonTypes.ValidateResponse {
+	return &commonTypes.ValidateResponse{
+		IsSucceeded:            isSucceeded,
+		Code:                   code,
+		Message:                msg,
+		IsValidateStringExists: isValid,
+	}
 }

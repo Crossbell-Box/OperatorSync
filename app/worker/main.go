@@ -29,6 +29,11 @@ func main() {
 		global.Logger.Fatal("Failed to load MQ: ", err.Error())
 	}
 
+	// Initialize RPC
+	if err := inits.RPC(); err != nil {
+		global.Logger.Fatal("Failed to start RPC server: ", err.Error())
+	}
+
 	// Initialize jobs
 	if err := inits.Jobs(); err != nil {
 		global.Logger.Fatal("Failed to start jobs: ", err.Error())
