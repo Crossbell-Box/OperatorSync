@@ -34,6 +34,8 @@ func main() {
 		global.Logger.Fatal("Failed to start RPC server: ", err.Error())
 	}
 
+	global.Logger.Debug("RPC server initialized, ready to accept connections.")
+
 	// Initialize jobs
 	if err := inits.Jobs(); err != nil {
 		global.Logger.Fatal("Failed to start jobs: ", err.Error())

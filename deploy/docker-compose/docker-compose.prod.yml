@@ -45,8 +45,6 @@ services:
     image: rss3/crossbell-operator-sync:server
     restart: unless-stopped
     env_file: ../env/server.env
-    depends_on:
-      - worker # Need worker rpc to start connection
     networks:
       - server_network
       - external_network

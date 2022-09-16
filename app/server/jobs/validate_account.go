@@ -19,12 +19,15 @@ func ValidateAccount(crossbellCharacterID string, platform string, username stri
 	var validateResponse commonTypes.ValidateResponse
 
 	// Start request
-	call := global.RPC.Go(
-		fmt.Sprintf("%s.%s", commonConsts.RPCSETTINGS_BaseServiceName, commonConsts.RPCSETTINGS_ValidateServiceName),
-		validateRequest,
-		&validateResponse,
-		nil,
-	)
+	errChan := make(chan error, 1)
+
+	go func() {
+		errChan <- global.RPC.Call(
+			fmt.Sprintf("%s.%s", commonConsts.RPCSETTINGS_BaseServiceName, commonConsts.RPCSETTINGS_ValidateServiceName),
+			validateRequest,
+			&validateResponse,
+		)
+	}()
 
 	// Set timeout
 	select {
@@ -33,8 +36,8 @@ func ValidateAccount(crossbellCharacterID string, platform string, username stri
 		global.Logger.Errorf("Validate request timeout...")
 		return false, fmt.Errorf("validate request timeout")
 
-	case <-call.Done:
-		if err := call.Error; err != nil {
+	case err := <-errChan:
+		if err != nil {
 			global.Logger.Errorf("Failed to receive validate response with error: %s", err.Error())
 			return false, err
 		}

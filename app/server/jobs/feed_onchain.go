@@ -58,12 +58,15 @@ func OneFeedOnChain(account *models.Account, feed *models.Feed) (string, string,
 	var onChainResponse commonTypes.OnChainResponse
 
 	// Start request
-	call := global.RPC.Go(
-		fmt.Sprintf("%s.%s", commonConsts.RPCSETTINGS_BaseServiceName, commonConsts.RPCSETTINGS_OnChainServiceName),
-		onChainRequest,
-		&onChainResponse,
-		nil,
-	)
+	errChan := make(chan error, 1)
+
+	go func() {
+		errChan <- global.RPC.Call(
+			fmt.Sprintf("%s.%s", commonConsts.RPCSETTINGS_BaseServiceName, commonConsts.RPCSETTINGS_OnChainServiceName),
+			onChainRequest,
+			&onChainResponse,
+		)
+	}()
 
 	// Set timeout
 	select {
@@ -72,8 +75,8 @@ func OneFeedOnChain(account *models.Account, feed *models.Feed) (string, string,
 		global.Logger.Errorf("OnChain request timeout...")
 		return "", "", fmt.Errorf("onChain request timeout")
 
-	case <-call.Done:
-		if err := call.Error; err != nil {
+	case err := <-errChan:
+		if err != nil {
 			global.Logger.Errorf("Failed to receive on chain respond with error: %s", err.Error())
 			utils.AccountOnChainPause(account, fmt.Sprintf("Failed toreceive on chain respond with error: %s", err.Error()))
 			return "", "", err

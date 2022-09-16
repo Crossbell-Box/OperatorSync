@@ -1,5 +1,7 @@
 package global
 
-import "net/rpc"
+import (
+	"github.com/Crossbell-Box/OperatorSync/app/server/types"
+)
 
-var RPC *rpc.Client
+var RPC *types.Pool
