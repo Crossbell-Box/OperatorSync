@@ -11,12 +11,12 @@ import (
 	"strings"
 )
 
-func ValidateAccounts(validateReq *commonTypes.ValidateRequest) *commonTypes.ValidateResponse {
+func ValidateAccounts(validateReq *commonTypes.ValidateRequest, response *commonTypes.ValidateResponse) {
 	global.Logger.Debug("New validate request received: ", validateReq)
 
 	handle, err := utils.GetCrossbellHandleFromID(validateReq.CrossbellCharacterID)
 	if err != nil {
-		return ValidateHandleFailed(commonConsts.ERROR_CODE_HTTP_REQUEST_FAILED, err.Error())
+		ValidateHandleFailed(commonConsts.ERROR_CODE_HTTP_REQUEST_FAILED, err.Error(), response)
 	}
 
 	validateString := strings.ToLower(fmt.Sprintf("Crossbell@%s", handle))
@@ -34,25 +34,26 @@ func ValidateAccounts(validateReq *commonTypes.ValidateRequest) *commonTypes.Val
 	case "tiktok":
 		isSucceeded, code, msg, isValid = tiktok.Account(validateReq.Username, validateString)
 	default:
-		return ValidateHandleFailed(commonConsts.ERROR_CODE_UNSUPPORTED_PLATFORM, "Unsupported platform")
+		ValidateHandleFailed(commonConsts.ERROR_CODE_UNSUPPORTED_PLATFORM, "Unsupported platform", response)
 	}
 
-	return ValidateHandleResponse(isSucceeded, code, msg, isValid)
+	ValidateHandleResponse(isSucceeded, code, msg, isValid, response)
 
 }
 
-func ValidateHandleFailed(errCode uint, errMsg string) *commonTypes.ValidateResponse {
-	return ValidateHandleResponse(
+func ValidateHandleFailed(errCode uint, errMsg string, response *commonTypes.ValidateResponse) {
+	ValidateHandleResponse(
 		false,
 		errCode,
 		errMsg,
 		false,
+		response,
 	)
 
 }
 
-func ValidateHandleResponse(isSucceeded bool, code uint, msg string, isValid bool) *commonTypes.ValidateResponse {
-	return &commonTypes.ValidateResponse{
+func ValidateHandleResponse(isSucceeded bool, code uint, msg string, isValid bool, response *commonTypes.ValidateResponse) {
+	*response = commonTypes.ValidateResponse{
 		IsSucceeded:            isSucceeded,
 		Code:                   code,
 		Message:                msg,

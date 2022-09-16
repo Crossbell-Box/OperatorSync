@@ -8,11 +8,11 @@ import (
 type WorkerRPC struct{}
 
 func (rpc *WorkerRPC) Validate(request commonTypes.ValidateRequest, response *commonTypes.ValidateResponse) error {
-	response = jobs.ValidateAccounts(&request)
+	jobs.ValidateAccounts(&request, response)
 	return nil
 }
 
 func (rpc *WorkerRPC) OnChain(request commonTypes.OnChainRequest, response *commonTypes.OnChainResponse) error {
-	response = jobs.OnChainNotes(&request)
+	jobs.OnChainNotes(&request, response)
 	return nil
 }
