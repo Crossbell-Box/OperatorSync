@@ -12,7 +12,7 @@ func (rpc *WorkerRPC) Validate(request commonTypes.ValidateRequest, response *co
 	return nil
 }
 
-func (rpc *WorkerRPC) OnChain(request commonTypes.OnChainRequest, response *commonTypes.OnChainRespond) error {
+func (rpc *WorkerRPC) OnChain(request commonTypes.OnChainRequest, response *commonTypes.OnChainResponse) error {
 	response = jobs.OnChainNotes(&request)
 	return nil
 }

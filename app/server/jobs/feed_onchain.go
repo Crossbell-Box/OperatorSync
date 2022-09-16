@@ -55,13 +55,13 @@ func OneFeedOnChain(account *models.Account, feed *models.Feed) (string, string,
 		RawFeed:              feed.RawFeed,
 	}
 
-	var onChainRespond commonTypes.OnChainRespond
+	var onChainResponse commonTypes.OnChainResponse
 
 	// Start request
 	call := global.RPC.Go(
 		fmt.Sprintf("%s.%s", commonConsts.RPCSETTINGS_BaseServiceName, commonConsts.RPCSETTINGS_OnChainServiceName),
 		onChainRequest,
-		&onChainRespond,
+		&onChainResponse,
 		nil,
 	)
 
@@ -81,12 +81,12 @@ func OneFeedOnChain(account *models.Account, feed *models.Feed) (string, string,
 	}
 
 	// Validate response
-	if !onChainRespond.IsSucceeded {
-		global.Logger.Errorf("Failed to finish OnChain work for feed %s#%d with error: %s", account.Platform, feed.ID, onChainRespond.Message)
+	if !onChainResponse.IsSucceeded {
+		global.Logger.Errorf("Failed to finish OnChain work for feed %s#%d with error: %s", account.Platform, feed.ID, onChainResponse.Message)
 		utils.AccountOnChainPause(account, fmt.Sprintf("Failed to finish OnChain work for feed %s#%d", account.Platform, feed.ID))
-		return onChainRespond.IPFSUri, onChainRespond.Transaction, fmt.Errorf(onChainRespond.Message)
+		return onChainResponse.IPFSUri, onChainResponse.Transaction, fmt.Errorf(onChainResponse.Message)
 	}
 
-	return onChainRespond.IPFSUri, onChainRespond.Transaction, nil
+	return onChainResponse.IPFSUri, onChainResponse.Transaction, nil
 
 }

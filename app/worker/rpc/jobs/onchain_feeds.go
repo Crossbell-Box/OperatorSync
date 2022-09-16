@@ -6,7 +6,7 @@ import (
 	commonTypes "github.com/Crossbell-Box/OperatorSync/common/types"
 )
 
-func OnChainNotes(workDispatched *commonTypes.OnChainRequest) *commonTypes.OnChainRespond {
+func OnChainNotes(workDispatched *commonTypes.OnChainRequest) *commonTypes.OnChainResponse {
 	global.Logger.Debug("New OnChain request received: ", workDispatched)
 
 	// Process request
@@ -19,7 +19,7 @@ func OnChainNotes(workDispatched *commonTypes.OnChainRequest) *commonTypes.OnCha
 	return OnChainHandleSucceed(workDispatched.Platform, workDispatched.FeedID, ipfsUri, tx)
 }
 
-func OnChainHandleSucceed(platform string, feedID uint, ipfsUri string, transaction string) *commonTypes.OnChainRespond {
+func OnChainHandleSucceed(platform string, feedID uint, ipfsUri string, transaction string) *commonTypes.OnChainResponse {
 	return OnChainHandleResponse(
 		true,
 		platform,
@@ -30,7 +30,7 @@ func OnChainHandleSucceed(platform string, feedID uint, ipfsUri string, transact
 	)
 }
 
-func OnChainHandleFailed(platform string, feedID uint, errMsg string) *commonTypes.OnChainRespond {
+func OnChainHandleFailed(platform string, feedID uint, errMsg string) *commonTypes.OnChainResponse {
 	return OnChainHandleResponse(
 		false,
 		platform,
@@ -41,8 +41,8 @@ func OnChainHandleFailed(platform string, feedID uint, errMsg string) *commonTyp
 	)
 }
 
-func OnChainHandleResponse(isSucceeded bool, platform string, feedID uint, ipfsUri string, transaction string, errMsg string) *commonTypes.OnChainRespond {
-	return &commonTypes.OnChainRespond{
+func OnChainHandleResponse(isSucceeded bool, platform string, feedID uint, ipfsUri string, transaction string, errMsg string) *commonTypes.OnChainResponse {
+	return &commonTypes.OnChainResponse{
 		IsSucceeded: isSucceeded,
 		Platform:    platform,
 		FeedID:      feedID,

@@ -8,7 +8,7 @@ type OnChainRequest struct {
 	RawFeed
 }
 
-type OnChainRespond struct {
+type OnChainResponse struct {
 	IsSucceeded bool   `json:"is_succeeded"`
 	Message     string `json:"message"`
 	Platform    string `json:"platform"`
