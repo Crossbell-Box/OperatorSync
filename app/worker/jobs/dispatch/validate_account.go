@@ -30,7 +30,7 @@ func ValidateAccounts(m *nats.Msg) {
 		callback.ValidateHandleFailed(m.Reply, commonConsts.ERROR_CODE_HTTP_REQUEST_FAILED, err.Error())
 	}
 
-	validateString := strings.ToLower(fmt.Sprintf("Crossbell@%s", handle))
+	validateString := strings.ToLower(fmt.Sprintf("%s@Crossbell", handle))
 
 	switch validateReq.Platform {
 	case "medium":
