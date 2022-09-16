@@ -112,10 +112,11 @@ func BindAccount(ctx *gin.Context) {
 			var possibleDeletedAccount models.Account
 			if isAccountInherit {
 				// Check if is abandoned
-				global.DB.Unscoped().First(
-					&possibleDeletedAccount,
+				global.DB.Unscoped().Where(
 					"platform = ? AND username = ?",
 					reqPlatform, reqUsername,
+				).Order("deleted_at DESC").First(
+					&possibleDeletedAccount,
 				)
 			}
 			if possibleDeletedAccount.ID > 0 {
