@@ -13,6 +13,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 	"net/http"
+	"strings"
 	"time"
 )
 
@@ -35,6 +36,7 @@ func BindAccount(ctx *gin.Context) {
 	nowTimeStr := time.Unix(0, 0).Format(time.RFC3339)
 	startFromStr := ctx.DefaultQuery("from", nowTimeStr)
 	startFromTime, err := time.Parse(time.RFC3339, startFromStr)
+	isAccountInherit := strings.Contains(strings.ToLower(ctx.DefaultQuery("inherit", "true")), "t")
 	if err != nil {
 		ctx.JSON(http.StatusOK, gin.H{
 			"ok":      false,
@@ -107,19 +109,37 @@ func BindAccount(ctx *gin.Context) {
 		} else if ok {
 			global.Logger.Debugf("Account #%s (%s@%s) added.", reqCharacterID, reqUsername, reqPlatform)
 			// Update database
-			account.Account = types.Account{
-				CrossbellCharacterID: reqCharacterID,
-				Platform:             reqPlatform,
-				Username:             reqUsername,
-				LastUpdated:          startFromTime,
-				UpdateInterval:       commonConsts.SUPPORTED_PLATFORM[reqPlatform].MinRefreshGap,
-				NextUpdate:           time.Now(),
-				FeedsCount:           0,
-				NotesCount:           0,
-				MediaUsage:           nil,
+			var possibleDeletedAccount models.Account
+			if isAccountInherit {
+				// Check if is abandoned
+				global.DB.Unscoped().First(
+					&possibleDeletedAccount,
+					"platform = ? AND username = ?",
+					reqPlatform, reqUsername,
+				)
 			}
-			account.OnChainStatusManageForAccount = types.OnChainStatusManageForAccount{
-				IsOnChainPaused: false,
+			if possibleDeletedAccount.ID > 0 {
+				// Inherit
+				account.Account = possibleDeletedAccount.Account
+				account.OnChainStatusManageForAccount = possibleDeletedAccount.OnChainStatusManageForAccount
+				// But new
+				account.Account.CrossbellCharacterID = reqCharacterID
+			} else {
+				// Create new
+				account.Account = types.Account{
+					CrossbellCharacterID: reqCharacterID,
+					Platform:             reqPlatform,
+					Username:             reqUsername,
+					LastUpdated:          startFromTime,
+					UpdateInterval:       commonConsts.SUPPORTED_PLATFORM[reqPlatform].MinRefreshGap,
+					NextUpdate:           time.Now(),
+					FeedsCount:           0,
+					NotesCount:           0,
+					MediaUsage:           nil,
+				}
+				account.OnChainStatusManageForAccount = types.OnChainStatusManageForAccount{
+					IsOnChainPaused: false,
+				}
 			}
 			global.DB.Create(&account)
 			// Clear cache
