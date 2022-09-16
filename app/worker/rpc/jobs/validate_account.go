@@ -19,7 +19,7 @@ func ValidateAccounts(validateReq *commonTypes.ValidateRequest, response *common
 		ValidateHandleFailed(commonConsts.ERROR_CODE_HTTP_REQUEST_FAILED, err.Error(), response)
 	}
 
-	validateString := strings.ToLower(fmt.Sprintf("Crossbell@%s", handle))
+	validateString := strings.ToLower(fmt.Sprintf("%s@Crossbell", handle))
 
 	var (
 		isSucceeded bool
