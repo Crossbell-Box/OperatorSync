@@ -5,7 +5,7 @@ metadata:
   namespace: crossbell
 spec:
   progressDeadlineSeconds: 600
-  replicas: 1
+  replicas: 2
   revisionHistoryLimit: 10
   selector:
     matchLabels:
@@ -28,12 +28,12 @@ spec:
           imagePullPolicy: Always
           name: operatorsync-server
           command: ["server"]
-          envFrom:
-            - secretRef:
-                name: operatorsync-server
           env:
             - name: MAIN_SERVER
               value: 'false'
+          envFrom:
+            - secretRef:
+                name: operatorsync-server
           ports:
             - containerPort: 8080
               protocol: TCP

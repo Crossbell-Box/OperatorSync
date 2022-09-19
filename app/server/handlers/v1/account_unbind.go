@@ -56,7 +56,7 @@ func UnbindAccount(ctx *gin.Context) {
 	} else {
 
 		if ok, err := jobs.ValidateAccount(reqCharacterID, reqPlatform, reqUsername); err != nil {
-			global.Logger.Errorf("Account (%s@%s) has already been occupied by #%s", reqUsername, reqPlatform, reqCharacterID)
+			global.Logger.Errorf("Account #%s (%s@%s) failed to finish validate request with error: %s", reqUsername, reqPlatform, reqCharacterID, err.Error())
 			ctx.JSON(http.StatusOK, gin.H{
 				"ok":      false,
 				"message": "Failed to finish account validate process.",

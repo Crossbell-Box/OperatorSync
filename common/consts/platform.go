@@ -26,8 +26,8 @@ var SUPPORTED_PLATFORM = map[string]platform{
 	"tiktok": {
 		Name:               "TikTok",
 		FeedLink:           "{{rsshub_stateless}}/tiktok/user/@{{username}}",
-		MinRefreshGap:      10 * time.Minute,
-		MaxRefreshGap:      3 * time.Hour,
+		MinRefreshGap:      30 * time.Minute,
+		MaxRefreshGap:      24 * time.Hour,
 		IsMediaAttachments: true,
 	},
 }

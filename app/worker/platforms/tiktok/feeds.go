@@ -2,7 +2,6 @@ package tiktok
 
 import (
 	"github.com/Crossbell-Box/OperatorSync/app/worker/global"
-	"github.com/Crossbell-Box/OperatorSync/app/worker/jobs/callback"
 	"github.com/Crossbell-Box/OperatorSync/app/worker/types"
 	"github.com/Crossbell-Box/OperatorSync/app/worker/utils"
 	commonTypes "github.com/Crossbell-Box/OperatorSync/common/types"
@@ -23,7 +22,9 @@ func init() {
 	videoRegex = regexp.MustCompile(`<source src="(.+?)"`)
 }
 
-func Feeds(cccs *types.ConcurrencyChannels, work *commonTypes.WorkDispatched, acceptTime time.Time, collectLink string) {
+func Feeds(cccs *types.ConcurrencyChannels, work *commonTypes.WorkDispatched, collectLink string) (
+	bool, []commonTypes.RawFeed, time.Duration, uint, string,
+) {
 	// Refer to https://rsshub.app/tiktok/user/@linustech
 
 	// Concurrency control
@@ -37,8 +38,7 @@ func Feeds(cccs *types.ConcurrencyChannels, work *commonTypes.WorkDispatched, ac
 		false,
 	)
 	if err != nil {
-		callback.FeedsHandleFailed(work, acceptTime, errCode, err.Error())
-		return
+		return false, nil, 0, errCode, err.Error()
 	}
 
 	maxFeedIndex := len(rawFeed.Items) - 1
@@ -115,6 +115,6 @@ func Feeds(cccs *types.ConcurrencyChannels, work *commonTypes.WorkDispatched, ac
 		}
 	}
 
-	callback.FeedsHandleSucceeded(work, acceptTime, feeds, minimalInterval)
+	return true, feeds, minimalInterval, 0, ""
 
 }

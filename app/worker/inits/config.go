@@ -41,6 +41,9 @@ func Config() error {
 	if config.Config.MQConnString, exist = os.LookupEnv("MQ_CONNECTION_STRING"); !exist {
 		config.Config.MQConnString = commonConsts.CONFIG_DEFAULT_MQ_CONNECTION_STRING
 	}
+	if config.Config.WorkerRPCPort, exist = os.LookupEnv("WORKER_RPC_PORT"); !exist {
+		config.Config.WorkerRPCPort = commonConsts.CONFIG_DEFAULT_WORKER_RPC_PORT
+	}
 
 	if concurrencyStatefulStr, exist := os.LookupEnv("CONCURRENCY_CONTROL_STATEFUL"); !exist {
 		config.Config.ConcurrencyStateful = consts.CONFIG_DEFAULT_CONCURRENCY_CONTROL_STATEFUL // Default

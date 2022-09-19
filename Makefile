@@ -14,13 +14,13 @@ build-docker:
 
 build/contract:
 	mkdir -p build/contract/
-	cd Crossbell-Contracts/
-	yarn
-	make install
-	make build
-	forge inspect Web3Entry abi > ../build/contract/Web3Entry.abi
-	forge inspect Web3Entry b > ../build/contract/Web3Entry.bin
-	cd ../
+	cd Crossbell-Contracts/ && \
+	yarn && \
+	make install && \
+	make build && \
+	forge inspect Web3Entry abi > ../build/contract/Web3Entry.abi && \
+	forge inspect Web3Entry b > ../build/contract/Web3Entry.bin && \
+	cd ../ && \
 	mkdir -p app/worker/chain/contract/
 	abigen --bin=build/contract/Web3Entry.bin --abi=build/contract/Web3Entry.abi --pkg=contract --out=app/worker/chain/contract/Web3Entry.go
 

@@ -1,42 +1,49 @@
 package jobs
 
 import (
-	"encoding/json"
 	"fmt"
 	"github.com/Crossbell-Box/OperatorSync/app/server/global"
 	commonConsts "github.com/Crossbell-Box/OperatorSync/common/consts"
 	commonTypes "github.com/Crossbell-Box/OperatorSync/common/types"
+	"time"
 )
 
 func ValidateAccount(crossbellCharacterID string, platform string, username string) (bool, error) {
-	// Convert crossbell character id to handle
 
-	var err error
-	var validateRequestBytes []byte
-
-	if validateRequestBytes, err = json.Marshal(&commonTypes.ValidateRequest{
+	validateRequest := commonTypes.ValidateRequest{
 		Platform:             platform,
 		Username:             username,
 		CrossbellCharacterID: crossbellCharacterID,
-	}); err != nil {
-		global.Logger.Error("Failed to parse validate request to bytes: ", err.Error())
-		return false, err
-	}
-
-	// Request validate
-
-	validateResponseMsg, err := global.MQ.Request(commonConsts.MQSETTINGS_ValidateChannelName, validateRequestBytes, commonConsts.MQSETTINGS_ValidateRequestTimeOut)
-	if err != nil {
-		global.Logger.Error("Failed to get validate response", err.Error())
-		return false, err
 	}
 
 	var validateResponse commonTypes.ValidateResponse
-	if err := json.Unmarshal(validateResponseMsg.Data, &validateResponse); err != nil {
-		global.Logger.Error("Failed to parse validate response", err.Error())
-		return false, err
+
+	// Start request
+	errChan := make(chan error, 1)
+
+	go func() {
+		errChan <- global.RPC.Call(
+			fmt.Sprintf("%s.%s", commonConsts.RPCSETTINGS_BaseServiceName, commonConsts.RPCSETTINGS_ValidateServiceName),
+			validateRequest,
+			&validateResponse,
+		)
+	}()
+
+	// Set timeout
+	select {
+	case <-time.After(commonConsts.RPCSETTINGS_ValidateRequestTimeOut):
+		// Timeout
+		global.Logger.Errorf("Validate request timeout...")
+		return false, fmt.Errorf("validate request timeout")
+
+	case err := <-errChan:
+		if err != nil {
+			global.Logger.Errorf("Failed to receive validate response with error: %s", err.Error())
+			return false, err
+		}
 	}
 
+	// Validate response
 	if !validateResponse.IsSucceeded {
 		// Something is wrong
 		global.Logger.Error("Validate work failed with code ", validateResponse.Code, " and message: ", validateResponse.Message)
