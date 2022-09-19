@@ -1,7 +1,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: operatorsync-server
+  name: operatorsync-server-main
   namespace: crossbell
 spec:
   progressDeadlineSeconds: 600
