@@ -3,6 +3,7 @@
 package types
 
 import (
+	"errors"
 	"github.com/Crossbell-Box/OperatorSync/app/server/consts"
 	"net"
 	"net/rpc"
@@ -30,12 +31,28 @@ func NewPool(addr string, dialNow bool) *Pool {
 }
 
 func (p *Pool) Call(serviceMethod string, args interface{}, reply interface{}) error {
-	client, err := p.get()
-	if err != nil {
-		return err
-	}
-	if err = client.Call(serviceMethod, args, reply); err != nil {
-		return err
+	var (
+		client *rpc.Client
+		err    error
+	)
+
+	for {
+		client, err = p.get()
+		if err != nil {
+			return err
+		}
+
+		if err = client.Call(serviceMethod, args, reply); errors.Is(err, rpc.ErrShutdown) {
+			// Close invalid client
+			client.Close()
+			// Continue
+		} else if err != nil {
+			// Other errors
+			return err
+			// Break
+		} else {
+			break
+		}
 	}
 
 	select {
