@@ -13,11 +13,10 @@ services:
     env_file: ../env/redis.env
   # Both related
   mq:
-    image: nats:alpine
-    command: "-js"
+    image: rabbitmq:management
     ports:
-      - 127.0.0.1:4222:4222
-      - 127.0.0.1:8222:8222
+      - 127.0.0.1:5672:5672
+      - 127.0.0.1:15672:15672
     env_file: ../env/mq.env
   # Worker related
   rsshub_stateful:

@@ -6,6 +6,8 @@ type serverConfig struct {
 	DBConnString    string // Postgres Database
 	RedisConnString string // Redis
 
+	WorkerRPCEndpoint string // Worker
+
 	IsMainServer bool // Works on cluster mode
 
 	commonConfig.Config

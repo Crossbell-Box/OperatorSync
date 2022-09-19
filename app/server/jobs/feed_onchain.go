@@ -1,7 +1,6 @@
 package jobs
 
 import (
-	"encoding/json"
 	"fmt"
 	"github.com/Crossbell-Box/OperatorSync/app/server/global"
 	"github.com/Crossbell-Box/OperatorSync/app/server/models"
@@ -9,6 +8,7 @@ import (
 	"github.com/Crossbell-Box/OperatorSync/app/server/utils"
 	commonConsts "github.com/Crossbell-Box/OperatorSync/common/consts"
 	commonTypes "github.com/Crossbell-Box/OperatorSync/common/types"
+	"time"
 )
 
 func feedOnChainDispatchWork(account *models.Account, feeds []models.Feed) {
@@ -46,43 +46,50 @@ func feedOnChainDispatchWork(account *models.Account, feeds []models.Feed) {
 }
 
 func OneFeedOnChain(account *models.Account, feed *models.Feed) (string, string, error) {
-	var err error
-	var onChainRequestBytes []byte
 
-	if onChainRequestBytes, err = json.Marshal(&commonTypes.OnChainRequest{
+	onChainRequest := commonTypes.OnChainRequest{
 		FeedID:               feed.ID,
 		CrossbellCharacterID: account.CrossbellCharacterID,
 		Platform:             account.Platform,
 		Username:             account.Username,
 		RawFeed:              feed.RawFeed,
-	}); err != nil {
-		global.Logger.Errorf("Failed to parse OnChain work for feed %s#%d with error: %s", account.Platform, feed.ID, err.Error())
-		utils.AccountOnChainPause(account, fmt.Sprintf("Failed to parse OnChain work for feed %s#%d", account.Platform, feed.ID))
-		return "", "", err
 	}
 
-	onchainResponseMsg, err := global.MQ.Request(commonConsts.MQSETTINGS_OnChainChannelName, onChainRequestBytes, commonConsts.MQSETTINGS_OnChainRequestTimeOut)
-	if err != nil {
-		global.Logger.Errorf("Failed to dispatch OnChain work for feed %s#%d with error: %s", account.Platform, feed.ID, err.Error())
-		utils.AccountOnChainPause(account, fmt.Sprintf("Failed to dispatch OnChain work for feed %s#%d", account.Platform, feed.ID))
-		return "", "", err
-	}
+	var onChainResponse commonTypes.OnChainResponse
 
-	// Parse response
-	var workRespond commonTypes.OnChainRespond
-	if err := json.Unmarshal(onchainResponseMsg.Data, &workRespond); err != nil {
-		global.Logger.Errorf("Failed to parse respond: %s", string(onchainResponseMsg.Data))
-		utils.AccountOnChainPause(account, fmt.Sprintf("Failed to parse respond: %s", string(onchainResponseMsg.Data)))
-		return "", "", err
+	// Start request
+	errChan := make(chan error, 1)
+
+	go func() {
+		errChan <- global.RPC.Call(
+			fmt.Sprintf("%s.%s", commonConsts.RPCSETTINGS_BaseServiceName, commonConsts.RPCSETTINGS_OnChainServiceName),
+			onChainRequest,
+			&onChainResponse,
+		)
+	}()
+
+	// Set timeout
+	select {
+	case <-time.After(commonConsts.RPCSETTINGS_OnChainRequestTimeOut):
+		// Timeout
+		global.Logger.Errorf("OnChain request timeout...")
+		return "", "", fmt.Errorf("onChain request timeout")
+
+	case err := <-errChan:
+		if err != nil {
+			global.Logger.Errorf("Failed to receive on chain respond with error: %s", err.Error())
+			utils.AccountOnChainPause(account, fmt.Sprintf("Failed toreceive on chain respond with error: %s", err.Error()))
+			return "", "", err
+		}
 	}
 
 	// Validate response
-	if !workRespond.IsSucceeded {
-		global.Logger.Errorf("Failed to finish OnChain work for feed %s#%d with error: %s", account.Platform, feed.ID, workRespond.Message)
+	if !onChainResponse.IsSucceeded {
+		global.Logger.Errorf("Failed to finish OnChain work for feed %s#%d with error: %s", account.Platform, feed.ID, onChainResponse.Message)
 		utils.AccountOnChainPause(account, fmt.Sprintf("Failed to finish OnChain work for feed %s#%d", account.Platform, feed.ID))
-		return workRespond.IPFSUri, workRespond.Transaction, fmt.Errorf(workRespond.Message)
+		return onChainResponse.IPFSUri, onChainResponse.Transaction, fmt.Errorf(onChainResponse.Message)
 	}
 
-	return workRespond.IPFSUri, workRespond.Transaction, nil
+	return onChainResponse.IPFSUri, onChainResponse.Transaction, nil
 
 }
