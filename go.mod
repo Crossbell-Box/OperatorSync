@@ -3,7 +3,7 @@ module github.com/Crossbell-Box/OperatorSync
 go 1.19
 
 require (
-	github.com/ethereum/go-ethereum v1.10.23
+	github.com/ethereum/go-ethereum v1.10.25
 	github.com/gin-gonic/gin v1.8.1
 	github.com/go-redis/redis/v9 v9.0.0-beta.2
 	github.com/lib/pq v1.10.7
