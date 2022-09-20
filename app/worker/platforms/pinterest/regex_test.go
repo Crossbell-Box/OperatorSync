@@ -7,7 +7,7 @@ import (
 
 func TestPinterestFeedRegex(t *testing.T) {
 
-	rawContent := `<a href="https://www.pinterest.com/pin/870742909180165305/"> <img src="https://i.pinimg.com/236x/03/07/6d/03076d3473fa18e15cd051fa22dc2dbf.jpg"></a> Nya Avatar 😘 `
+	rawContent := "<a href=\"https://www.pinterest.com/pin/870742909180165305/\">\n                  <img src=\"https://i.pinimg.com/236x/03/07/6d/03076d3473fa18e15cd051fa22dc2dbf.jpg\"></a>\n                  Nya Avatar 😘"
 
 	var originalSizeImgs []string
 	anchors := anchorRegex.FindAllString(rawContent, -1)
