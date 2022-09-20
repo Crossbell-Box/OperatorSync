@@ -11,13 +11,15 @@ import (
 )
 
 var (
-	imageRegex *regexp.Regexp
+	anchorRegex *regexp.Regexp
+	imageRegex  *regexp.Regexp
 )
 
 func init() {
 
 	// Image regex
-	imageRegex = regexp.MustCompile(`<img[^>]+\bsrc=["']([^"']+)["']`)
+	anchorRegex = regexp.MustCompile(`<a.+</a>`)
+	imageRegex = regexp.MustCompile(`<img[^>]+\bsrc=["']([^"']+)["'].*?/?>`)
 }
 
 func Feeds(cccs *types.ConcurrencyChannels, work *commonTypes.WorkDispatched, collectLink string) (
@@ -54,15 +56,17 @@ func Feeds(cccs *types.ConcurrencyChannels, work *commonTypes.WorkDispatched, co
 				PublishedAt: *item.PublishedParsed,
 			}
 
-			rawContent := item.Description
-
-			imgs := imageRegex.FindAllStringSubmatch(rawContent, -1)
-			// Reset size
 			var originalSizeImgs []string
-			for _, img := range imgs {
-				originalsUri := strings.Replace(img[1], "/236x/", "/originals/", 1)
-				originalSizeImgs = append(originalSizeImgs, originalsUri)
-				rawContent = strings.Replace(rawContent, img[1], originalsUri, 1)
+
+			rawContent := item.Description
+			anchors := anchorRegex.FindAllString(rawContent, -1)
+			for _, a := range anchors {
+				imgs := imageRegex.FindAllStringSubmatch(a, -1)
+				for _, img := range imgs {
+					originalsUri := strings.Replace(img[1], "/236x/", "/originals/", 1)
+					originalSizeImgs = append(originalSizeImgs, originalsUri)
+					rawContent = strings.Replace(rawContent, a, strings.Replace(img[0], img[1], originalsUri, 1), 1)
+				}
 			}
 
 			feed.Media = utils.UploadAllMedia(originalSizeImgs)
