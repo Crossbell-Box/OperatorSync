@@ -6,13 +6,13 @@ import (
 	"sync"
 )
 
-func UploadAllMedia(regResult [][]string) []types.Media {
+func UploadAllMedia(mediaUris []string) []types.Media {
 
 	// Collect all unique media URIs
 	mediaUriSet := make(map[string]struct{})
-	for _, rawMediaUriRegRes := range regResult {
-		if _, ok := mediaUriSet[rawMediaUriRegRes[1]]; !ok {
-			mediaUriSet[rawMediaUriRegRes[1]] = struct{}{}
+	for _, rawMediaUri := range mediaUris {
+		if _, ok := mediaUriSet[rawMediaUri]; !ok {
+			mediaUriSet[rawMediaUri] = struct{}{}
 		}
 	}
 

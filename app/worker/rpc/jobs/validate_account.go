@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/Crossbell-Box/OperatorSync/app/worker/global"
 	"github.com/Crossbell-Box/OperatorSync/app/worker/platforms/medium"
+	"github.com/Crossbell-Box/OperatorSync/app/worker/platforms/pinterest"
 	"github.com/Crossbell-Box/OperatorSync/app/worker/platforms/tiktok"
 	"github.com/Crossbell-Box/OperatorSync/app/worker/utils"
 	commonConsts "github.com/Crossbell-Box/OperatorSync/common/consts"
@@ -33,6 +34,8 @@ func ValidateAccounts(validateReq *commonTypes.ValidateRequest, response *common
 		isSucceeded, code, msg, isValid = medium.Account(validateReq.Username, validateString)
 	case "tiktok":
 		isSucceeded, code, msg, isValid = tiktok.Account(validateReq.Username, validateString)
+	case "pinterest":
+		isSucceeded, code, msg, isValid = pinterest.Account(validateReq.Username, validateString)
 	default:
 		ValidateHandleFailed(commonConsts.ERROR_CODE_UNSUPPORTED_PLATFORM, "Unsupported platform", response)
 	}

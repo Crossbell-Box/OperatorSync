@@ -12,7 +12,7 @@ func OnChainNotes(workDispatched *commonTypes.OnChainRequest, response *commonTy
 	// Process request
 	ipfsUri, tx, err := utils.FeedOnChain(workDispatched)
 	if err != nil {
-		global.Logger.Error("Unable to finish onChain request: ", workDispatched)
+		global.Logger.Error("Unable to finish OnChain request: ", workDispatched)
 		OnChainHandleFailed(workDispatched.Platform, workDispatched.FeedID, err.Error(), response)
 	}
 

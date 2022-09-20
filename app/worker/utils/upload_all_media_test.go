@@ -17,19 +17,12 @@ func TestUploadAllMedia(t *testing.T) {
 	global.Logger = logger.Sugar()
 
 	// Defile variables
-	mediaRegResults := [][]string{{
-		"",
+	mediaRegResults := []string{
 		"https://avatars.githubusercontent.com/u/20502130?s=64&amp;v=4",
-	}, {
-		"",
 		"https://avatars.githubusercontent.com/u/20502130?s=64&amp;v=4",
-	}, {
-		"",
 		"https://avatars.githubusercontent.com/u/20502130?s=64&amp;v=4",
-	}, {
-		"",
 		"https://avatars.githubusercontent.com/u/20502130?s=32&amp;v=4",
-	}}
+	}
 
 	// Run test
 	mediaUploadResults := UploadAllMedia(mediaRegResults)

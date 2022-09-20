@@ -2,16 +2,15 @@ package dispatch
 
 import (
 	"encoding/json"
-	"github.com/Crossbell-Box/OperatorSync/app/worker/config"
 	"github.com/Crossbell-Box/OperatorSync/app/worker/global"
 	"github.com/Crossbell-Box/OperatorSync/app/worker/mq/jobs/callback"
 	"github.com/Crossbell-Box/OperatorSync/app/worker/platforms/medium"
+	"github.com/Crossbell-Box/OperatorSync/app/worker/platforms/pinterest"
 	"github.com/Crossbell-Box/OperatorSync/app/worker/platforms/tiktok"
 	"github.com/Crossbell-Box/OperatorSync/app/worker/types"
 	commonConsts "github.com/Crossbell-Box/OperatorSync/common/consts"
 	commonTypes "github.com/Crossbell-Box/OperatorSync/common/types"
 	amqp "github.com/rabbitmq/amqp091-go"
-	"strings"
 	"time"
 )
 
@@ -31,17 +30,6 @@ func ProcessFeeds(cccs *types.ConcurrencyChannels, ch *amqp.Channel, qRetrieveNa
 
 	collectLink := commonConsts.SUPPORTED_PLATFORM[workDispatched.Platform].FeedLink
 
-	collectLink =
-		strings.ReplaceAll(
-			strings.ReplaceAll(
-				collectLink,
-				"{{rsshub_stateful}}",
-				config.Config.RSSHubEndpointStateful,
-			),
-			"{{rsshub_stateless}}",
-			config.Config.RSSHubEndpointStateless,
-		)
-
 	var (
 		isSucceeded bool
 		feeds       []commonTypes.RawFeed
@@ -55,6 +43,8 @@ func ProcessFeeds(cccs *types.ConcurrencyChannels, ch *amqp.Channel, qRetrieveNa
 		isSucceeded, feeds, newInterval, errCode, errMsg = medium.Feeds(cccs, &workDispatched, collectLink)
 	case "tiktok":
 		isSucceeded, feeds, newInterval, errCode, errMsg = tiktok.Feeds(cccs, &workDispatched, collectLink)
+	case "pinterest":
+		isSucceeded, feeds, newInterval, errCode, errMsg = pinterest.Feeds(cccs, &workDispatched, collectLink)
 	default:
 		// Unable to handle
 		callback.FeedsHandleFailed(ch, qRetrieveName, &workDispatched, acceptTime, commonConsts.ERROR_CODE_UNSUPPORTED_PLATFORM, "Unsupported platform")

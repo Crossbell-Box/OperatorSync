@@ -1,6 +1,7 @@
 package tiktok
 
 import (
+	"github.com/Crossbell-Box/OperatorSync/app/worker/config"
 	"github.com/Crossbell-Box/OperatorSync/app/worker/global"
 	"github.com/Crossbell-Box/OperatorSync/app/worker/types"
 	"github.com/Crossbell-Box/OperatorSync/app/worker/utils"
@@ -32,6 +33,13 @@ func Feeds(cccs *types.ConcurrencyChannels, work *commonTypes.WorkDispatched, co
 	defer cccs.Stateful.Done()
 
 	global.Logger.Debug("New feeds request for tiktok")
+
+	collectLink =
+		strings.ReplaceAll(
+			collectLink,
+			"{{rsshub_stateless}}",
+			config.Config.RSSHubEndpointStateless,
+		)
 
 	rawFeed, errCode, err := utils.RSSFeedRequest(
 		strings.ReplaceAll(collectLink, "{{username}}", work.Username),
