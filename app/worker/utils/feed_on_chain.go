@@ -26,7 +26,7 @@ func FeedOnChain(work *commonTypes.OnChainRequest) (string, string, error) {
 		Content: work.Content,
 		Tags:    work.Categories,
 		Sources: []string{
-			"OperatorSync",
+			"Sync",
 			platform.Name,
 		},
 		ContentWarning: work.ContentWarning,
