@@ -30,7 +30,7 @@ func FeedOnChain(work *commonTypes.OnChainRequest) (string, string, error) {
 			platform.Name,
 		},
 		ContentWarning: work.ContentWarning,
-		DatePublished:  work.PublishedAt.Format("2022-01-01T00:00:00Z"),
+		DatePublished:  work.PublishedAt.Format("2006-01-02T15:04:05Z"),
 	}
 
 	if ValidateUri(work.Link) {
