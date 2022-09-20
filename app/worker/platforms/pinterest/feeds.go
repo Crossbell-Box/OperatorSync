@@ -54,7 +54,7 @@ func Feeds(cccs *types.ConcurrencyChannels, work *commonTypes.WorkDispatched, co
 				PublishedAt: *item.PublishedParsed,
 			}
 
-			rawContent := item.Content
+			rawContent := item.Description
 
 			imgs := imageRegex.FindAllStringSubmatch(rawContent, -1)
 			// Reset size
