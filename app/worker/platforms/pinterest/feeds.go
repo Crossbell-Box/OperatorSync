@@ -60,7 +60,9 @@ func Feeds(cccs *types.ConcurrencyChannels, work *commonTypes.WorkDispatched, co
 			// Reset size
 			var originalSizeImgs []string
 			for _, img := range imgs {
-				originalSizeImgs = append(originalSizeImgs, strings.Replace(img[1], "/236x/", "/originals/", 1))
+				originalsUri := strings.Replace(img[1], "/236x/", "/originals/", 1)
+				originalSizeImgs = append(originalSizeImgs, originalsUri)
+				rawContent = strings.Replace(rawContent, img[1], originalsUri, 1)
 			}
 
 			feed.Media = utils.UploadAllMedia(originalSizeImgs)
