@@ -45,7 +45,7 @@ func tryToResumeAllPausedAccounts() {
 
 	var pausedAccounts []models.Account
 
-	global.DB.Find(&pausedAccounts, "is_onChain_paused = ?", true)
+	global.DB.Find(&pausedAccounts, "is_onchain_paused = ?", true)
 
 	for _, pa := range pausedAccounts {
 		if tryToResumeOnePausedAccount(&pa) {
