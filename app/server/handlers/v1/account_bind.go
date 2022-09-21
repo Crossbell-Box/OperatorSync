@@ -109,7 +109,9 @@ func BindAccount(ctx *gin.Context) {
 		} else if ok {
 			global.Logger.Debugf("Account #%s (%s@%s) added.", reqCharacterID, reqUsername, reqPlatform)
 			// Update database
-			var possibleDeletedAccount models.Account
+			possibleDeletedAccount := models.Account{
+				ID: 0,
+			}
 			if isAccountInherit {
 				// Check if is abandoned
 				global.DB.Unscoped().Where(
