@@ -107,7 +107,16 @@ func feedCollectHandleSucceeded(d *amqp.Delivery) {
 
 		// Find account
 		var account models.Account
-		global.DB.First(&account, workSucceeded.AccountID)
+		// Ensure account exists
+		if err := global.DB.First(&account, workSucceeded.AccountID).Error; errors.Is(err, gorm.ErrRecordNotFound) {
+			// Account is not valid anymore
+			global.Logger.Errorf("Failed to find matching account with id: %d", workSucceeded.AccountID)
+			return
+		} else if err != nil {
+			// Other errors (if any)
+			global.Logger.Errorf("Failed to find matching account with error: %v", err)
+			return
+		}
 
 		// Update account
 		var interv time.Duration
