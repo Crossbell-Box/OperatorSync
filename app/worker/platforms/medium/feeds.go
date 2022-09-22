@@ -6,6 +6,7 @@ import (
 	"github.com/Crossbell-Box/OperatorSync/app/worker/types"
 	"github.com/Crossbell-Box/OperatorSync/app/worker/utils"
 	commonTypes "github.com/Crossbell-Box/OperatorSync/common/types"
+	"net/url"
 	"regexp"
 	"strings"
 	"time"
@@ -19,6 +20,23 @@ func init() {
 
 	// Medium regex
 	imageRegex = regexp.MustCompile(`<img[^>]+\bsrc=["']([^"']+)["']`)
+}
+
+func removeTrackingQuery(rawUri string) string {
+	// Process link: remove tracking query
+
+	rawLinkUri, err := url.Parse(rawUri)
+	if err != nil {
+		return rawUri
+	}
+	// Only process when succeeded to parse URI
+	rawUriQuery := rawLinkUri.Query()
+	if rawUriQuery.Has("source") {
+		rawUriQuery.Del("source")
+		// Delete `source=rss-xxxxxxxxxxxx------x`
+	}
+	rawLinkUri.RawQuery = rawUriQuery.Encode()
+	return rawLinkUri.String()
 }
 
 func Feeds(cccs *types.ConcurrencyChannels, work *commonTypes.WorkDispatched, collectLink string) (
@@ -49,13 +67,14 @@ func Feeds(cccs *types.ConcurrencyChannels, work *commonTypes.WorkDispatched, co
 		if item.PublishedParsed.After(work.DropBefore) && item.PublishedParsed.Before(work.DropAfter) {
 			feed := commonTypes.RawFeed{
 				Title:       item.Title,
-				Link:        item.Link,
+				Link:        removeTrackingQuery(item.Link),
 				GUID:        item.GUID,
 				Categories:  item.Categories,
 				Authors:     utils.ParseAuthors(item.Authors),
 				PublishedAt: *item.PublishedParsed,
 			}
 
+			// Process content: remove tracking image
 			rawContent := item.Content
 
 			imgs := imageRegex.FindAllStringSubmatch(rawContent, -1)
@@ -82,7 +101,7 @@ func Feeds(cccs *types.ConcurrencyChannels, work *commonTypes.WorkDispatched, co
 
 			feeds = append(feeds, feed)
 
-			// Calc interval
+			// Calc new interval
 			var interv time.Duration
 			if index < maxFeedIndex {
 				interv = item.PublishedParsed.Sub(*rawFeed.Items[index+1].PublishedParsed)
