@@ -28,7 +28,7 @@ var SUPPORTED_PLATFORM = map[string]platform{
 		FeedLink:           "{{rsshub_stateless}}/tiktok/user/@{{username}}",
 		MinRefreshGap:      30 * time.Minute,
 		MaxRefreshGap:      1 * time.Hour,
-		IsMediaAttachments: false,
+		IsMediaAttachments: true,
 	},
 	"pinterest": {
 		Name:               "Pinterest",
