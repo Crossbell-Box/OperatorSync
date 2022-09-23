@@ -12,7 +12,7 @@ require (
 	github.com/rcrowley/go-metrics v0.0.0-20201227073835-cf1acfcdf475
 	go.uber.org/zap v1.23.0
 	gorm.io/driver/postgres v1.3.10
-	gorm.io/gorm v1.23.9
+	gorm.io/gorm v1.23.10
 )
 
 require (
