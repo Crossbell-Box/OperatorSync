@@ -115,6 +115,7 @@ func UploadURIToLivePeer(url string, name string) (string, uint, string, string,
 			global.Logger.Errorf("Failed to check video (%s) upload status with error: %s", uploadTask.Asset.ID, err.Error())
 			continue // Try again later
 		}
+		global.Logger.Debugf("Video upload (asset id: %s) task tatus: %s", uploadTask.Asset.ID, uploadTaskStatus.Status.Phase)
 
 		if uploadTaskStatus.Status.Phase == "ready" {
 			// Ready to publish
