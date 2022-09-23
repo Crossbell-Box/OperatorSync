@@ -15,30 +15,23 @@ type LivePeerUploadURLRequest struct {
 	Name string `json:"name"`
 }
 
+type LivePeerAssetUploadStatus struct {
+	Phase        string `json:"phase"` // "waiting" / "ready" / "failed"
+	UpdatedAt    uint   `json:"updatedAt"`
+	ErrorMessage string `json:"errorMessage"`
+}
+
 type LivePeerUploadURLResponse struct {
 	Asset struct {
-		ID         string `json:"id"`
-		PlaybackID string `json:"playbackId"`
-		UserID     string `json:"userId"`
-		CreatedAt  uint   `json:"createdAt"`
-		Status     string `json:"status"`
-		Name       string `json:"name"`
+		ID         string                    `json:"id"`
+		PlaybackID string                    `json:"playbackId"`
+		UserID     string                    `json:"userId"`
+		CreatedAt  uint                      `json:"createdAt"`
+		Status     LivePeerAssetUploadStatus `json:"status"`
+		Name       string                    `json:"name"`
 	} `json:"asset"`
 	Task struct {
-		ID            string `json:"id"`
-		CreatedAt     uint   `json:"createdAt"`
-		Type          string `json:"type"`
-		OutputAssetID string `json:"outputAssetId"`
-		UserID        string `json:"userId"`
-		Params        struct {
-			Import struct {
-				URL string `json:"url"`
-			} `json:"import"`
-		} `json:"params"`
-		Status struct {
-			Phase     string `json:"phase"`
-			UpdatedAt uint   `json:"updatedAt"`
-		} `json:"status"`
+		ID string `json:"id"`
 	} `json:"task"`
 }
 
@@ -48,25 +41,15 @@ type LivePeerAssetStatusResponse struct {
 		Hash      string `json:"hash"`
 		Algorithm string `json:"algorithm"`
 	} `json:"hash"`
-	Name      string `json:"name"`
-	Size      uint   `json:"size"`
-	Status    string `json:"status"` // "ready"
-	UserID    string `json:"userId"`
-	CreatedAt uint   `json:"createdAt"`
-	UpdatedAt uint   `json:"updatedAt"`
+	Name      string                    `json:"name"`
+	Size      uint                      `json:"size"`
+	Status    LivePeerAssetUploadStatus `json:"status"`
+	UserID    string                    `json:"userId"`
+	CreatedAt uint                      `json:"createdAt"`
+	//UpdatedAt uint   `json:"updatedAt"`
 	VideoSpec struct {
-		Format string `json:"format"`
-		Tracks []struct {
-			Type        string  `json:"type"` // "video" / "audio“
-			Codec       string  `json:"codec"`
-			Bitrate     uint    `json:"bitrate"`
-			Duration    float32 `json:"duration"`
-			FPS         float32 `json:"fps,omitempty"`         // Video only
-			Width       uint    `json:"width,omitempty"`       // Video only
-			Height      uint    `json:"height,omitempty"`      // Video only
-			PixelFormat string  `json:"pixelFormat,omitempty"` // Video only
-			Channels    uint    `json:"channels,omitempty"`    // Audio only
-		} `json:"tracks"`
+		Format   string  `json:"format"`
+		Duration float32 `json:"duration"`
 	} `json:"videoSpec"`
 	PlaybackID  string `json:"playbackId"`
 	PlaybackUrl string `json:"playbackUrl"`
@@ -85,6 +68,8 @@ type VideoAdditionalProps struct {
 
 func UploadURIToLivePeer(url string, name string) (string, uint, string, string, error) {
 	// Docs https://docs.livepeer.studio/guides/on-demand#upload-with-url
+
+	global.Logger.Debugf("Uploading file %s to LivePeer with url %s", name, url)
 
 	reqBody := LivePeerUploadURLRequest{
 		URL:  url,
@@ -108,13 +93,13 @@ func UploadURIToLivePeer(url string, name string) (string, uint, string, string,
 		global.Logger.Errorf("Failed to do http request with error: %s", err.Error())
 		return "", 0, "", "", err
 	}
-	var uploadWork LivePeerUploadURLResponse
-	if err := json.NewDecoder(res.Body).Decode(&uploadWork); err != nil {
+	var uploadTask LivePeerUploadURLResponse
+	if err := json.NewDecoder(res.Body).Decode(&uploadTask); err != nil {
 		global.Logger.Errorf("Failed to parse http response result with error: %s", err.Error())
 		return "", 0, "", "", err
 	}
 
-	var uploadStatus *LivePeerAssetStatusResponse
+	var uploadTaskStatus *LivePeerAssetStatusResponse
 
 	// Wait till asset upload succeed
 	// TODO: Use a check query to optimise
@@ -122,31 +107,26 @@ func UploadURIToLivePeer(url string, name string) (string, uint, string, string,
 	for {
 		// Let's sleep for 30 seconds
 		time.Sleep(30 * time.Second)
-		uploadStatus, err = CheckUploadStatus(uploadWork.Asset.ID)
+		uploadTaskStatus, err = CheckUploadStatus(uploadTask.Asset.ID)
 		if err != nil {
 			// Failed to get data
-			global.Logger.Errorf("Failed to check video (%s) upload status with error: %s", uploadWork.Asset.ID, err.Error())
+			global.Logger.Errorf("Failed to check video (%s) upload status with error: %s", uploadTask.Asset.ID, err.Error())
 			continue // Try again later
 		}
 
-		if uploadStatus.Status == "ready" {
+		if uploadTaskStatus.Status.Phase == "ready" {
 			// Ready to publish
 			break
+		} else if uploadTaskStatus.Status.Phase == "failed" {
+			// Upload failed, need to report back
+			global.Logger.Errorf("Failed to upload video %s %v to LivePeer with error: %s", url, uploadTask, uploadTaskStatus.Status.ErrorMessage)
+			return "", 0, "", "", fmt.Errorf(uploadTaskStatus.Status.ErrorMessage)
 		}
 	}
 
 	additionalProps := VideoAdditionalProps{
-		Work:   uploadWork,
-		Status: *uploadStatus,
-	}
-
-	// Find the video track and fill the width / height props
-	for _, track := range uploadStatus.VideoSpec.Tracks {
-		if track.Type == "video" {
-			additionalProps.Height = track.Height
-			additionalProps.Width = track.Width
-			break
-		}
+		Work:   uploadTask,
+		Status: *uploadTaskStatus,
 	}
 
 	additionalPropsBytes, err := json.Marshal(&additionalProps)
@@ -154,7 +134,7 @@ func UploadURIToLivePeer(url string, name string) (string, uint, string, string,
 		global.Logger.Errorf("Failed to parse additional props into bytes with error: %s", err.Error())
 	}
 
-	return uploadStatus.PlaybackUrl, uploadStatus.Size, fmt.Sprintf("video/%s", uploadStatus.VideoSpec.Format), string(additionalPropsBytes), nil
+	return uploadTaskStatus.PlaybackUrl, uploadTaskStatus.Size, fmt.Sprintf("video/%s", uploadTaskStatus.VideoSpec.Format), string(additionalPropsBytes), nil
 }
 
 func CheckUploadStatus(assetID string) (*LivePeerAssetStatusResponse, error) {
@@ -166,6 +146,7 @@ func CheckUploadStatus(assetID string) (*LivePeerAssetStatusResponse, error) {
 		return nil, err
 	}
 	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", config.Config.LivePeerAPIKey))
+	req.Header.Set("Content-Type", "application/json; charset=UTF-8")
 
 	res, err := (&http.Client{}).Do(req)
 	if err != nil {
