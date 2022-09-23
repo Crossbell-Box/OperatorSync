@@ -20,7 +20,7 @@ func TestUploadURLToIPFS(t *testing.T) {
 	origLink := "https://file.nya.one/misskey/1dfe05b6-32d5-42ff-aa39-7e33aefb84ec.jpg"
 
 	// Test with image
-	fileName, ipfsUrl, fileSize, contentType, additionalProps, err := UploadURLToIPFS(origLink)
+	fileName, ipfsUrl, fileSize, contentType, additionalProps, err := UploadURLToIPFS(origLink, false)
 	if err != nil {
 		t.Fatal(err.Error())
 	} else {

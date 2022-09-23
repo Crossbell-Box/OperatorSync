@@ -27,7 +27,7 @@ type response struct {
 	Error   string `json:"error"`
 }
 
-func UploadURLToIPFS(targetUrl string) (string, string, uint, string, string, error) {
+func UploadURLToIPFS(targetUrl string, withProxy bool) (string, string, uint, string, string, error) {
 	// Get filename
 	global.Logger.Debug("Uploading file ", targetUrl, " to IPFS...")
 
@@ -42,7 +42,7 @@ func UploadURLToIPFS(targetUrl string) (string, string, uint, string, string, er
 	filename := path.Base(reqUrl.Path)
 
 	// Retrieve data
-	body, err := HttpRequest(targetUrl, false)
+	body, err := HttpRequest(targetUrl, withProxy)
 	if err != nil {
 		global.Logger.Error("Failed to retrieve data from: ", targetUrl)
 		return "", "", 0, "", "", err
