@@ -33,8 +33,8 @@ var SUPPORTED_PLATFORM = map[string]platform{
 	"pinterest": {
 		Name:               "Pinterest",
 		FeedLink:           "https://www.pinterest.com/{{username}}/feed.rss",
-		MinRefreshGap:      5 * time.Minute,
-		MaxRefreshGap:      10 * time.Minute,
+		MinRefreshGap:      15 * time.Minute,
+		MaxRefreshGap:      1 * time.Hour,
 		IsMediaAttachments: false,
 	},
 }
