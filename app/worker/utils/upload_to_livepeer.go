@@ -106,7 +106,9 @@ func UploadURIToLivePeer(url string, name string) (string, uint, string, string,
 
 	for {
 		// Let's sleep for 30 seconds
+		global.Logger.Debugf("Waiting for 30 seconds till next check (asset id: %s)...", uploadTask.Asset.ID)
 		time.Sleep(30 * time.Second)
+		global.Logger.Debugf("Start check upload task status (asset id: %s)", uploadTask.Asset.ID)
 		uploadTaskStatus, err = CheckUploadStatus(uploadTask.Asset.ID)
 		if err != nil {
 			// Failed to get data
@@ -116,6 +118,7 @@ func UploadURIToLivePeer(url string, name string) (string, uint, string, string,
 
 		if uploadTaskStatus.Status.Phase == "ready" {
 			// Ready to publish
+			global.Logger.Debugf("Video is ready (asset id: %s)", uploadTask.Asset.ID)
 			break
 		} else if uploadTaskStatus.Status.Phase == "failed" {
 			// Upload failed, need to report back
