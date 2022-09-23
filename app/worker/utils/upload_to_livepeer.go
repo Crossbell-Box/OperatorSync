@@ -102,7 +102,6 @@ func UploadURIToLivePeer(url string, name string) (string, uint, string, string,
 	var uploadTaskStatus *LivePeerAssetStatusResponse
 
 	// Wait till asset upload succeed
-	// TODO: Use a check query to optimise
 
 	for {
 		// Let's sleep for 30 seconds

@@ -5,6 +5,7 @@ import (
 	"github.com/Crossbell-Box/OperatorSync/app/worker/global"
 	"github.com/Crossbell-Box/OperatorSync/app/worker/types"
 	"github.com/Crossbell-Box/OperatorSync/app/worker/utils"
+	commonConsts "github.com/Crossbell-Box/OperatorSync/common/consts"
 	commonTypes "github.com/Crossbell-Box/OperatorSync/common/types"
 	"regexp"
 	"strings"
@@ -12,14 +13,14 @@ import (
 )
 
 var (
-	posterRegex *regexp.Regexp
-	videoRegex  *regexp.Regexp
+	//posterRegex *regexp.Regexp
+	videoRegex *regexp.Regexp
 )
 
 func init() {
 
 	// TikTok regex
-	posterRegex = regexp.MustCompile(`poster="(.+?)"`)
+	//posterRegex = regexp.MustCompile(`poster="(.+?)"`)
 	videoRegex = regexp.MustCompile(`<source src="(.+?)"`)
 }
 
@@ -57,8 +58,8 @@ func Feeds(cccs *types.ConcurrencyChannels, work *commonTypes.WorkDispatched, co
 	for index, item := range rawFeed.Items {
 		if item.PublishedParsed.After(work.DropBefore) && item.PublishedParsed.Before(work.DropAfter) {
 			feed := commonTypes.RawFeed{
-				Title:       item.Title, // This should better be content
-				Content:     item.Description,
+				Title: item.Title,
+				//Content:     item.Description,
 				PublishedAt: *item.PublishedParsed,
 				GUID:        item.GUID,
 				Link:        item.Link,
@@ -66,26 +67,23 @@ func Feeds(cccs *types.ConcurrencyChannels, work *commonTypes.WorkDispatched, co
 			}
 
 			// 2 medias to upload: poster & video
-			if posterRegex.MatchString(feed.Content) {
-				rawContent := feed.Content
-
-				posterUrl := posterRegex.FindStringSubmatch(rawContent)[1]
-
-				// Upload to IPFS
-				media := commonTypes.Media{
-					OriginalURI: posterUrl,
-				}
-				if media.FileName, media.IPFSUri, media.FileSize, media.ContentType, media.AdditionalProps, err = utils.UploadURLToIPFS(media.OriginalURI); err != nil {
-					global.Logger.Error("Failed to upload poster (", media.OriginalURI, ") onto IPFS: ", err.Error())
-				} else {
-					rawContent = strings.ReplaceAll(rawContent, media.OriginalURI, media.IPFSUri)
-					feed.Media = append(feed.Media, media)
-				}
-
-				feed.Content = rawContent
-			}
-			if videoRegex.MatchString(feed.Content) {
-				rawContent := feed.Content
+			rawContent := item.Description
+			//if posterRegex.MatchString(rawContent) {
+			//
+			//	posterUrl := posterRegex.FindStringSubmatch(rawContent)[1]
+			//
+			//	// Upload to IPFS
+			//	media := commonTypes.Media{
+			//		OriginalURI: posterUrl,
+			//	}
+			//	if media.FileName, media.IPFSUri, media.FileSize, media.ContentType, media.AdditionalProps, err = utils.UploadURLToIPFS(media.OriginalURI); err != nil {
+			//		global.Logger.Error("Failed to upload poster (", media.OriginalURI, ") onto IPFS: ", err.Error())
+			//		// Still acceptable
+			//	} else {
+			//		feed.Media = append(feed.Media, media)
+			//	}
+			//}
+			if videoRegex.MatchString(rawContent) {
 
 				videoUrl := videoRegex.FindStringSubmatch(rawContent)[1]
 
@@ -96,12 +94,11 @@ func Feeds(cccs *types.ConcurrencyChannels, work *commonTypes.WorkDispatched, co
 				}
 				if media.IPFSUri, media.FileSize, media.ContentType, media.AdditionalProps, err = utils.UploadURIToLivePeer(media.OriginalURI, media.FileName); err != nil {
 					global.Logger.Error("Failed to upload video (", media.OriginalURI, ") onto LivePeer: ", err.Error())
+					// Unacceptable
+					return false, nil, 0, commonConsts.ERROR_CODE_FAILED_TO_UPLOAD, err.Error()
 				} else {
-					rawContent = strings.ReplaceAll(rawContent, media.OriginalURI, media.IPFSUri)
 					feed.Media = append(feed.Media, media)
 				}
-
-				feed.Content = rawContent
 			}
 
 			// Add to results
