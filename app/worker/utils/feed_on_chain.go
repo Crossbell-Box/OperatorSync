@@ -50,40 +50,26 @@ func FeedOnChain(work *commonTypes.OnChainRequest) (string, string, error) {
 			}
 
 			// Append additional props
-			var additionalProps map[string]interface{}
+			var additionalProps map[string]string
 			err := json.Unmarshal([]byte(media.AdditionalProps), &additionalProps)
 			if err != nil {
 				global.Logger.Errorf("Failed to parse additional props for media #%s with error: %s", media.IPFSUri, err.Error())
 			} else {
 				// If has "width" and "height"
-				if mediaWidth, ok := additionalProps["width"]; ok {
-					switch mediaWidth.(type) {
-					case int:
-						attachment.Width = uint(mediaWidth.(int))
-					case uint:
-						attachment.Width = mediaWidth.(uint)
-					case string:
-						mediaWidthInt, err := strconv.Atoi(mediaWidth.(string))
-						if err != nil {
-							global.Logger.Errorf("Failed to parse width of media #%s with error: %s", media.IPFSUri, err.Error())
-						} else {
-							attachment.Width = uint(mediaWidthInt)
-						}
+				if mediaWidthStr, ok := additionalProps["width"]; ok {
+					mediaWidth, err := strconv.Atoi(mediaWidthStr)
+					if err != nil {
+						global.Logger.Errorf("Failed to parse width of media #%s with error: %s", media.IPFSUri, err.Error())
+					} else {
+						attachment.Width = uint(mediaWidth)
 					}
 				}
-				if mediaHeight, ok := additionalProps["height"]; ok {
-					switch mediaHeight.(type) {
-					case int:
-						attachment.Height = uint(mediaHeight.(int))
-					case uint:
-						attachment.Height = mediaHeight.(uint)
-					case string:
-						mediaHeightInt, err := strconv.Atoi(mediaHeight.(string))
-						if err != nil {
-							global.Logger.Errorf("Failed to parse height of media #%s with error: %s", media.IPFSUri, err.Error())
-						} else {
-							attachment.Height = uint(mediaHeightInt)
-						}
+				if mediaHeightStr, ok := additionalProps["height"]; ok {
+					mediaHeight, err := strconv.Atoi(mediaHeightStr)
+					if err != nil {
+						global.Logger.Errorf("Failed to parse height of media #%s with error: %s", media.IPFSUri, err.Error())
+					} else {
+						attachment.Width = uint(mediaHeight)
 					}
 				}
 			}

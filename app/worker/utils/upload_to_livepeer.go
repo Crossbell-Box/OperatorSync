@@ -58,8 +58,8 @@ type LivePeerAssetStatusResponse struct {
 
 type VideoAdditionalProps struct {
 	// Required by frontend
-	Height uint `json:"height"`
-	Width  uint `json:"width"`
+	Height string `json:"height"`
+	Width  string `json:"width"`
 
 	// Additional props
 	Work   LivePeerUploadURLResponse   `json:"work"`
