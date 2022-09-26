@@ -11,8 +11,9 @@ import (
 )
 
 var (
-	anchorRegex *regexp.Regexp
-	imageRegex  *regexp.Regexp
+	anchorRegex   *regexp.Regexp
+	imageRegex    *regexp.Regexp
+	leadingSpaces *regexp.Regexp
 )
 
 func init() {
@@ -20,6 +21,7 @@ func init() {
 	// Image regex
 	anchorRegex = regexp.MustCompile(`<a[\s\S]+</a>`)
 	imageRegex = regexp.MustCompile(`<img[^>]+\bsrc=["']([^"']+)["'].*?/?>`)
+	leadingSpaces = regexp.MustCompile(`^[\s\n\r]+`)
 }
 
 func Feeds(cccs *types.ConcurrencyChannels, work *commonTypes.WorkDispatched, collectLink string) (
@@ -65,16 +67,14 @@ func Feeds(cccs *types.ConcurrencyChannels, work *commonTypes.WorkDispatched, co
 				for _, img := range imgs {
 					originalsUri := strings.Replace(img[1], "/236x/", "/originals/", 1)
 					originalSizeImgs = append(originalSizeImgs, originalsUri)
-					rawContent = strings.Replace(rawContent, a, strings.Replace(img[0], img[1], originalsUri, 1), 1)
+					rawContent = strings.Replace(rawContent, a, "", 1)
 				}
 			}
 
 			feed.Media = utils.UploadAllMedia(originalSizeImgs)
-			for _, media := range feed.Media {
-				rawContent = strings.ReplaceAll(rawContent, media.OriginalURI, media.IPFSUri)
-			}
 
-			feed.Content = rawContent
+			// Remove leading spaces
+			feed.Content = leadingSpaces.ReplaceAllString(rawContent, "")
 
 			feeds = append(feeds, feed)
 

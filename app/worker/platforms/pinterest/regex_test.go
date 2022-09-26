@@ -16,10 +16,10 @@ func TestPinterestFeedRegex(t *testing.T) {
 		for _, img := range imgs {
 			originalsUri := strings.Replace(img[1], "/236x/", "/originals/", 1)
 			originalSizeImgs = append(originalSizeImgs, originalsUri)
-			rawContent = strings.Replace(rawContent, a, strings.Replace(img[0], img[1], originalsUri, 1), 1)
+			rawContent = strings.Replace(rawContent, a, "", 1)
 		}
 	}
 
-	t.Log(rawContent)
+	t.Log(leadingSpaces.ReplaceAllString(rawContent, ""))
 	t.Log(originalSizeImgs)
 }
