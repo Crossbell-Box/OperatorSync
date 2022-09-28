@@ -1,5 +1,7 @@
 package consts
 
+import "time"
+
 const (
 	CONFIG_DEFAULT_IPFS_ENDPOINT = "https://ipfs-relay.crossbell.io/upload"
 
@@ -10,4 +12,6 @@ const (
 	CONFIG_DEFAULT_CROSSBELL_CHAIN_ID         = 3737 // Crossbell chain related
 	CONFIG_DEFAULT_CROSSBELL_JSON_RPC         = "https://rpc.crossbell.io"
 	CONFIG_DEFAULT_CROSSBELL_CONTRACT_ADDRESS = "0xa6f969045641Cf486a747A2688F3a5A6d43cd0D8"
+
+	CONFIG_TRANSACTION_TIMEOUT = 5 * time.Minute
 )

@@ -1,8 +1,12 @@
 package chain
 
 import (
+	"context"
+	"errors"
 	crossbellContract "github.com/Crossbell-Box/OperatorSync/app/worker/chain/contract"
+	"github.com/Crossbell-Box/OperatorSync/app/worker/consts"
 	"github.com/Crossbell-Box/OperatorSync/app/worker/global"
+	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	ethTypes "github.com/ethereum/go-ethereum/core/types"
 	"math/big"
 	"strconv"
@@ -16,7 +20,7 @@ func PostNoteForCharacter(characterIdStr string, metadataUri string) (string, er
 	}
 
 	// Prepare contract instance
-	contractInstance, operatorAuth, err := Prepare()
+	client, contractInstance, operatorAuth, err := Prepare()
 	if err != nil {
 		global.Logger.Errorf("Failed to prepare eth contract instance")
 		return "", err
@@ -32,6 +36,19 @@ func PostNoteForCharacter(characterIdStr string, metadataUri string) (string, er
 	)
 	if err != nil {
 		global.Logger.Errorf("Failed to create transaction: %s", err.Error())
+		return "", err
+	}
+
+	// Wait till transaction finish or timeout
+	ctx, cancel := context.WithTimeout(context.Background(), consts.CONFIG_TRANSACTION_TIMEOUT)
+	defer cancel()
+	_, err = bind.WaitMined(ctx, client, tx)
+	if err != nil {
+		if errors.Is(err, context.DeadlineExceeded) {
+			global.Logger.Errorf("Transaction %s timed out!", tx.Hash().Hex())
+		} else {
+			global.Logger.Errorf("Transaction %s failed with error: %s", tx.Hash().Hex(), err.Error())
+		}
 		return "", err
 	}
 

@@ -47,15 +47,13 @@ func update() error {
 	return nil
 }
 
-func Prepare() (*crossbellContract.Contract, *bind.TransactOpts, error) {
+func Prepare() (*ethclient.Client, *crossbellContract.Contract, *bind.TransactOpts, error) {
 	if _initialized {
 		// Already initialized, just update
 		err := update()
-		if err != nil {
-			return nil, nil, err
+		if err == nil {
+			return _client, _instance, _auth, nil
 		}
-
-		return _instance, _auth, nil
 	}
 
 	global.Logger.Debug("Start initializing Crossbell contract instance...")
@@ -65,26 +63,26 @@ func Prepare() (*crossbellContract.Contract, *bind.TransactOpts, error) {
 	_client, err = ethclient.Dial(config.Config.CrossbellJsonRPC)
 	if err != nil {
 		global.Logger.Errorf("Failed to connect to Crossbell JSON RPC with error: %s", err.Error())
-		return nil, nil, err
+		return nil, nil, nil, err
 	}
 
 	_instance, err = crossbellContract.NewContract(common.HexToAddress(config.Config.CrossbellContractAddress), _client)
 	if err != nil {
 		global.Logger.Errorf("Failed to create Crossbell Contract instance with error: %s", err.Error())
-		return nil, nil, err
+		return nil, nil, nil, err
 	}
 
 	privateKey, err := crypto.HexToECDSA(config.Config.EthereumPrivateKey)
 	if err != nil {
 		global.Logger.Errorf("Failed to initialize Ethereum Private Key with error: %s", err.Error())
-		return nil, nil, err
+		return nil, nil, nil, err
 	}
 
 	publicKey := privateKey.Public()
 	publicKeyECDSA, ok := publicKey.(*ecdsa.PublicKey)
 	if !ok {
 		global.Logger.Errorf("Failed to cast publickey to ECDSA")
-		return nil, nil, fmt.Errorf("error casting public key to ECDSA")
+		return nil, nil, nil, fmt.Errorf("error casting public key to ECDSA")
 	}
 
 	_address = crypto.PubkeyToAddress(*publicKeyECDSA)
@@ -94,17 +92,17 @@ func Prepare() (*crossbellContract.Contract, *bind.TransactOpts, error) {
 	_auth, err = bind.NewKeyedTransactorWithChainID(privateKey, big.NewInt(config.Config.CrossbellChainID))
 	if err != nil {
 		global.Logger.Errorf("Failed to bind ethereum key with error: %s", err.Error())
-		return nil, nil, err
+		return nil, nil, nil, err
 	}
 	_auth.Value = big.NewInt(0)     // in wei
 	_auth.GasLimit = uint64(300000) // in units
 
 	err = update()
 	if err != nil {
-		return nil, nil, err
+		return nil, nil, nil, err
 	}
 
 	global.Logger.Debug("Crossbell Ethereum account initialized successfully")
 	_initialized = true
-	return _instance, _auth, nil
+	return _client, _instance, _auth, nil
 }

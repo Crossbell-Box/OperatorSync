@@ -32,7 +32,7 @@ func TestPrepare(t *testing.T) {
 	global.Logger = logger.Sugar()
 
 	// Prepare contract instance
-	contractInstance, _, err := Prepare()
+	_, contractInstance, _, err := Prepare()
 	if err != nil {
 		global.Logger.Errorf("Failed to prepare eth contract instance")
 		t.Fail()
