@@ -66,7 +66,14 @@ func dispatchAllFeedCollectWorks(ch *amqp.Channel, queueName string) {
 	for _, account := range accountsNeedUpdate {
 
 		// Update account settings
-		platform := commonConsts.SUPPORTED_PLATFORM[account.Platform]
+		platform, ok := commonConsts.SUPPORTED_PLATFORM[account.Platform]
+		if !ok {
+			// Unsupported platform
+			// Might be caused by old feed collect work returns
+			// Disable account
+			global.DB.Delete(&account)
+			continue
+		}
 		interv := nowTime.Sub(account.LastUpdated)
 		if interv < platform.MinRefreshGap {
 			interv = platform.MinRefreshGap
