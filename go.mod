@@ -11,7 +11,7 @@ require (
 	github.com/rabbitmq/amqp091-go v1.5.0
 	github.com/rcrowley/go-metrics v0.0.0-20201227073835-cf1acfcdf475
 	go.uber.org/zap v1.23.0
-	gorm.io/driver/postgres v1.4.2
+	gorm.io/driver/postgres v1.4.4
 	gorm.io/gorm v1.24.0
 )
 
