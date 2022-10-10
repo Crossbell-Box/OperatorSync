@@ -5,7 +5,10 @@ import (
 	"github.com/Crossbell-Box/OperatorSync/app/worker/global"
 	"github.com/Crossbell-Box/OperatorSync/app/worker/platforms/medium"
 	"github.com/Crossbell-Box/OperatorSync/app/worker/platforms/pinterest"
+	"github.com/Crossbell-Box/OperatorSync/app/worker/platforms/substack"
+	"github.com/Crossbell-Box/OperatorSync/app/worker/platforms/tg_channel"
 	"github.com/Crossbell-Box/OperatorSync/app/worker/platforms/tiktok"
+	"github.com/Crossbell-Box/OperatorSync/app/worker/platforms/twitter"
 	"github.com/Crossbell-Box/OperatorSync/app/worker/utils"
 	commonConsts "github.com/Crossbell-Box/OperatorSync/common/consts"
 	commonTypes "github.com/Crossbell-Box/OperatorSync/common/types"
@@ -36,6 +39,12 @@ func ValidateAccounts(validateReq *commonTypes.ValidateRequest, response *common
 		isSucceeded, code, msg, isValid = tiktok.Account(validateReq.Username, validateString)
 	case "pinterest":
 		isSucceeded, code, msg, isValid = pinterest.Account(validateReq.Username, validateString)
+	case "twitter":
+		isSucceeded, code, msg, isValid = twitter.Account(validateReq.Username, validateString)
+	case "tg_channel":
+		isSucceeded, code, msg, isValid = tg_channel.Account(validateReq.Username, validateString)
+	case "substack":
+		isSucceeded, code, msg, isValid = substack.Account(validateReq.Username, validateString)
 	default:
 		ValidateHandleFailed(commonConsts.ERROR_CODE_UNSUPPORTED_PLATFORM, "Unsupported platform", response)
 	}

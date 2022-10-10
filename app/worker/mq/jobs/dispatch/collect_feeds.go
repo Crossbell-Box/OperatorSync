@@ -6,7 +6,10 @@ import (
 	"github.com/Crossbell-Box/OperatorSync/app/worker/mq/jobs/callback"
 	"github.com/Crossbell-Box/OperatorSync/app/worker/platforms/medium"
 	"github.com/Crossbell-Box/OperatorSync/app/worker/platforms/pinterest"
+	"github.com/Crossbell-Box/OperatorSync/app/worker/platforms/substack"
+	"github.com/Crossbell-Box/OperatorSync/app/worker/platforms/tg_channel"
 	"github.com/Crossbell-Box/OperatorSync/app/worker/platforms/tiktok"
+	"github.com/Crossbell-Box/OperatorSync/app/worker/platforms/twitter"
 	"github.com/Crossbell-Box/OperatorSync/app/worker/types"
 	commonConsts "github.com/Crossbell-Box/OperatorSync/common/consts"
 	commonTypes "github.com/Crossbell-Box/OperatorSync/common/types"
@@ -45,6 +48,12 @@ func ProcessFeeds(cccs *types.ConcurrencyChannels, ch *amqp.Channel, qRetrieveNa
 		isSucceeded, feeds, newInterval, errCode, errMsg = tiktok.Feeds(cccs, &workDispatched, collectLink)
 	case "pinterest":
 		isSucceeded, feeds, newInterval, errCode, errMsg = pinterest.Feeds(cccs, &workDispatched, collectLink)
+	case "twitter":
+		isSucceeded, feeds, newInterval, errCode, errMsg = twitter.Feeds(cccs, &workDispatched, collectLink)
+	case "tg_channel":
+		isSucceeded, feeds, newInterval, errCode, errMsg = tg_channel.Feeds(cccs, &workDispatched, collectLink)
+	case "substack":
+		isSucceeded, feeds, newInterval, errCode, errMsg = substack.Feeds(cccs, &workDispatched, collectLink)
 	default:
 		// Unable to handle
 		callback.FeedsHandleFailed(ch, qRetrieveName, &workDispatched, acceptTime, commonConsts.ERROR_CODE_UNSUPPORTED_PLATFORM, "Unsupported platform")

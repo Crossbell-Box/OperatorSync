@@ -44,4 +44,28 @@ var SUPPORTED_PLATFORM = map[string]platform{
 		IsMediaAttachments: true,
 		HTML2Markdown:      false,
 	},
+	"twitter": {
+		Name:               "Twitter",
+		FeedLink:           "{{rsshub_stateless}}/twitter/user/{{username}}",
+		MinRefreshGap:      10 * time.Minute,
+		MaxRefreshGap:      1 * time.Hour,
+		IsMediaAttachments: true,
+		HTML2Markdown:      false,
+	},
+	"tg_channel": {
+		Name:               "Telegram Channel",
+		FeedLink:           "{{rsshub_stateless}}/telegram/channel/{{username}}",
+		MinRefreshGap:      30 * time.Minute,
+		MaxRefreshGap:      1 * time.Hour,
+		IsMediaAttachments: false,
+		HTML2Markdown:      true,
+	},
+	"substack": {
+		Name:               "Substack",
+		FeedLink:           "https://{{username}}.substack.com/feed",
+		MinRefreshGap:      20 * time.Minute,
+		MaxRefreshGap:      1 * time.Hour,
+		IsMediaAttachments: false,
+		HTML2Markdown:      true,
+	},
 }
