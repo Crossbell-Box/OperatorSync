@@ -8,6 +8,7 @@ import (
 	"github.com/Crossbell-Box/OperatorSync/app/worker/types"
 	commonConsts "github.com/Crossbell-Box/OperatorSync/common/consts"
 	commonTypes "github.com/Crossbell-Box/OperatorSync/common/types"
+	md "github.com/JohannesKaufmann/html-to-markdown"
 	"strconv"
 )
 
@@ -22,15 +23,28 @@ func FeedOnChain(work *commonTypes.OnChainRequest) (string, string, error) {
 			work.Authors,
 			fmt.Sprintf("csb://account:%s@%s", work.Username, work.Platform),
 		),
-		Title:   work.Title,
-		Content: work.Content,
-		Tags:    work.Categories,
+		Title: work.Title,
+		Tags:  work.Categories,
 		Sources: []string{
 			"Sync",
 			platform.Name,
 		},
 		ContentWarning: work.ContentWarning,
 		DatePublished:  work.PublishedAt.Format("2006-01-02T15:04:05Z"),
+	}
+
+	if platform.HTML2Markdown {
+		converter := md.NewConverter("", true, nil)
+		mdContent, err := converter.ConvertString(work.Content)
+		if err != nil {
+			// Failed to parse
+			global.Logger.Errorf("Failed to parse html to markdown for feed (%s-%d) with error: %s", work.Platform, work.FeedID, err.Error())
+			metadata.Content = work.Content
+		} else {
+			metadata.Content = mdContent
+		}
+	} else {
+		metadata.Content = work.Content
 	}
 
 	if ValidateUri(work.Link) {

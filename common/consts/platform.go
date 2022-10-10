@@ -3,11 +3,15 @@ package consts
 import "time"
 
 type platform = struct {
-	Name               string
-	FeedLink           string
-	MinRefreshGap      time.Duration
-	MaxRefreshGap      time.Duration
+	// Meta information
+	Name          string
+	FeedLink      string
+	MinRefreshGap time.Duration
+	MaxRefreshGap time.Duration
+
+	// OnChain Settings
 	IsMediaAttachments bool
+	HTML2Markdown      bool
 }
 
 // FeedLink replace rule:
@@ -22,6 +26,7 @@ var SUPPORTED_PLATFORM = map[string]platform{
 		MinRefreshGap:      20 * time.Minute,
 		MaxRefreshGap:      1 * time.Hour,
 		IsMediaAttachments: false,
+		HTML2Markdown:      true,
 	},
 	"tiktok": {
 		Name:               "TikTok",
@@ -29,6 +34,7 @@ var SUPPORTED_PLATFORM = map[string]platform{
 		MinRefreshGap:      30 * time.Minute,
 		MaxRefreshGap:      1 * time.Hour,
 		IsMediaAttachments: true,
+		HTML2Markdown:      false,
 	},
 	"pinterest": {
 		Name:               "Pinterest",
@@ -36,5 +42,6 @@ var SUPPORTED_PLATFORM = map[string]platform{
 		MinRefreshGap:      30 * time.Minute,
 		MaxRefreshGap:      1 * time.Hour,
 		IsMediaAttachments: true,
+		HTML2Markdown:      false,
 	},
 }
