@@ -85,7 +85,12 @@ func Feeds(cccs *types.ConcurrencyChannels, work *commonTypes.WorkDispatched, co
 
 			feed.Media = utils.UploadAllMedia(images)
 			for _, media := range feed.Media {
-				rawContent = strings.ReplaceAll(rawContent, img2a[media.OriginalURI], media.IPFSUri)
+				if a, ok := img2a[media.OriginalURI]; ok {
+					rawContent = strings.ReplaceAll(rawContent, a, media.IPFSUri)
+				} else {
+					// Unable to find original anchor, so just replace the link
+					rawContent = strings.ReplaceAll(rawContent, media.OriginalURI, media.IPFSUri)
+				}
 			}
 
 			feed.Content = rawContent
