@@ -3,6 +3,7 @@ package utils
 import (
 	"github.com/Crossbell-Box/OperatorSync/app/worker/global"
 	"github.com/Crossbell-Box/OperatorSync/common/types"
+	"html"
 	"sync"
 )
 
@@ -20,11 +21,11 @@ func UploadAllMedia(mediaUris []string) []types.Media {
 	var ipfsUploadWg sync.WaitGroup
 	ipfsUploadResultChannel := make(chan types.Media, len(mediaUriSet))
 	for uri := range mediaUriSet {
-		uri := uri
+		unescapedUri := html.UnescapeString(uri)
 		ipfsUploadWg.Add(1)
 		go func() {
 			media := types.Media{
-				OriginalURI: uri,
+				OriginalURI: unescapedUri,
 			}
 			var err error
 			if media.FileName, media.IPFSUri, media.FileSize, media.ContentType, media.AdditionalProps, err = UploadURLToIPFS(media.OriginalURI, false); err != nil {
