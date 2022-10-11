@@ -48,9 +48,12 @@ func BindAccount(ctx *gin.Context) {
 	// Check character -> create if not exist
 	if err := global.DB.First(&types.Character{}, "crossbell_character_id = ?", reqCharacterID).Error; errors.Is(err, gorm.ErrRecordNotFound) {
 		global.Logger.Debugf("Character %s doesn't exist, creating...", reqCharacterID)
-		global.DB.Create(&types.Character{
-			CrossbellCharacterID: reqCharacterID,
-		})
+		if _, err := createOrRecoverAccount(reqCharacterID); err != nil {
+			ctx.JSON(http.StatusOK, gin.H{
+				"ok":      false,
+				"message": fmt.Sprintf("Failed to activate character with error: %s", err.Error()),
+			})
+		}
 	}
 
 	global.Logger.Debugf("Account #%s (%s@%s) bind request received.", reqCharacterID, reqUsername, reqPlatform)

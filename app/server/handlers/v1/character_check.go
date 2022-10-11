@@ -18,7 +18,7 @@ func CheckCharacter(ctx *gin.Context) {
 	if err := global.DB.First(&character, "crossbell_character_id = ?", reqCharacterID).Error; errors.Is(err, gorm.ErrRecordNotFound) {
 		ctx.JSON(http.StatusOK, gin.H{
 			"ok":      false,
-			"message": "Character not enabled",
+			"message": "Character not activated",
 		})
 	} else {
 		ctx.JSON(http.StatusOK, gin.H{
