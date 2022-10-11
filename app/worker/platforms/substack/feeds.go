@@ -18,7 +18,7 @@ var (
 func init() {
 
 	// Image regex
-	anchorRegex = regexp.MustCompile(`<a[\s\S]+</a>`)
+	anchorRegex = regexp.MustCompile(`<a[\s\S]+?</a>`)
 	imageRegex = regexp.MustCompile(`<img[^>]+\bsrc=["']([^"']+)["'].*?/?>`)
 
 }
