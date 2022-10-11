@@ -124,7 +124,7 @@ func DispatchSingleFeedCollectWork(ch *amqp.Channel, work *commonTypes.WorkDispa
 			Body:         workBytes,
 		},
 	); err != nil {
-		global.Logger.Error("Failed to dispatch work: ", work)
+		global.Logger.Errorf("Failed to dispatch work %v with error %s", work, err.Error())
 		return err
 	} else {
 		// Dispatched successfully
