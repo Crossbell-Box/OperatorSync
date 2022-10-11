@@ -53,6 +53,7 @@ func BindAccount(ctx *gin.Context) {
 				"ok":      false,
 				"message": fmt.Sprintf("Failed to activate character with error: %s", err.Error()),
 			})
+			return
 		}
 	}
 
