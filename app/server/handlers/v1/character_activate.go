@@ -14,7 +14,7 @@ func ActivateCharacter(ctx *gin.Context) {
 	// Parse request params
 	reqCharacterID := ctx.Param("character")
 
-	character, err := createOrRecoverAccount(reqCharacterID)
+	character, err := createOrRecoverCharacter(reqCharacterID)
 	if err != nil {
 		ctx.JSON(http.StatusOK, gin.H{
 			"ok":      false,
@@ -29,7 +29,7 @@ func ActivateCharacter(ctx *gin.Context) {
 	}
 }
 
-func createOrRecoverAccount(crossbellCharacterID string) (*models.Character, error) {
+func createOrRecoverCharacter(crossbellCharacterID string) (*models.Character, error) {
 	// Check if is in database
 	var character models.Character
 	if err := global.DB.Unscoped().First(&character, "crossbell_character_id = ?", crossbellCharacterID).Error; errors.Is(err, gorm.ErrRecordNotFound) {
