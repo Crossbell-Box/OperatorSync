@@ -26,7 +26,7 @@ func init() {
 func Feeds(cccs *types.ConcurrencyChannels, work *commonTypes.WorkDispatched, collectLink string) (
 	bool, []commonTypes.RawFeed, time.Duration, uint, string,
 ) {
-	// Refer to https://eddkimber.substack.com/feed
+	// Refer to https://lc499.substack.com/feed
 
 	// Concurrency control
 	cccs.Direct.Request()
