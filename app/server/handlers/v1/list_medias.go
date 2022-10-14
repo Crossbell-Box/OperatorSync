@@ -7,6 +7,7 @@ import (
 	"github.com/Crossbell-Box/OperatorSync/app/server/consts"
 	"github.com/Crossbell-Box/OperatorSync/app/server/global"
 	"github.com/Crossbell-Box/OperatorSync/app/server/models"
+	commonGlobal "github.com/Crossbell-Box/OperatorSync/common/global"
 	"github.com/gin-gonic/gin"
 	"net/http"
 	"strconv"
@@ -60,15 +61,15 @@ func ListMedias(ctx *gin.Context) {
 	} else {
 		cacheQueryKey += fmt.Sprintf("%s", reqBeforeTime)
 	}
-	if exist, err := global.Redis.HExists(getCacheCtx, cacheBaseKey, cacheQueryKey).Result(); err != nil {
+	if exist, err := commonGlobal.Redis.HExists(getCacheCtx, cacheBaseKey, cacheQueryKey).Result(); err != nil {
 		global.Logger.Error("Unable to check medias cache")
 	} else if exist {
-		if mediasBytes, err := global.Redis.HGet(getCacheCtx, cacheBaseKey, cacheQueryKey).Bytes(); err != nil {
+		if mediasBytes, err := commonGlobal.Redis.HGet(getCacheCtx, cacheBaseKey, cacheQueryKey).Bytes(); err != nil {
 			global.Logger.Error("Unable to get medias cache")
 		} else if err = json.Unmarshal(mediasBytes, &medias); err != nil {
 			global.Logger.Error("Unable to parse medias cache")
 			// Clear invalid cache
-			global.Redis.HDel(getCacheCtx, cacheBaseKey, cacheQueryKey)
+			commonGlobal.Redis.HDel(getCacheCtx, cacheBaseKey, cacheQueryKey)
 		} else {
 			// Successfully parsed
 
@@ -101,7 +102,7 @@ func ListMedias(ctx *gin.Context) {
 			// WTF?
 			global.Logger.Error("Failed to parse medias")
 		} else {
-			global.Redis.HSet(setCacheCtx, cacheBaseKey, cacheQueryKey, mediasBytes)
+			commonGlobal.Redis.HSet(setCacheCtx, cacheBaseKey, cacheQueryKey, mediasBytes)
 		}
 
 	*/

@@ -30,7 +30,7 @@ func main() {
 	}
 
 	// Initialize redis
-	if err := inits.Redis(); err != nil {
+	if err := commonInits.Redis(config.Config.RedisConnString); err != nil {
 		global.Logger.Fatal("Failed to load redis: ", err.Error())
 	}
 

@@ -11,8 +11,7 @@ type workerConfig struct {
 
 	ProxyURL *url.URL
 
-	IPFSEndpoint   string
-	LivePeerAPIKey string
+	IPFSEndpoint string
 
 	// Concurrency control
 	ConcurrencyStateful  int

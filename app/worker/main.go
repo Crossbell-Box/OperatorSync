@@ -24,6 +24,11 @@ func main() {
 
 	global.Logger.Info("Logger initialized, switch to here.")
 
+	// Initialize redis
+	if err := commonInits.Redis(config.Config.RedisConnString); err != nil {
+		global.Logger.Fatal("Failed to load redis: ", err.Error())
+	}
+
 	// Initialize MQ
 	if err := commonInits.MQ(config.Config.MQConnString, global.Logger); err != nil {
 		global.Logger.Fatal("Failed to load MQ: ", err.Error())

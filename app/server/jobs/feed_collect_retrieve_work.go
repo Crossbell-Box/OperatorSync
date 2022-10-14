@@ -77,8 +77,16 @@ func FeedCollectStartRetrieveWork() error {
 func feedCollectHandleSucceeded(d *amqp.Delivery) {
 	global.Logger.Debug("New succeeded Collect work received: ", string(d.Body))
 
+	// Retrieve work bytes from redis
+	workSucceededBytes, err := commonGlobal.Redis.Get(context.Background(), string(d.Body)).Bytes()
+	commonGlobal.Redis.Del(context.Background(), string(d.Body))
+	if err != nil {
+		global.Logger.Errorf("Failed to retrieve succeeded work result from redis with error: %s", err.Error())
+		return
+	}
+
 	var workSucceeded commonTypes.WorkSucceeded
-	if err := json.Unmarshal(d.Body, &workSucceeded); err != nil {
+	if err := json.Unmarshal(workSucceededBytes, &workSucceeded); err != nil {
 		global.Logger.Error("Unable to parse succeeded work: ", string(d.Body))
 	} else {
 		// Parse successfully
@@ -248,9 +256,9 @@ func feedCollectHandleSucceeded(d *amqp.Delivery) {
 			feedsCacheKey := fmt.Sprintf("%s:%s:%d", consts.CACHE_PREFIX, "feeds", account.ID)
 			mediasCacheKey := fmt.Sprintf("%s:%s:%s", consts.CACHE_PREFIX, "medias", account.CrossbellCharacterID)
 			clearCacheCtx := context.Background()
-			global.Redis.Del(clearCacheCtx, accountsCacheKey) // To flush account update time
-			global.Redis.Del(clearCacheCtx, feedsCacheKey)    // To flush cached feeds
-			global.Redis.Del(clearCacheCtx, mediasCacheKey)   // To flush cached media list
+			commonGlobal.Redis.Del(clearCacheCtx, accountsCacheKey) // To flush account update time
+			commonGlobal.Redis.Del(clearCacheCtx, feedsCacheKey)    // To flush cached feeds
+			commonGlobal.Redis.Del(clearCacheCtx, mediasCacheKey)   // To flush cached media list
 
 			if len(feeds) > 0 {
 				// Post feeds On Chain
