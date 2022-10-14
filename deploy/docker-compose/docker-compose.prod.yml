@@ -10,7 +10,7 @@ services:
     volumes:
       - db_storage:/var/lib/postgresql/data
   redis:
-    image: redis
+    image: redis:alpine
     restart: unless-stopped
     env_file: ../env/redis.env
     networks:
