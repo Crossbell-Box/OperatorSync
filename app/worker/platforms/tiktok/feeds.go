@@ -87,12 +87,12 @@ func Feeds(cccs *types.ConcurrencyChannels, work *commonTypes.WorkDispatched, co
 
 				videoUrl := videoRegex.FindStringSubmatch(rawContent)[1]
 
-				// Upload to LivePeer, not IPFS
+				// Upload to IPFS
 				media := commonTypes.Media{
 					OriginalURI: videoUrl,
 				}
 				if media.FileName, media.IPFSUri, media.FileSize, media.ContentType, media.AdditionalProps, err = utils.UploadURLToIPFS(media.OriginalURI, true); err != nil {
-					global.Logger.Error("Failed to upload video (", media.OriginalURI, ") onto LivePeer: ", err.Error())
+					global.Logger.Error("Failed to upload video (", media.OriginalURI, ") onto IPFS: ", err.Error())
 					// Unacceptable
 					return false, nil, 0, commonConsts.ERROR_CODE_FAILED_TO_UPLOAD, err.Error()
 				} else {

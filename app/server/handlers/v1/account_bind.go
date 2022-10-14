@@ -10,6 +10,7 @@ import (
 	"github.com/Crossbell-Box/OperatorSync/app/server/models"
 	"github.com/Crossbell-Box/OperatorSync/app/server/types"
 	commonConsts "github.com/Crossbell-Box/OperatorSync/common/consts"
+	commonGlobal "github.com/Crossbell-Box/OperatorSync/common/global"
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 	"net/http"
@@ -151,7 +152,7 @@ func BindAccount(ctx *gin.Context) {
 			global.DB.Create(&account)
 			// Clear cache
 			listAccountsCacheKey := fmt.Sprintf("%s:%s:%s", consts.CACHE_PREFIX, "accounts:list", reqCharacterID)
-			global.Redis.Del(context.Background(), listAccountsCacheKey)
+			commonGlobal.Redis.Del(context.Background(), listAccountsCacheKey)
 			// Response
 			ctx.JSON(http.StatusOK, gin.H{
 				"ok":      true,

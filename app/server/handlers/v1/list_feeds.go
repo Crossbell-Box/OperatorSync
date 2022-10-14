@@ -9,6 +9,7 @@ import (
 	"github.com/Crossbell-Box/OperatorSync/app/server/global"
 	"github.com/Crossbell-Box/OperatorSync/app/server/models"
 	commonConsts "github.com/Crossbell-Box/OperatorSync/common/consts"
+	commonGlobal "github.com/Crossbell-Box/OperatorSync/common/global"
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 	"net/http"
@@ -81,15 +82,15 @@ func ListSingleAccountFeeds(ctx *gin.Context) {
 	} else {
 		cacheQueryKey += fmt.Sprintf("%s", reqBeforeTime)
 	}
-	if exist, err := global.Redis.HExists(getCacheCtx, cacheBaseKey, cacheQueryKey).Result(); err != nil {
+	if exist, err := commonGlobal.Redis.HExists(getCacheCtx, cacheBaseKey, cacheQueryKey).Result(); err != nil {
 		global.Logger.Error("Unable to check feeds cache")
 	} else if exist {
-		if feedsBytes, err := global.Redis.HGet(getCacheCtx, cacheBaseKey, cacheQueryKey).Bytes(); err != nil {
+		if feedsBytes, err := commonGlobal.Redis.HGet(getCacheCtx, cacheBaseKey, cacheQueryKey).Bytes(); err != nil {
 			global.Logger.Error("Unable to get feeds cache")
 		} else if err = json.Unmarshal(feedsBytes, &feeds); err != nil {
 			global.Logger.Error("Unable to parse feeds cache")
 			// Clear invalid cache
-			global.Redis.HDel(getCacheCtx, cacheBaseKey, cacheQueryKey)
+			commonGlobal.Redis.HDel(getCacheCtx, cacheBaseKey, cacheQueryKey)
 		} else {
 			// Successfully parsed
 
@@ -127,7 +128,7 @@ func ListSingleAccountFeeds(ctx *gin.Context) {
 			// WTF?
 			global.Logger.Error("Failed to parse feeds")
 		} else {
-			global.Redis.HSet(setCacheCtx, cacheBaseKey, cacheQueryKey, feedsBytes)
+			commonGlobal.Redis.HSet(setCacheCtx, cacheBaseKey, cacheQueryKey, feedsBytes)
 		}
 
 	*/

@@ -3,15 +3,14 @@ package inits
 import (
 	"context"
 	"fmt"
-	"github.com/Crossbell-Box/OperatorSync/app/server/config"
-	"github.com/Crossbell-Box/OperatorSync/app/server/global"
+	"github.com/Crossbell-Box/OperatorSync/common/global"
 	"github.com/go-redis/redis/v9"
 	"time"
 )
 
-func Redis() error {
+func Redis(conn string) error {
 	// Parse connect string
-	redisConfig, err := redis.ParseURL(config.Config.RedisConnString)
+	redisConfig, err := redis.ParseURL(conn)
 	if err != nil {
 		return fmt.Errorf("failed to parse redis connection string: %v", err)
 	}

@@ -3,8 +3,10 @@ package callback
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"github.com/Crossbell-Box/OperatorSync/app/worker/global"
 	commonConsts "github.com/Crossbell-Box/OperatorSync/common/consts"
+	commonGlobal "github.com/Crossbell-Box/OperatorSync/common/global"
 	commonTypes "github.com/Crossbell-Box/OperatorSync/common/types"
 	amqp "github.com/rabbitmq/amqp091-go"
 	"time"
@@ -29,6 +31,10 @@ func FeedsHandleSucceeded(ch *amqp.Channel, qSucceededName string, workDispatche
 	if succeededWorkBytes, err := json.Marshal(&succeededWork); err != nil {
 		global.Logger.Error("Failed to marshall succeeded work: ", succeededWork)
 	} else {
+		// Save result to redis
+		storageKey := fmt.Sprintf(commonConsts.REDIS_FeedCollectResultKeyTemplate, workDispatched.Platform, workDispatched.Username, workDispatched.DispatchAt.UnixNano())
+		commonGlobal.Redis.Set(context.Background(), storageKey, succeededWorkBytes, commonConsts.REDIS_FeedCollectResultExpires)
+
 		ctx, cancel := context.WithTimeout(context.Background(), commonConsts.MQSETTINGS_PublishTimeOut)
 		defer cancel()
 
@@ -40,11 +46,11 @@ func FeedsHandleSucceeded(ch *amqp.Channel, qSucceededName string, workDispatche
 			false,
 			amqp.Publishing{
 				DeliveryMode: amqp.Persistent,
-				ContentType:  "application/json",
+				ContentType:  "text/plain",
 				Headers: amqp.Table{
 					commonConsts.MQSETTINGS_FeedCollectIdentifierField: commonConsts.MQSETTINGS_FeedCollectSucceededIdentifier,
 				},
-				Body: succeededWorkBytes,
+				Body: []byte(storageKey),
 			},
 		)
 		if err != nil {

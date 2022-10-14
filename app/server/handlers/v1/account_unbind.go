@@ -9,6 +9,7 @@ import (
 	"github.com/Crossbell-Box/OperatorSync/app/server/jobs"
 	"github.com/Crossbell-Box/OperatorSync/app/server/models"
 	commonConsts "github.com/Crossbell-Box/OperatorSync/common/consts"
+	commonGlobal "github.com/Crossbell-Box/OperatorSync/common/global"
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 	"net/http"
@@ -67,7 +68,7 @@ func UnbindAccount(ctx *gin.Context) {
 			global.DB.Delete(&account)
 			// Clear cache
 			listAccountsCacheKey := fmt.Sprintf("%s:%s:%s", consts.CACHE_PREFIX, "accounts:list", reqCharacterID)
-			global.Redis.Del(context.Background(), listAccountsCacheKey)
+			commonGlobal.Redis.Del(context.Background(), listAccountsCacheKey)
 			// Response
 			ctx.JSON(http.StatusOK, gin.H{
 				"ok":      true,

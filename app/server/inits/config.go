@@ -18,7 +18,7 @@ func Config() error {
 		config.Config.DBConnString = consts.CONFIG_DEFAULT_DATABASE_CONNECTION_STRING
 	}
 	if config.Config.RedisConnString, exist = os.LookupEnv("REDIS_CONNECTION_STRING"); !exist {
-		config.Config.RedisConnString = consts.CONFIG_DEFAULT_REDIS_CONNECTION_STRING
+		config.Config.RedisConnString = commonConsts.CONFIG_DEFAULT_REDIS_CONNECTION_STRING
 	}
 	if config.Config.MQConnString, exist = os.LookupEnv("MQ_CONNECTION_STRING"); !exist {
 		config.Config.MQConnString = commonConsts.CONFIG_DEFAULT_MQ_CONNECTION_STRING

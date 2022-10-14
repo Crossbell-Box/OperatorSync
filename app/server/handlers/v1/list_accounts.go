@@ -7,6 +7,7 @@ import (
 	"github.com/Crossbell-Box/OperatorSync/app/server/consts"
 	"github.com/Crossbell-Box/OperatorSync/app/server/global"
 	"github.com/Crossbell-Box/OperatorSync/app/server/models"
+	commonGlobal "github.com/Crossbell-Box/OperatorSync/common/global"
 	"github.com/gin-gonic/gin"
 	"net/http"
 	"time"
@@ -25,15 +26,15 @@ func ListAccounts(ctx *gin.Context) {
 	// Get data from cache
 	getCacheCtx, cancelGetCacheCtx := context.WithTimeout(context.Background(), 1*time.Second)
 	defer cancelGetCacheCtx()
-	if exist, err := global.Redis.Exists(getCacheCtx, cacheKey).Result(); err != nil {
+	if exist, err := commonGlobal.Redis.Exists(getCacheCtx, cacheKey).Result(); err != nil {
 		global.Logger.Error("Unable to check accounts cache")
 	} else if exist > 0 {
-		if accountsBytes, err := global.Redis.Get(getCacheCtx, cacheKey).Bytes(); err != nil {
+		if accountsBytes, err := commonGlobal.Redis.Get(getCacheCtx, cacheKey).Bytes(); err != nil {
 			global.Logger.Error("Unable to get accounts cache")
 		} else if err = json.Unmarshal(accountsBytes, &accounts); err != nil {
 			global.Logger.Error("Unable to parse accounts cache")
 			// Clear invalid cache
-			global.Redis.Del(getCacheCtx, cacheKey)
+			commonGlobal.Redis.Del(getCacheCtx, cacheKey)
 		} else {
 			// Successfully parsed
 
@@ -77,7 +78,7 @@ func ListAccounts(ctx *gin.Context) {
 			// WTF?
 			global.Logger.Error("Failed to parse accounts")
 		} else {
-			global.Redis.Set(setCacheCtx, cacheKey, accountsBytes, consts.ACCOUNT_LIST_CACHE_EXPIRE)
+			commonGlobal.Redis.Set(setCacheCtx, cacheKey, accountsBytes, consts.ACCOUNT_LIST_CACHE_EXPIRE)
 		}
 
 	*/
