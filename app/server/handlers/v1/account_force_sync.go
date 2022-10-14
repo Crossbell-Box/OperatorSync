@@ -65,7 +65,7 @@ func ForceSyncAccount(ctx *gin.Context) {
 
 		// Parse accounts update interval to seconds
 		account.UpdateInterval = time.Duration(account.UpdateInterval.Seconds())
-		if account.LastUpdated.Equal(time.Unix(0, 0)) {
+		if !account.LastUpdated.After(time.Unix(0, 0)) {
 			// Prevent 1970-1-1
 			account.LastUpdated = account.NextUpdate
 		}

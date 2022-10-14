@@ -57,7 +57,7 @@ func ListAccounts(ctx *gin.Context) {
 	// Parse accounts update interval to seconds
 	for i, _ := range accounts {
 		accounts[i].UpdateInterval = time.Duration(accounts[i].UpdateInterval.Seconds())
-		if accounts[i].LastUpdated.Equal(time.Unix(0, 0)) {
+		if !accounts[i].LastUpdated.After(time.Unix(0, 0)) {
 			// Prevent 1970-1-1
 			accounts[i].LastUpdated = accounts[i].NextUpdate
 		}
