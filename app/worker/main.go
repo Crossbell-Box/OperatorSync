@@ -25,7 +25,7 @@ func main() {
 	global.Logger.Info("Logger initialized, switch to here.")
 
 	// Initialize MQ
-	if err := commonInits.MQ(config.Config.MQConnString); err != nil {
+	if err := commonInits.MQ(config.Config.MQConnString, global.Logger); err != nil {
 		global.Logger.Fatal("Failed to load MQ: ", err.Error())
 	}
 

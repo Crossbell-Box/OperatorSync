@@ -20,55 +20,54 @@ import (
 
 func FeedCollectStartRetrieveWork() error {
 
-	// Prepare channel
-
-	ch, err := commonGlobal.MQ.Channel()
-	if err != nil {
-		global.Logger.Error("Failed to open MQ Feeds Collect retrieve channel with error: ", err.Error())
-		return err
-	}
-
-	// Prepare queue
-
-	q, err := ch.QueueDeclare(
-		commonConsts.MQSETTINGS_FeedCollectRetrieveQueueName,
-		false,
-		false,
-		false,
-		false,
-		nil,
-	)
-	if err != nil {
-		global.Logger.Error("Failed to prepare MQ Feeds Collect retrieve queue with error: ", err.Error())
-		return err
-	}
-
-	deliveries, err := ch.Consume(
-		q.Name,
-		"",
-		true,
-		false,
-		false,
-		false,
-		nil,
-	)
-	if err != nil {
-		global.Logger.Error("Failed to subscribe to MQ Feeds Collect retrieve queue with error: ", err.Error())
-		return err
-	}
-
 	global.Logger.Debug("Feed Collect start listen on retrieve works...")
 
 	go func() {
-		for d := range deliveries {
-			switch d.Headers[commonConsts.MQSETTINGS_FeedCollectIdentifierField] {
-			case commonConsts.MQSETTINGS_FeedCollectSucceededIdentifier:
-				feedCollectHandleSucceeded(&d)
-			case commonConsts.MQSETTINGS_FeedCollectFailedIdentifier:
-				feedCollectHandleFailed(&d)
-			default:
-				global.Logger.Errorf("Undefined message received: %v", d)
+		for {
+			// Waiting for connection
+			for {
+				time.Sleep(commonConsts.MQSETTINGS_ReconnectDelay)
+				if commonGlobal.MQ != nil {
+					break
+				}
 			}
+			notifyClose := make(chan *amqp.Error)
+			ch, q := prepareFeedCollectQueue(commonConsts.MQSETTINGS_FeedCollectRetrieveQueueName, notifyClose)
+			deliveries, err := ch.Consume(
+				q.Name,
+				"",
+				true,
+				false,
+				false,
+				false,
+				nil,
+			)
+			if err != nil {
+				global.Logger.Fatalf("Failed to subscribe to MQ Feeds Collect retrieve queue with error: %s", err.Error())
+			}
+			isPendingRestart := false
+			for {
+				if isPendingRestart {
+					break
+				}
+				select {
+				case d := <-deliveries:
+					switch d.Headers[commonConsts.MQSETTINGS_FeedCollectIdentifierField] {
+					case commonConsts.MQSETTINGS_FeedCollectSucceededIdentifier:
+						feedCollectHandleSucceeded(&d)
+					case commonConsts.MQSETTINGS_FeedCollectFailedIdentifier:
+						feedCollectHandleFailed(&d)
+					default:
+						global.Logger.Errorf("Undefined message received: %v", d)
+					}
+				case err := <-notifyClose:
+					if err != nil {
+						global.Logger.Errorf("MQ channel closed with error %d (%s), preparing to reconnect", err.Code, err.Error())
+						isPendingRestart = true
+					}
+				}
+			}
+
 		}
 	}()
 

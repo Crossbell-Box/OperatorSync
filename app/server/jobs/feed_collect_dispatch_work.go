@@ -14,34 +14,35 @@ import (
 
 func FeedCollectStartDispatchWork() {
 
-	// Prepare channel
-
-	ch, err := commonGlobal.MQ.Channel()
-	if err != nil {
-		global.Logger.Fatal("Failed to open MQ Feeds Collect dispatch channel with error: ", err.Error())
-	}
-
-	// Prepare queue
-
-	q, err := ch.QueueDeclare(
-		commonConsts.MQSETTINGS_FeedCollectDispatchQueueName,
-		false,
-		false,
-		false,
-		false,
-		nil,
-	)
-	if err != nil {
-		global.Logger.Fatal("Failed to prepare MQ Feeds Collect dispatch queue with error: ", err.Error())
-	}
+	// Start queue
 
 	global.Logger.Debug("Feed Collect work start dispatching...")
 	go func() {
 		t := time.NewTicker(10 * time.Second)
 		for {
-			select {
-			case <-t.C:
-				dispatchAllFeedCollectWorks(ch, q.Name)
+			// Waiting for connection
+			for {
+				time.Sleep(commonConsts.MQSETTINGS_ReconnectDelay)
+				if commonGlobal.MQ != nil {
+					break
+				}
+			}
+			notifyClose := make(chan *amqp.Error)
+			ch, q := prepareFeedCollectQueue(commonConsts.MQSETTINGS_FeedCollectDispatchQueueName, notifyClose)
+			isPendingRestart := false
+			for {
+				if isPendingRestart {
+					break
+				}
+				select {
+				case <-t.C:
+					dispatchAllFeedCollectWorks(ch, q.Name)
+				case err := <-notifyClose:
+					if err != nil {
+						global.Logger.Errorf("MQ channel closed with error %d (%s), preparing to reconnect", err.Code, err.Error())
+						isPendingRestart = true
+					}
+				}
 			}
 		}
 	}()

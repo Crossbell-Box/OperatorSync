@@ -35,7 +35,7 @@ func main() {
 	}
 
 	// Initialize MQ
-	if err := commonInits.MQ(config.Config.MQConnString); err != nil {
+	if err := commonInits.MQ(config.Config.MQConnString, global.Logger); err != nil {
 		global.Logger.Fatal("Failed to load MQ: ", err.Error())
 	}
 

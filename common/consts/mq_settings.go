@@ -11,4 +11,7 @@ const (
 	MQSETTINGS_FeedCollectIdentifierField     = "cos-status-identifier"
 	MQSETTINGS_FeedCollectSucceededIdentifier = "succeeded"
 	MQSETTINGS_FeedCollectFailedIdentifier    = "failed"
+
+	MQSETTINGS_ReconnectDelay = 3 * time.Second
+	MQSETTINGS_ReconnectLimit = 3 // Maximum retry before process shutdown
 )
