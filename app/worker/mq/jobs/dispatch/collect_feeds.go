@@ -6,6 +6,7 @@ import (
 	"github.com/Crossbell-Box/OperatorSync/app/worker/mq/jobs/callback"
 	"github.com/Crossbell-Box/OperatorSync/app/worker/platforms/medium"
 	"github.com/Crossbell-Box/OperatorSync/app/worker/platforms/pinterest"
+	"github.com/Crossbell-Box/OperatorSync/app/worker/platforms/pixiv"
 	"github.com/Crossbell-Box/OperatorSync/app/worker/platforms/substack"
 	"github.com/Crossbell-Box/OperatorSync/app/worker/platforms/tg_channel"
 	"github.com/Crossbell-Box/OperatorSync/app/worker/platforms/tiktok"
@@ -54,6 +55,8 @@ func ProcessFeeds(cccs *types.ConcurrencyChannels, ch *amqp.Channel, qRetrieveNa
 		isSucceeded, feeds, newInterval, errCode, errMsg = tg_channel.Feeds(cccs, &workDispatched, collectLink)
 	case "substack":
 		isSucceeded, feeds, newInterval, errCode, errMsg = substack.Feeds(cccs, &workDispatched, collectLink)
+	case "pixiv":
+		isSucceeded, feeds, newInterval, errCode, errMsg = pixiv.Feeds(cccs, &workDispatched, collectLink)
 	default:
 		// Unable to handle
 		callback.FeedsHandleFailed(ch, qRetrieveName, &workDispatched, acceptTime, commonConsts.ERROR_CODE_UNSUPPORTED_PLATFORM, "Unsupported platform")
