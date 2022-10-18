@@ -30,8 +30,8 @@ func Feeds(cccs *types.ConcurrencyChannels, work *commonTypes.WorkDispatched, co
 	// Refer to https://rsshub.app/tiktok/user/@linustech
 
 	// Concurrency control
-	cccs.Stateful.Request()
-	defer cccs.Stateful.Done()
+	cccs.Stateless.Request()
+	defer cccs.Stateless.Done()
 
 	global.Logger.Debug("New feeds request for tiktok")
 

@@ -27,8 +27,8 @@ func Feeds(cccs *types.ConcurrencyChannels, work *commonTypes.WorkDispatched, co
 	// Refer to https://rsshub.app/twitter/user/lc499
 
 	// Concurrency control
-	cccs.Direct.Request()
-	defer cccs.Direct.Done()
+	cccs.Stateless.Request()
+	defer cccs.Stateless.Done()
 
 	global.Logger.Debug("New feeds request for twitter")
 

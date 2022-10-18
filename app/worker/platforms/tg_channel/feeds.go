@@ -27,8 +27,8 @@ func Feeds(cccs *types.ConcurrencyChannels, work *commonTypes.WorkDispatched, co
 	// Refer to https://rsshub.app/telegram/channel/nya_sync_dev_test_c
 
 	// Concurrency control
-	cccs.Direct.Request()
-	defer cccs.Direct.Done()
+	cccs.Stateless.Request()
+	defer cccs.Stateless.Done()
 
 	global.Logger.Debug("New feeds request for telegram channel")
 
