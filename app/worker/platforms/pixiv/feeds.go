@@ -1,4 +1,4 @@
-package twitter
+package pixiv
 
 import (
 	"github.com/Crossbell-Box/OperatorSync/app/worker/config"
@@ -11,31 +11,32 @@ import (
 )
 
 var (
-	imageRegex *regexp.Regexp
+	pixivImageRegex *regexp.Regexp
 )
 
 func init() {
 
 	// Image regex
-	imageRegex = regexp.MustCompile(`<img[^>]+\bsrc=["']([^"']+)["'].*?/?>`)
+	pixivImageRegex = regexp.MustCompile(`<img[^>]+\bsrc=["']([^"']+)["'].*?/?>`)
 }
 
 func Feeds(cccs *types.ConcurrencyChannels, work *commonTypes.WorkDispatched, collectLink string) (
 	bool, []commonTypes.RawFeed, uint, string,
 ) {
-	// Refer to https://rsshub.app/twitter/user/lc499
+
+	// Refer to https://rsshub.app/pixiv/user/87178177
 
 	// Concurrency control
-	cccs.Stateless.Request()
-	defer cccs.Stateless.Done()
+	cccs.Stateful.Request()
+	defer cccs.Stateful.Done()
 
-	global.Logger.Debug("New feeds request for twitter")
+	global.Logger.Debug("New feeds request for pixiv")
 
 	collectLink =
 		strings.ReplaceAll(
 			collectLink,
-			"{{rsshub_stateless}}",
-			config.Config.RSSHubEndpointStateless,
+			"{{rsshub_stateful}}",
+			config.Config.RSSHubEndpointStateful,
 		)
 
 	rawFeed, errCode, err := utils.RSSFeedRequest(
@@ -51,8 +52,7 @@ func Feeds(cccs *types.ConcurrencyChannels, work *commonTypes.WorkDispatched, co
 	for _, item := range rawFeed.Items {
 		if item.PublishedParsed.After(work.DropBefore) && item.PublishedParsed.Before(work.DropAfter) {
 			feed := commonTypes.RawFeed{
-				//Title:       item.Title,
-				Content:     item.Title,
+				Title:       item.Title,
 				Link:        item.Link,
 				GUID:        item.GUID,
 				Authors:     utils.ParseAuthors(item.Authors),
@@ -62,7 +62,7 @@ func Feeds(cccs *types.ConcurrencyChannels, work *commonTypes.WorkDispatched, co
 			// Process content
 			rawContent := item.Description
 
-			imgs := imageRegex.FindAllStringSubmatch(rawContent, -1)
+			imgs := pixivImageRegex.FindAllStringSubmatch(rawContent, -1)
 			var normalImages []string
 			for _, img := range imgs {
 				normalImages = append(normalImages, img[1])
@@ -74,7 +74,6 @@ func Feeds(cccs *types.ConcurrencyChannels, work *commonTypes.WorkDispatched, co
 			//feed.Content = rawContent
 
 			feeds = append(feeds, feed)
-
 		}
 	}
 

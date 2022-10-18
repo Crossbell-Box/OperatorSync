@@ -9,7 +9,6 @@ import (
 	"net/url"
 	"regexp"
 	"strings"
-	"time"
 )
 
 var (
@@ -40,7 +39,7 @@ func removeTrackingQuery(rawUri string) string {
 }
 
 func Feeds(cccs *types.ConcurrencyChannels, work *commonTypes.WorkDispatched, collectLink string) (
-	bool, []commonTypes.RawFeed, time.Duration, uint, string,
+	bool, []commonTypes.RawFeed, uint, string,
 ) {
 	// Refer to https://medium.com/feed/@nya_9949
 
@@ -55,15 +54,12 @@ func Feeds(cccs *types.ConcurrencyChannels, work *commonTypes.WorkDispatched, co
 		true,
 	)
 	if err != nil {
-		return false, nil, 0, errCode, err.Error()
+		return false, nil, errCode, err.Error()
 	}
 
-	maxFeedIndex := len(rawFeed.Items) - 1
-
 	var feeds []commonTypes.RawFeed
-	var minimalInterval time.Duration = work.DropAfter.Sub(work.DropBefore)
 
-	for index, item := range rawFeed.Items {
+	for _, item := range rawFeed.Items {
 		if item.PublishedParsed.After(work.DropBefore) && item.PublishedParsed.Before(work.DropAfter) {
 			feed := commonTypes.RawFeed{
 				Title:       item.Title,
@@ -101,22 +97,9 @@ func Feeds(cccs *types.ConcurrencyChannels, work *commonTypes.WorkDispatched, co
 
 			feeds = append(feeds, feed)
 
-			// Calc new interval
-			var interv time.Duration
-			if index < maxFeedIndex {
-				interv = item.PublishedParsed.Sub(*rawFeed.Items[index+1].PublishedParsed)
-			} else {
-				interv = item.PublishedParsed.Sub(work.DropBefore)
-			}
-			if interv < 0 {
-				interv = -interv
-			}
-			if interv < minimalInterval {
-				minimalInterval = interv
-			}
 		}
 	}
 
-	return true, feeds, minimalInterval, 0, ""
+	return true, feeds, 0, ""
 
 }

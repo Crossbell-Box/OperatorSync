@@ -9,7 +9,6 @@ import (
 	commonTypes "github.com/Crossbell-Box/OperatorSync/common/types"
 	"regexp"
 	"strings"
-	"time"
 )
 
 var (
@@ -25,13 +24,13 @@ func init() {
 }
 
 func Feeds(cccs *types.ConcurrencyChannels, work *commonTypes.WorkDispatched, collectLink string) (
-	bool, []commonTypes.RawFeed, time.Duration, uint, string,
+	bool, []commonTypes.RawFeed, uint, string,
 ) {
 	// Refer to https://rsshub.app/tiktok/user/@linustech
 
 	// Concurrency control
-	cccs.Stateful.Request()
-	defer cccs.Stateful.Done()
+	cccs.Stateless.Request()
+	defer cccs.Stateless.Done()
 
 	global.Logger.Debug("New feeds request for tiktok")
 
@@ -47,15 +46,12 @@ func Feeds(cccs *types.ConcurrencyChannels, work *commonTypes.WorkDispatched, co
 		false,
 	)
 	if err != nil {
-		return false, nil, 0, errCode, err.Error()
+		return false, nil, errCode, err.Error()
 	}
 
-	maxFeedIndex := len(rawFeed.Items) - 1
-
 	var feeds []commonTypes.RawFeed
-	var minimalInterval time.Duration = work.DropAfter.Sub(work.DropBefore)
 
-	for index, item := range rawFeed.Items {
+	for _, item := range rawFeed.Items {
 		if item.PublishedParsed.After(work.DropBefore) && item.PublishedParsed.Before(work.DropAfter) {
 			feed := commonTypes.RawFeed{
 				Title: item.Title,
@@ -94,7 +90,7 @@ func Feeds(cccs *types.ConcurrencyChannels, work *commonTypes.WorkDispatched, co
 				if media.FileName, media.IPFSUri, media.FileSize, media.ContentType, media.AdditionalProps, err = utils.UploadURLToIPFS(media.OriginalURI, true); err != nil {
 					global.Logger.Error("Failed to upload video (", media.OriginalURI, ") onto IPFS: ", err.Error())
 					// Unacceptable
-					return false, nil, 0, commonConsts.ERROR_CODE_FAILED_TO_UPLOAD, err.Error()
+					return false, nil, commonConsts.ERROR_CODE_FAILED_TO_UPLOAD, err.Error()
 				} else {
 					feed.Media = append(feed.Media, media)
 				}
@@ -103,22 +99,9 @@ func Feeds(cccs *types.ConcurrencyChannels, work *commonTypes.WorkDispatched, co
 			// Add to results
 			feeds = append(feeds, feed)
 
-			// Calc interval
-			var interv time.Duration
-			if index < maxFeedIndex {
-				interv = item.PublishedParsed.Sub(*rawFeed.Items[index+1].PublishedParsed)
-			} else {
-				interv = item.PublishedParsed.Sub(work.DropBefore)
-			}
-			if interv < 0 {
-				interv = -interv
-			}
-			if interv < minimalInterval {
-				minimalInterval = interv
-			}
 		}
 	}
 
-	return true, feeds, minimalInterval, 0, ""
+	return true, feeds, 0, ""
 
 }

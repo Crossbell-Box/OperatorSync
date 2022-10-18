@@ -68,4 +68,12 @@ var SUPPORTED_PLATFORM = map[string]platform{
 		IsMediaAttachments: false,
 		HTML2Markdown:      true,
 	},
+	"pixiv": {
+		Name:               "pixiv",
+		FeedLink:           "{{rsshub_stateful}}/pixiv/user/{{username}}", // Actually is UserID
+		MinRefreshGap:      1 * time.Hour,
+		MaxRefreshGap:      12 * time.Hour,
+		IsMediaAttachments: true,
+		HTML2Markdown:      false,
+	},
 }

@@ -6,11 +6,13 @@ import (
 	"github.com/Crossbell-Box/OperatorSync/app/worker/mq/jobs/callback"
 	"github.com/Crossbell-Box/OperatorSync/app/worker/platforms/medium"
 	"github.com/Crossbell-Box/OperatorSync/app/worker/platforms/pinterest"
+	"github.com/Crossbell-Box/OperatorSync/app/worker/platforms/pixiv"
 	"github.com/Crossbell-Box/OperatorSync/app/worker/platforms/substack"
 	"github.com/Crossbell-Box/OperatorSync/app/worker/platforms/tg_channel"
 	"github.com/Crossbell-Box/OperatorSync/app/worker/platforms/tiktok"
 	"github.com/Crossbell-Box/OperatorSync/app/worker/platforms/twitter"
 	"github.com/Crossbell-Box/OperatorSync/app/worker/types"
+	"github.com/Crossbell-Box/OperatorSync/app/worker/utils"
 	commonConsts "github.com/Crossbell-Box/OperatorSync/common/consts"
 	commonTypes "github.com/Crossbell-Box/OperatorSync/common/types"
 	amqp "github.com/rabbitmq/amqp091-go"
@@ -36,24 +38,25 @@ func ProcessFeeds(cccs *types.ConcurrencyChannels, ch *amqp.Channel, qRetrieveNa
 	var (
 		isSucceeded bool
 		feeds       []commonTypes.RawFeed
-		newInterval time.Duration
 		errCode     uint
 		errMsg      string
 	)
 
 	switch workDispatched.Platform {
 	case "medium":
-		isSucceeded, feeds, newInterval, errCode, errMsg = medium.Feeds(cccs, &workDispatched, collectLink)
+		isSucceeded, feeds, errCode, errMsg = medium.Feeds(cccs, &workDispatched, collectLink)
 	case "tiktok":
-		isSucceeded, feeds, newInterval, errCode, errMsg = tiktok.Feeds(cccs, &workDispatched, collectLink)
+		isSucceeded, feeds, errCode, errMsg = tiktok.Feeds(cccs, &workDispatched, collectLink)
 	case "pinterest":
-		isSucceeded, feeds, newInterval, errCode, errMsg = pinterest.Feeds(cccs, &workDispatched, collectLink)
+		isSucceeded, feeds, errCode, errMsg = pinterest.Feeds(cccs, &workDispatched, collectLink)
 	case "twitter":
-		isSucceeded, feeds, newInterval, errCode, errMsg = twitter.Feeds(cccs, &workDispatched, collectLink)
+		isSucceeded, feeds, errCode, errMsg = twitter.Feeds(cccs, &workDispatched, collectLink)
 	case "tg_channel":
-		isSucceeded, feeds, newInterval, errCode, errMsg = tg_channel.Feeds(cccs, &workDispatched, collectLink)
+		isSucceeded, feeds, errCode, errMsg = tg_channel.Feeds(cccs, &workDispatched, collectLink)
 	case "substack":
-		isSucceeded, feeds, newInterval, errCode, errMsg = substack.Feeds(cccs, &workDispatched, collectLink)
+		isSucceeded, feeds, errCode, errMsg = substack.Feeds(cccs, &workDispatched, collectLink)
+	case "pixiv":
+		isSucceeded, feeds, errCode, errMsg = pixiv.Feeds(cccs, &workDispatched, collectLink)
 	default:
 		// Unable to handle
 		callback.FeedsHandleFailed(ch, qRetrieveName, &workDispatched, acceptTime, commonConsts.ERROR_CODE_UNSUPPORTED_PLATFORM, "Unsupported platform")
@@ -61,7 +64,7 @@ func ProcessFeeds(cccs *types.ConcurrencyChannels, ch *amqp.Channel, qRetrieveNa
 	}
 
 	if isSucceeded {
-		callback.FeedsHandleSucceeded(ch, qRetrieveName, &workDispatched, acceptTime, feeds, newInterval)
+		callback.FeedsHandleSucceeded(ch, qRetrieveName, &workDispatched, acceptTime, feeds, utils.CalcNewInterval(&workDispatched, feeds))
 	} else {
 		callback.FeedsHandleFailed(ch, qRetrieveName, &workDispatched, acceptTime, errCode, errMsg)
 	}
