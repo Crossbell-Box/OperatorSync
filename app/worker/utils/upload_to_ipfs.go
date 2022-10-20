@@ -17,14 +17,16 @@ import (
 	"path"
 	"strconv"
 	"strings"
+	"time"
 )
 
 type response struct {
-	Status  string `json:"status"`
-	CID     string `json:"cid"`
-	URL     string `json:"url"`
-	Web2URL string `json:"web2url"`
-	Error   string `json:"error"`
+	Status   string `json:"status"`
+	CID      string `json:"cid"`
+	URL      string `json:"url"`
+	Web2URL  string `json:"web2url"`
+	FileSize uint   `json:"fileSize"`
+	Error    string `json:"error"`
 }
 
 func UploadURLToIPFS(targetUrl string, withProxy bool) (string, string, uint, string, string, error) {
@@ -109,7 +111,7 @@ func UploadBytesToIPFS(data []byte, filename string) (string, uint, error) {
 	var resp response
 	formContentType := bodyWriter.FormDataContentType()
 	_ = bodyWriter.Close() // Ignore error
-	ipfsReq, err := http.NewRequest("POST", config.Config.IPFSEndpoint, bodyBuffer)
+	ipfsReq, err := http.NewRequest("POST", fmt.Sprintf("%s/upload", config.Config.IPFSEndpoint), bodyBuffer)
 	if err != nil {
 		global.Logger.Error("Failed to initialize request: ", err.Error())
 		return "", 0, err
@@ -132,5 +134,43 @@ func UploadBytesToIPFS(data []byte, filename string) (string, uint, error) {
 		return resp.URL, uint(fileSize), nil
 	} else {
 		return "", 0, fmt.Errorf(resp.Error)
+	}
+}
+
+func UploadVideoToIPFS(videoUrl string) (string, uint, error) {
+	for {
+		// Prepare request
+		ipfsReq, err := http.NewRequest("POST", fmt.Sprintf("%s/video", config.Config.IPFSEndpoint), nil)
+		if err != nil {
+			global.Logger.Error("Failed to initialize request: ", err.Error())
+			return "", 0, err
+		}
+
+		// Add query
+		q := ipfsReq.URL.Query()
+		q.Add("url", videoUrl)
+		ipfsReq.URL.RawQuery = q.Encode()
+
+		// Do request
+		var resp response
+		ipfsRes, err := (&http.Client{}).Do(ipfsReq)
+		if err != nil {
+			global.Logger.Error("Failed to do request: ", err.Error())
+			return "", 0, err
+		}
+		err = json.NewDecoder(ipfsRes.Body).Decode(&resp)
+		if err != nil {
+			log.Println("Error decoding JSON:", err)
+			return "", 0, err
+		}
+
+		if resp.Status == "ok" {
+			return resp.URL, resp.FileSize, nil
+		} else if resp.Status == "error" {
+			return "", 0, fmt.Errorf(resp.Error)
+		}
+
+		// else: pending
+		time.Sleep(10 * time.Second)
 	}
 }

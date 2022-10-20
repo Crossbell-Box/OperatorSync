@@ -3,7 +3,7 @@ package consts
 import "time"
 
 const (
-	CONFIG_DEFAULT_IPFS_ENDPOINT = "https://ipfs-relay.crossbell.io/upload"
+	CONFIG_DEFAULT_IPFS_ENDPOINT = "https://ipfs-relay.crossbell.io"
 
 	CONFIG_DEFAULT_CONCURRENCY_CONTROL_STATEFUL  = 10 // Concurrency Control
 	CONFIG_DEFAULT_CONCURRENCY_CONTROL_STATELESS = 50

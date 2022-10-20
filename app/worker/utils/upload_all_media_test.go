@@ -10,7 +10,7 @@ import (
 func TestUploadAllMedia(t *testing.T) {
 
 	// Init settings
-	config.Config.IPFSEndpoint = "https://ipfs-relay.crossbell.io/upload"
+	config.Config.IPFSEndpoint = "https://ipfs-relay.crossbell.io"
 
 	logger, _ := zap.NewDevelopment()
 	defer logger.Sync() // Unable to handle errors here

@@ -86,7 +86,7 @@ func FeedCollectStartProcess() error {
 				}
 				select {
 				case d := <-deliveries:
-					dispatch.ProcessFeeds(cccs, ch, qRetrieve.Name, &d)
+					go dispatch.ProcessFeeds(cccs, ch, qRetrieve.Name, &d)
 				case err := <-notifyClose:
 					if err != nil {
 						global.Logger.Errorf("MQ channel closed with error %d (%s), preparing to reconnect", err.Code, err.Error())
