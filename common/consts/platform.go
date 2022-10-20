@@ -76,4 +76,12 @@ var SUPPORTED_PLATFORM = map[string]platform{
 		IsMediaAttachments: true,
 		HTML2Markdown:      false,
 	},
+	"y2b_channel": {
+		Name:               "YouTube Channel",
+		FeedLink:           "https://www.youtube.com/feeds/videos.xml?channel_id={{username}}", // Channel ID
+		MinRefreshGap:      1 * time.Hour,
+		MaxRefreshGap:      12 * time.Hour,
+		IsMediaAttachments: true,
+		HTML2Markdown:      false,
+	},
 }

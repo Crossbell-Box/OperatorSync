@@ -10,6 +10,7 @@ import (
 	"github.com/Crossbell-Box/OperatorSync/app/worker/platforms/tg_channel"
 	"github.com/Crossbell-Box/OperatorSync/app/worker/platforms/tiktok"
 	"github.com/Crossbell-Box/OperatorSync/app/worker/platforms/twitter"
+	"github.com/Crossbell-Box/OperatorSync/app/worker/platforms/y2b_channel"
 	"github.com/Crossbell-Box/OperatorSync/app/worker/utils"
 	commonConsts "github.com/Crossbell-Box/OperatorSync/common/consts"
 	commonTypes "github.com/Crossbell-Box/OperatorSync/common/types"
@@ -48,6 +49,8 @@ func ValidateAccounts(validateReq *commonTypes.ValidateRequest, response *common
 		isSucceeded, code, msg, isValid = substack.Account(validateReq.Username, validateString)
 	case "pixiv":
 		isSucceeded, code, msg, isValid = pixiv.Account(validateReq.Username, validateString)
+	case "y2b_channel":
+		isSucceeded, code, msg, isValid = y2b_channel.Account(validateReq.Username, validateString)
 	default:
 		ValidateHandleFailed(commonConsts.ERROR_CODE_UNSUPPORTED_PLATFORM, "Unsupported platform", response)
 	}
