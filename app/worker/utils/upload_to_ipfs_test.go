@@ -32,3 +32,24 @@ func TestUploadURLToIPFS(t *testing.T) {
 	}
 
 }
+
+func TestUploadVideoToIPFS(t *testing.T) {
+
+	// Init settings
+	config.Config.IPFSEndpoint = "https://ipfs-relay.crossbell.io"
+
+	logger, _ := zap.NewDevelopment()
+	defer logger.Sync() // Unable to handle errors here
+	global.Logger = logger.Sugar()
+
+	// Define variables
+	origLink := "https://www.youtube.com/watch?v=Txq26_SI6XE"
+	ipfsUrl, fileSize, err := UploadVideoToIPFS(origLink)
+	if err != nil {
+		t.Fatal(err)
+	} else {
+		t.Log(ipfsUrl)
+		t.Log(fileSize)
+	}
+
+}

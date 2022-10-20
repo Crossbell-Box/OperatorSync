@@ -35,7 +35,7 @@ func Feeds(cccs *types.ConcurrencyChannels, work *commonTypes.WorkDispatched, co
 		if item.PublishedParsed.After(work.DropBefore) && item.PublishedParsed.Before(work.DropAfter) {
 			feed := commonTypes.RawFeed{
 				Title:       item.Title,
-				Content:     item.Description,
+				Content:     item.Extensions["media"]["group"][0].Children["description"][0].Value,
 				Link:        item.Link,
 				GUID:        item.GUID,
 				Authors:     utils.ParseAuthors(item.Authors),

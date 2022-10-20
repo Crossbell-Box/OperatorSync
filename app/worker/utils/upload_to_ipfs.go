@@ -152,6 +152,7 @@ func UploadVideoToIPFS(videoUrl string) (string, uint, error) {
 		ipfsReq.URL.RawQuery = q.Encode()
 
 		// Do request
+		global.Logger.Debugf("Checking upload status for %s", videoUrl)
 		var resp response
 		ipfsRes, err := (&http.Client{}).Do(ipfsReq)
 		if err != nil {
@@ -165,12 +166,15 @@ func UploadVideoToIPFS(videoUrl string) (string, uint, error) {
 		}
 
 		if resp.Status == "ok" {
+			global.Logger.Debugf("Video %s uploaded successfully!", videoUrl)
 			return resp.URL, resp.FileSize, nil
 		} else if resp.Status == "error" {
+			global.Logger.Errorf("Failed to upload video %s with IPFS Upload Relay error: %s", videoUrl, err.Error())
 			return "", 0, fmt.Errorf(resp.Error)
 		}
 
 		// else: pending
+		global.Logger.Debugf("Video %s upload status: %s", videoUrl, resp.Status)
 		time.Sleep(10 * time.Second)
 	}
 }
