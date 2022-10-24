@@ -12,12 +12,14 @@ import (
 
 var (
 	imageRegex *regexp.Regexp
+	videoRegex *regexp.Regexp
 )
 
 func init() {
 
 	// Image regex
 	imageRegex = regexp.MustCompile(`<img[^>]+\bsrc=["']([^"']+)["'].*?/?>`)
+	videoRegex = regexp.MustCompile(`<video[^>]+\bsrc=["']([^"']+)["'].*?</video>`)
 }
 
 func Feeds(cccs *types.ConcurrencyChannels, work *commonTypes.WorkDispatched, collectLink string) (
@@ -51,8 +53,6 @@ func Feeds(cccs *types.ConcurrencyChannels, work *commonTypes.WorkDispatched, co
 	for _, item := range rawFeed.Items {
 		if item.PublishedParsed.After(work.DropBefore) && item.PublishedParsed.Before(work.DropAfter) {
 			feed := commonTypes.RawFeed{
-				//Title:       item.Title,
-				Content:     item.Title,
 				Link:        item.Link,
 				GUID:        item.GUID,
 				Authors:     utils.ParseAuthors(item.Authors),
@@ -62,16 +62,22 @@ func Feeds(cccs *types.ConcurrencyChannels, work *commonTypes.WorkDispatched, co
 			// Process content
 			rawContent := item.Description
 
+			var medias []string
 			imgs := imageRegex.FindAllStringSubmatch(rawContent, -1)
-			var normalImages []string
 			for _, img := range imgs {
-				normalImages = append(normalImages, img[1])
-				//rawContent = strings.ReplaceAll(rawContent, img[1], "")
+				medias = append(medias, img[1])
+				rawContent = strings.ReplaceAll(rawContent, img[0], "")
 			}
 
-			feed.Media = utils.UploadAllMedia(normalImages)
+			videos := videoRegex.FindAllStringSubmatch(rawContent, -1)
+			for _, video := range videos {
+				medias = append(medias, video[1])
+				rawContent = strings.ReplaceAll(rawContent, video[0], "")
+			}
 
-			//feed.Content = rawContent
+			feed.Media = utils.UploadAllMedia(medias)
+
+			feed.Content = rawContent
 
 			feeds = append(feeds, feed)
 
