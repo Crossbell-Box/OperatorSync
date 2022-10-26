@@ -54,7 +54,7 @@ var SUPPORTED_PLATFORM = map[string]platform{
 	},
 	"tg_channel": {
 		Name:               "Telegram Channel",
-		FeedLink:           "{{rsshub_stateless}}/telegram/channel/{{username}}",
+		FeedLink:           "{{rsshub_stateless}}/telegram/channel/{{username}}/includeServiceMsg=0",
 		MinRefreshGap:      30 * time.Minute,
 		MaxRefreshGap:      1 * time.Hour,
 		IsMediaAttachments: false,
