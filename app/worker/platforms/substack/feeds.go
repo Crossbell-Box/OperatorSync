@@ -10,8 +10,9 @@ import (
 )
 
 var (
-	anchorRegex *regexp.Regexp
-	imageRegex  *regexp.Regexp
+	anchorRegex    *regexp.Regexp
+	imageRegex     *regexp.Regexp
+	subscribeRegex *regexp.Regexp
 )
 
 func init() {
@@ -19,6 +20,7 @@ func init() {
 	// Image regex
 	anchorRegex = regexp.MustCompile(`<a[\s\S]+?</a>`)
 	imageRegex = regexp.MustCompile(`<img[^>]+\bsrc=["']([^"']+)["'].*?/?>`)
+	subscribeRegex = regexp.MustCompile(`<div\s+class="subscription-widget-wrap"[\s\S]+?</form></div></div>`)
 
 }
 
@@ -89,6 +91,8 @@ func Feeds(cccs *types.ConcurrencyChannels, work *commonTypes.WorkDispatched, co
 				}
 			}
 
+			rawContent = removeSubscribeAds(rawContent)
+
 			feed.Content = rawContent
 
 			feeds = append(feeds, feed)
@@ -98,4 +102,15 @@ func Feeds(cccs *types.ConcurrencyChannels, work *commonTypes.WorkDispatched, co
 
 	return true, feeds, 0, ""
 
+}
+
+func removeSubscribeAds(rawContent string) string {
+
+	// Remove all subscription advertisements
+	subAds := subscribeRegex.FindAllString(rawContent, -1)
+	for _, subAd := range subAds {
+		rawContent = strings.ReplaceAll(rawContent, subAd, "")
+	}
+
+	return rawContent
 }
