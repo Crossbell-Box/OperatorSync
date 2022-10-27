@@ -14,9 +14,10 @@ func OnChainNotes(workDispatched *commonTypes.OnChainRequest, response *commonTy
 	if err != nil {
 		global.Logger.Error("Unable to finish OnChain request: ", workDispatched)
 		OnChainHandleFailed(workDispatched.Platform, workDispatched.FeedID, err.Error(), response)
+	} else {
+		OnChainHandleSucceed(workDispatched.Platform, workDispatched.FeedID, ipfsUri, tx, response)
 	}
 
-	OnChainHandleSucceed(workDispatched.Platform, workDispatched.FeedID, ipfsUri, tx, response)
 }
 
 func OnChainHandleSucceed(platform string, feedID uint, ipfsUri string, transaction string, response *commonTypes.OnChainResponse) {
