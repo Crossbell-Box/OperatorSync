@@ -4,6 +4,7 @@ import (
 	"errors"
 	"github.com/Crossbell-Box/OperatorSync/app/server/global"
 	"github.com/Crossbell-Box/OperatorSync/app/server/models"
+	"github.com/Crossbell-Box/OperatorSync/app/server/types"
 	commonConsts "github.com/Crossbell-Box/OperatorSync/common/consts"
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
@@ -11,7 +12,7 @@ import (
 	"time"
 )
 
-func ForceSyncAccount(ctx *gin.Context) {
+func CheckAccountOnChainStatus(ctx *gin.Context) {
 
 	reqCharacterID := ctx.Param("character")
 	reqPlatform := ctx.Param("platform")
@@ -52,23 +53,50 @@ func ForceSyncAccount(ctx *gin.Context) {
 			"result":  nil,
 		})
 	} else {
-		// Check if eligible to sync now
-		earliestNextUpdate := account.LastUpdated.Add(commonConsts.SUPPORTED_PLATFORM[reqPlatform].MinRefreshGap)
-		if earliestNextUpdate.Before(time.Now()) {
-			account.NextUpdate = time.Now()
-		} else {
-			account.NextUpdate = earliestNextUpdate
+		// Check if anything stuck
+		var (
+			pendingNotes int64
+			succeedNotes int64
+		)
+		err = global.DB.Scopes(models.FeedTable(models.Feed{
+			Feed: types.Feed{
+				Platform: account.Platform,
+			},
+		})).Where("account_id = ? AND transaction = ?", account.ID, "").Count(&pendingNotes).Error
+		if err != nil {
+			global.Logger.Errorf("Account #%s (%s@%s) failed to count pending notes from database with error: %s", reqUsername, reqPlatform, reqCharacterID, err.Error())
+			ctx.JSON(http.StatusOK, gin.H{
+				"ok":      false,
+				"message": "Failed to count pending notes from database.",
+				"result":  nil,
+			})
+			return
+		}
+		err = global.DB.Scopes(models.FeedTable(models.Feed{
+			Feed: types.Feed{
+				Platform: account.Platform,
+			},
+		})).Where("account_id = ? AND transaction <> ?", account.ID, "").Count(&succeedNotes).Error
+		if err != nil {
+			global.Logger.Errorf("Account #%s (%s@%s) failed to count succeeded notes from database with error: %s", reqUsername, reqPlatform, reqCharacterID, err.Error())
+			ctx.JSON(http.StatusOK, gin.H{
+				"ok":      false,
+				"message": "Failed to count succeeded notes from database.",
+				"result":  nil,
+			})
+			return
+		}
+
+		// Fix number
+		account.NotesCount = uint(succeedNotes)
+		if pendingNotes > 0 && !account.IsOnChainPaused {
+			account.IsOnChainPaused = true
+			account.OnChainPausedAt = time.Now()
+			account.OnChainPauseMessage = "Unknown error, user request manual check"
 		}
 
 		// Save account
 		global.DB.Save(&account)
-
-		// Parse accounts update interval to seconds
-		account.UpdateInterval = time.Duration(account.UpdateInterval.Seconds())
-		if !account.LastUpdated.After(time.Unix(0, 0)) {
-			// Prevent 1970-1-1
-			account.LastUpdated = account.NextUpdate
-		}
 
 		// Response
 		ctx.JSON(http.StatusOK, gin.H{

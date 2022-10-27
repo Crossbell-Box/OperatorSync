@@ -12,6 +12,7 @@ func V1Endpoints(rg *gin.RouterGroup) {
 	rg.GET("/:character/account", v1.ListAccounts)
 	rg.POST("/:character/account/bind/:platform/:username", v1.BindAccount)
 	rg.POST("/:character/account/sync/:platform/:username", v1.ForceSyncAccount)
+	rg.POST("/:character/account/check/:platform/:username", v1.CheckAccountOnChainStatus)
 	rg.DELETE("/:character/account/unbind/:platform/:username", v1.UnbindAccount)
 	rg.GET("/:character/media", v1.ListMedias)
 
