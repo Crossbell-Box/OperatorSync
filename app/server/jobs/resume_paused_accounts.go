@@ -108,6 +108,9 @@ func tryToResumeOnePausedAccount(account *models.Account) bool {
 			global.Logger.Debugf("Succeeded to OnChain feed %s#%d", account.Platform, feed.ID)
 			pausedFeeds[index].IPFSUri = ipfsUri
 			pausedFeeds[index].Transaction = tx
+
+			// Increase succeeded notes count
+			account.NotesCount++
 		}
 	}
 
@@ -117,6 +120,7 @@ func tryToResumeOnePausedAccount(account *models.Account) bool {
 			Platform: account.Platform,
 		},
 	})).Save(&pausedFeeds)
+	global.DB.Save(account)
 
 	return allSucceeded
 
