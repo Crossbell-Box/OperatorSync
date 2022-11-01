@@ -9,6 +9,7 @@ func ListEndpoints(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, []string{
 		"GET    /            - List all available endpoints",
 		"GET    /healthcheck - Status and healthcheck",
+		"GET    /platforms   - List all available platforms",
 
 		"GET    /v1/:character                                      - Check character status",
 		"POST   /v1/:character                                      - Activate character",

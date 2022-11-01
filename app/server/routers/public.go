@@ -11,4 +11,8 @@ func PublicEndpoints(rg *gin.RouterGroup) {
 
 	// Health Check
 	rg.GET("/healthcheck", public.HealthCheck)
+
+	// List platforms
+	rg.GET("/platforms", public.ListPlatforms)
+
 }
