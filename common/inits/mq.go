@@ -21,7 +21,7 @@ func MQ(MQConnString string, logger *zap.SugaredLogger) error {
 			connCounter := 0
 			for connCounter < consts.MQSETTINGS_ReconnectLimit {
 				connCounter++
-				logger.Infof("MQ connecting... (%d/%d)", connCounter, consts.MQSETTINGS_ReconnectLimit)
+				logger.Infof("MQ connecting... (Attemp %d/ Max %d)", connCounter, consts.MQSETTINGS_ReconnectLimit)
 				conn, err := amqp.Dial(MQConnString)
 				if err == nil {
 					// Valid connection
