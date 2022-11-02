@@ -16,7 +16,7 @@ type IndexerResponse struct {
 		TransactionHash string `json:"transactionHash"`
 		// Ignore other fields for now
 	} `json:"list"`
-	Count uint `json:"count"`
+	//Count uint `json:"count"`
 	// Ignore cursor
 }
 
