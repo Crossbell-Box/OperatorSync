@@ -13,6 +13,16 @@ import (
 )
 
 func FeedOnChain(work *commonTypes.OnChainRequest) (string, string, error) {
+	// Step -1: Check if feed with this uri (if any) is already on chain
+	if ValidateUri(work.Link) {
+		// Get feed with link from indexer
+		ipfsUri, tx, err := GetFeedWithLinkFromIndexer(work.Link)
+		if err == nil && ipfsUri != "" && tx != "" {
+			// Already post
+			return ipfsUri, tx, nil
+		}
+	}
+
 	// Step 0: Prepare platform
 	platform := commonConsts.SUPPORTED_PLATFORM[work.Platform]
 

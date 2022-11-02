@@ -81,6 +81,11 @@ func Config() error {
 		config.Config.CrossbellJsonRPC = consts.CONFIG_DEFAULT_CROSSBELL_JSON_RPC // Default
 	}
 
+	if config.Config.CrossbellIndexer, exist = os.LookupEnv("CROSSBELL_INDEXER"); !exist {
+		log.Println("No Crossbell Indexer endpoint found, use default")
+		config.Config.CrossbellJsonRPC = consts.CONFIG_DEFAULT_CROSSBELL_INDEXER // Default
+	}
+
 	if config.Config.CrossbellContractAddress, exist = os.LookupEnv("CROSSBELL_CONTRACT_ADDRESS"); !exist {
 		log.Println("No Crossbell contract address found, use default")
 		config.Config.CrossbellContractAddress = consts.CONFIG_DEFAULT_CROSSBELL_CONTRACT_ADDRESS // Default

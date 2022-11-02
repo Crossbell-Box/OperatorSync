@@ -21,6 +21,7 @@ type workerConfig struct {
 	// Crossbell chain related
 	CrossbellChainID         int64
 	CrossbellJsonRPC         string
+	CrossbellIndexer         string
 	CrossbellContractAddress string
 	EthereumPrivateKey       string
 
