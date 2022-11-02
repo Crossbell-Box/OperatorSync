@@ -20,4 +20,7 @@ type RawFeed struct {
 	Categories     pq.StringArray `json:"categories" gorm:"type:text[]"`
 	Media          []Media        `json:"media" gorm:"-"`
 	ContentWarning string         `json:"content_warning"` // 'nsfw' | 'sensitive' | 'spoiler'
+
+	// PostNote4Uri specified field
+	ForURI string `json:"for_uri"`
 }

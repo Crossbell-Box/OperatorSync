@@ -12,7 +12,7 @@ import (
 	"strconv"
 )
 
-func PostNoteForCharacter(characterIdStr string, metadataUri string) (string, error) {
+func PostNoteForCharacter(characterIdStr string, metadataUri string, forURI string) (string, error) {
 	characterId, err := strconv.ParseInt(characterIdStr, 10, 64)
 	if err != nil {
 		global.Logger.Errorf("Failed to parse character id with error: %s", err.Error())
@@ -27,13 +27,22 @@ func PostNoteForCharacter(characterIdStr string, metadataUri string) (string, er
 	}
 
 	var tx *ethTypes.Transaction
-	tx, err = contractInstance.PostNote(
-		operatorAuth,
-		crossbellContract.DataTypesPostNoteData{
-			CharacterId: big.NewInt(characterId),
-			ContentUri:  metadataUri,
-		},
-	)
+	noteData := crossbellContract.DataTypesPostNoteData{
+		CharacterId: big.NewInt(characterId),
+		ContentUri:  metadataUri,
+	}
+	if forURI != "" {
+		tx, err = contractInstance.PostNote4AnyUri(
+			operatorAuth,
+			noteData,
+			forURI,
+		)
+	} else {
+		tx, err = contractInstance.PostNote(
+			operatorAuth,
+			noteData,
+		)
+	}
 	if err != nil {
 		global.Logger.Errorf("Failed to create transaction: %s", err.Error())
 		return "", err
