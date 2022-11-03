@@ -66,9 +66,6 @@ func Config() error {
 
 	config.Config.DevelopmentMode = !strings.Contains(strings.ToLower(os.Getenv("MODE")), "prod")
 
-	if config.Config.DevelopmentMode {
-		log.Println("Configurations: ", config.Config)
-	}
 	if crossbellChainIDStr, exist := os.LookupEnv("CROSSBELL_CHAIN_ID"); !exist {
 		config.Config.CrossbellChainID = consts.CONFIG_DEFAULT_CROSSBELL_CHAIN_ID // Default
 	} else if config.Config.CrossbellChainID, err = strconv.ParseInt(crossbellChainIDStr, 10, 64); err != nil || config.Config.ConcurrencyDirect <= 0 {
@@ -93,6 +90,11 @@ func Config() error {
 
 	if config.Config.EthereumPrivateKey, exist = os.LookupEnv("ETHEREUM_PRIVATE_KEY"); !exist {
 		return fmt.Errorf("please specify ethereum private key for on-chain requests")
+	}
+
+	// Print configurations
+	if config.Config.DevelopmentMode {
+		log.Println("Configurations: ", config.Config)
 	}
 
 	return nil
