@@ -18,7 +18,7 @@ func ResumePausedAccounts() {
 		for {
 			select {
 			case <-t.C:
-				tryToResumeAllPausedAccounts()
+				TryToResumeAllPausedAccounts()
 			}
 		}
 	}()
@@ -32,7 +32,7 @@ func init() {
 	_isResumeWorkProcessing = false
 }
 
-func tryToResumeAllPausedAccounts() {
+func TryToResumeAllPausedAccounts() {
 	if _isResumeWorkProcessing {
 		// No need to start another one, skip
 		return

@@ -12,6 +12,13 @@ func R(e *gin.Engine) {
 	publicGroup := e.Group("/")
 	PublicEndpoints(publicGroup)
 
+	// Debug Endpoints
+	//if config.Config.DevelopmentMode {
+	//	debugGroup := e.Group("/debug")
+	//	DebugEndpoints(debugGroup)
+	//}
+
+	// API v1
 	v1Group := e.Group("/v1")
 	V1Endpoints(v1Group)
 
