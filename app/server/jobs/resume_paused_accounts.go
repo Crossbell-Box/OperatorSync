@@ -73,7 +73,7 @@ func tryToResumeOnePausedAccount(account *models.Account) bool {
 		Feed: types.Feed{
 			Platform: account.Platform,
 		},
-	})).Find(&pausedFeeds, "transaction = ? OR transaction IS NULL", "").Error; err != nil {
+	})).Where("account_id = ?", account.ID).Find(&pausedFeeds, "transaction = ? OR transaction IS NULL", "").Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			// Something is wrong
 			global.Logger.Errorf("Something is wrong, failed to find the first paused feed of account %s#%d", account.Platform, account.ID)
