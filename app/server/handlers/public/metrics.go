@@ -84,7 +84,7 @@ func calcMetrics() *types.Metrics {
 		})).Count(&pm.Feed)
 
 		global.DB.Model(&models.Account{}).Where("platform = ?", platformID).Count(&pm.Account.Total)
-		global.DB.Model(&models.Account{}).Where("platform = ?", platformID).Where("feeds_count > ?", 0).Count(&m.Character.Valid)
+		global.DB.Model(&models.Account{}).Where("platform = ?", platformID).Where("feeds_count > ?", 0).Count(&m.Account.Valid)
 
 		m.Account.Total += pm.Account.Total
 		m.Account.Valid += pm.Account.Valid
