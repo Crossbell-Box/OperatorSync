@@ -15,4 +15,7 @@ func PublicEndpoints(rg *gin.RouterGroup) {
 	// List platforms
 	rg.GET("/platforms", public.ListPlatforms)
 
+	// Metrics
+	rg.GET("/metrics", public.Metrics)
+
 }

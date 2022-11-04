@@ -10,6 +10,7 @@ func ListEndpoints(ctx *gin.Context) {
 		"GET    /            - List all available endpoints",
 		"GET    /healthcheck - Status and healthcheck",
 		"GET    /platforms   - List all available platforms",
+		"GET    /metrics     - List statics metrics",
 
 		"GET    /v1/:character                                      - Check character status",
 		"POST   /v1/:character                                      - Activate character",
