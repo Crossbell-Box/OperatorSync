@@ -33,7 +33,7 @@ dev-stop:
 dev-down:
 	docker-compose -f deploy/docker-compose/docker-compose.dev.yml down
 
-prod-start: build-docker
+prod-start:
 	docker-compose -f deploy/docker-compose/docker-compose.prod.yml -p operatorsync up -d
 
 prod-stop:
