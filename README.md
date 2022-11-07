@@ -8,7 +8,7 @@ We recommend deploying xSync server in docker or kubernetes.
 
 ### Requirements
 
-- IPFS-Upload-Relay: Please deploy your own `https://github.com/NaturalSelectionLabs/IPFS-Upload-Relay` server.
+- IPFS-Upload-Relay: Please deploy your own [IPFS-Upload-Relay](https://github.com/NaturalSelectionLabs/IPFS-Upload-Relay) server.
 
 ### Docker
 
