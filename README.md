@@ -30,6 +30,11 @@ For more details, please refer to Makefile.
 
 This server parse users' RSS feeds to structured data, and then post them on chain.
 
+### Prepare development environment
+
+1. Make sure you've installed both docker and docker-compose.
+2. Start deps by `make dev`
+
 ### Add a new platform
 
 1. Edit `SUPPORTED_PLATFORM` in `common/consts/platform.go`, add target platform's basic information.
