@@ -9,8 +9,8 @@ build: build/executable
 clean: clean-build
 
 build-docker:
-	docker build . -f deploy/dockerfile/server.Dockerfile -t rss3/crossbell-operator-sync:server
-	docker build . -f deploy/dockerfile/worker.Dockerfile -t rss3/crossbell-operator-sync:worker
+	docker build . -f deploy/dockerfile/server.Dockerfile -t rss3/crossbell-xsync:server
+	docker build . -f deploy/dockerfile/worker.Dockerfile -t rss3/crossbell-xsync:worker
 
 build/contract:
 	mkdir -p build/contract/
@@ -43,8 +43,8 @@ prod-down:
 	docker-compose -f deploy/docker-compose/docker-compose.prod.yml down
 
 clean-docker: dev-down prod-down
-	docker image rm rss3/crossbell-operator-sync:server -f
-	docker image rm rss3/crossbell-operator-sync:worker -f
+	docker image rm rss3/crossbell-xsync:server -f
+	docker image rm rss3/crossbell-xsync:worker -f
 
 build/executable:
 	go build -o ./build/executable/ ./app/server
