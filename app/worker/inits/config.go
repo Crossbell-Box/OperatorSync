@@ -32,7 +32,7 @@ func Config() error {
 	}
 
 	if config.Config.IPFSEndpoint, exist = os.LookupEnv("IPFS_ENDPOINT"); !exist {
-		config.Config.IPFSEndpoint = consts.CONFIG_DEFAULT_IPFS_ENDPOINT
+		return fmt.Errorf("please specify endpoint URI for your IPFS-Upload-Relay instance (https://github.com/NaturalSelectionLabs/IPFS-Upload-Relay)")
 	}
 
 	if config.Config.RedisConnString, exist = os.LookupEnv("REDIS_CONNECTION_STRING"); !exist {

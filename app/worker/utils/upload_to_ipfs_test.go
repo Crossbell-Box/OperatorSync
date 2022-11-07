@@ -10,7 +10,7 @@ import (
 func TestUploadURLToIPFS(t *testing.T) {
 
 	// Init settings
-	config.Config.IPFSEndpoint = "https://ipfs-relay.crossbell.io"
+	config.Config.IPFSEndpoint = ""
 
 	logger, _ := zap.NewDevelopment()
 	defer logger.Sync() // Unable to handle errors here
@@ -36,7 +36,7 @@ func TestUploadURLToIPFS(t *testing.T) {
 func TestUploadVideoToIPFS(t *testing.T) {
 
 	// Init settings
-	config.Config.IPFSEndpoint = "https://ipfs-relay.crossbell.io"
+	config.Config.IPFSEndpoint = ""
 
 	logger, _ := zap.NewDevelopment()
 	defer logger.Sync() // Unable to handle errors here

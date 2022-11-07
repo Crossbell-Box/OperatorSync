@@ -32,7 +32,7 @@ ENV RSSHUB_STATELESS=https://rsshub.app
 ## Direct access http proxy URL, default disabled
 #ENV PROXY_URL=http://localhost:4000
 ## IPFS Upload endpoint
-ENV IPFS_ENDPOINT=https://ipfs-relay.crossbell.io
+#ENV IPFS_ENDPOINT=
 ## Message Queue connection
 ENV MQ_CONNECTION_STRING=nats://localhost:4222
 ## Concurrency control
