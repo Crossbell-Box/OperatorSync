@@ -3,6 +3,7 @@ package chain
 import (
 	"context"
 	"errors"
+	"fmt"
 	crossbellContract "github.com/Crossbell-Box/OperatorSync/app/worker/chain/contract"
 	"github.com/Crossbell-Box/OperatorSync/app/worker/consts"
 	"github.com/Crossbell-Box/OperatorSync/app/worker/global"
@@ -51,14 +52,16 @@ func PostNoteForCharacter(characterIdStr string, metadataUri string, forURI stri
 	// Wait till transaction finish or timeout
 	ctx, cancel := context.WithTimeout(context.Background(), consts.CONFIG_TRANSACTION_TIMEOUT)
 	defer cancel()
-	_, err = bind.WaitMined(ctx, client, tx)
+	rcpt, err := bind.WaitMined(ctx, client, tx)
 	if err != nil {
 		if errors.Is(err, context.DeadlineExceeded) {
 			global.Logger.Errorf("Transaction %s timed out!", tx.Hash().Hex())
-		} else {
-			global.Logger.Errorf("Transaction %s failed with error: %s", tx.Hash().Hex(), err.Error())
 		}
 		return "", err
+	}
+	if rcpt.Status == ethTypes.ReceiptStatusFailed {
+		global.Logger.Errorf("Transaction %s failed", tx.Hash().Hex())
+		return "", fmt.Errorf("transaction failed")
 	}
 
 	return tx.Hash().Hex(), nil
