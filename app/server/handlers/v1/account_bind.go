@@ -105,6 +105,20 @@ func BindAccount(ctx *gin.Context) {
 		// Nope? So it's empty and available to bind.
 		global.Logger.Debugf("Account #%s (%s@%s) not exist, start validating...", reqCharacterID, reqUsername, reqPlatform)
 
+		// Check if operator is set
+		if ok, err := utils.CheckOperator(reqCharacterID); err != nil {
+			global.Logger.Errorf("Failed to check operator for %s", reqCharacterID)
+			// Just ignore
+		} else if !ok {
+			// Oops
+			ctx.JSON(http.StatusOK, gin.H{
+				"ok":      true,
+				"message": "Operator not set properly",
+				"result":  false,
+			})
+			return
+		}
+
 		if ok, err := utils.ValidateAccount(reqCharacterID, reqPlatform, reqUsername); err != nil {
 			global.Logger.Errorf("Account #%s (%s@%s) failed to finish account validate process with error: %s", reqUsername, reqPlatform, reqCharacterID, err.Error())
 			ctx.JSON(http.StatusOK, gin.H{
