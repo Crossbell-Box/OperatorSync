@@ -16,3 +16,8 @@ func (rpc *WorkerRPC) OnChain(request commonTypes.OnChainRequest, response *comm
 	jobs.OnChainNotes(&request, response)
 	return nil
 }
+
+func (rpc *WorkerRPC) CheckOperator(request commonTypes.CheckOperatorRequest, response *commonTypes.CheckOperatorResponse) error {
+	jobs.CheckOperator(&request, response)
+	return nil
+}

@@ -6,8 +6,8 @@ import (
 	"fmt"
 	"github.com/Crossbell-Box/OperatorSync/app/server/consts"
 	"github.com/Crossbell-Box/OperatorSync/app/server/global"
-	"github.com/Crossbell-Box/OperatorSync/app/server/jobs"
 	"github.com/Crossbell-Box/OperatorSync/app/server/models"
+	"github.com/Crossbell-Box/OperatorSync/app/server/utils"
 	commonConsts "github.com/Crossbell-Box/OperatorSync/common/consts"
 	commonGlobal "github.com/Crossbell-Box/OperatorSync/common/global"
 	"github.com/gin-gonic/gin"
@@ -56,7 +56,7 @@ func UnbindAccount(ctx *gin.Context) {
 		})
 	} else {
 
-		if ok, err := jobs.ValidateAccount(reqCharacterID, reqPlatform, reqUsername); err != nil {
+		if ok, err := utils.ValidateAccount(reqCharacterID, reqPlatform, reqUsername); err != nil {
 			global.Logger.Errorf("Account #%s (%s@%s) failed to finish validate request with error: %s", reqUsername, reqPlatform, reqCharacterID, err.Error())
 			ctx.JSON(http.StatusOK, gin.H{
 				"ok":      false,

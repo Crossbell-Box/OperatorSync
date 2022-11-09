@@ -11,4 +11,7 @@ const (
 
 	RPCSETTINGS_OnChainServiceName    = "OnChain" // Should be same as function name
 	RPCSETTINGS_OnChainRequestTimeOut = 3 * time.Minute
+
+	RPCSETTINGS_CheckOperatorServiceName    = "CheckOperator" // Should be same as function name
+	RPCSETTINGS_CheckOperatorRequestTimeOut = 20 * time.Second
 )

@@ -9,6 +9,7 @@ import (
 	"github.com/Crossbell-Box/OperatorSync/app/server/global"
 	"github.com/Crossbell-Box/OperatorSync/app/server/models"
 	"github.com/Crossbell-Box/OperatorSync/app/server/types"
+	"github.com/Crossbell-Box/OperatorSync/app/server/utils"
 	commonConsts "github.com/Crossbell-Box/OperatorSync/common/consts"
 	commonGlobal "github.com/Crossbell-Box/OperatorSync/common/global"
 	commonTypes "github.com/Crossbell-Box/OperatorSync/common/types"
@@ -262,7 +263,7 @@ func feedCollectHandleSucceeded(d *amqp.Delivery) {
 
 			if len(feeds) > 0 {
 				// Post feeds On Chain
-				feedOnChainDispatchWork(&account, feeds)
+				utils.FeedOnChainDispatchWork(&account, feeds)
 			}
 
 			// Update metrics

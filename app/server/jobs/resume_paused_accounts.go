@@ -87,7 +87,8 @@ func tryToResumeOnePausedAccount(account *models.Account) bool {
 
 	sort.Sort(pausedFeeds)
 
-	allSucceeded := true
+	isAllSucceeded := true
+	isAccountTerminated := false
 
 	for index, feed := range pausedFeeds {
 		// Recover feeds' media
@@ -98,11 +99,14 @@ func tryToResumeOnePausedAccount(account *models.Account) bool {
 		}
 
 		// Try to push as many feeds as we can
-		ipfsUri, tx, err := OneFeedOnChain(account, &feed)
+		ipfsUri, tx, err, terminated := utils.OneFeedOnChain(account, &feed)
 		if err != nil {
 			// Oops
 			global.Logger.Errorf("Failed to OnCHain feed %s#%d with error: %s", account.Platform, feed.ID, err.Error())
-			allSucceeded = false
+			isAllSucceeded = false
+			if terminated {
+				isAccountTerminated = true
+			}
 			break
 		} else {
 			global.Logger.Debugf("Succeeded to OnChain feed %s#%d", account.Platform, feed.ID)
@@ -120,8 +124,12 @@ func tryToResumeOnePausedAccount(account *models.Account) bool {
 			Platform: account.Platform,
 		},
 	})).Save(&pausedFeeds)
-	global.DB.Save(account)
 
-	return allSucceeded
+	if !isAccountTerminated {
+		// Update account if not terminated
+		global.DB.Save(account)
+	}
+
+	return isAllSucceeded
 
 }
