@@ -6,14 +6,14 @@ import (
 
 func CheckAndTerminateIfNeed(account *models.Account) bool {
 	// Check operator for character
-	if isOperatorValid, err := CheckOperator(account.CrossbellCharacterID); err != nil {
+	if isOperatorValid, checkOperatorErr := CheckOperator(account.CrossbellCharacterID); checkOperatorErr != nil {
 		// Failed to check operator status, unable to handle now
 		return false
 	} else if !isOperatorValid {
 		// Operator is no longer valid for this character
 		TerminateCharacter(account.CrossbellCharacterID)
 		return true
-	} else if isAccountValid, err := ValidateAccount(account.CrossbellCharacterID, account.Platform, account.Username); err != nil {
+	} else if isAccountValid, validateAccountErr := ValidateAccount(account.CrossbellCharacterID, account.Platform, account.Username); validateAccountErr != nil {
 		// Operator is valid, but failed to check account validate string status, unable to handle now
 		return false
 	} else if !isAccountValid {
