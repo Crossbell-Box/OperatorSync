@@ -1,18 +1,10 @@
 package v1
 
 import (
-	"context"
-	"errors"
 	"fmt"
-	"github.com/Crossbell-Box/OperatorSync/app/server/consts"
 	"github.com/Crossbell-Box/OperatorSync/app/server/global"
-	"github.com/Crossbell-Box/OperatorSync/app/server/models"
-	"github.com/Crossbell-Box/OperatorSync/app/server/types"
 	"github.com/Crossbell-Box/OperatorSync/app/server/utils"
-	commonConsts "github.com/Crossbell-Box/OperatorSync/common/consts"
-	commonGlobal "github.com/Crossbell-Box/OperatorSync/common/global"
 	"github.com/gin-gonic/gin"
-	"gorm.io/gorm"
 	"net/http"
 	"strings"
 	"time"
@@ -25,19 +17,10 @@ func BindAccount(ctx *gin.Context) {
 	reqPlatform := ctx.Param("platform")
 	reqUsername := ctx.Param("username")
 
-	if _, ok := commonConsts.SUPPORTED_PLATFORM[reqPlatform]; !ok {
-		ctx.JSON(http.StatusOK, gin.H{
-			"ok":      false,
-			"message": "Platform not supported",
-		})
-		return
-	}
-
 	// User selectable start time
 	nowTimeStr := time.Unix(0, 0).Format(time.RFC3339)
 	startFromStr := ctx.DefaultQuery("from", nowTimeStr)
 	startFromTime, err := time.Parse(time.RFC3339, startFromStr)
-	isAccountInherit := strings.Contains(strings.ToLower(ctx.DefaultQuery("inherit", "true")), "t")
 	if err != nil {
 		ctx.JSON(http.StatusOK, gin.H{
 			"ok":      false,
@@ -45,158 +28,29 @@ func BindAccount(ctx *gin.Context) {
 		})
 		return
 	}
+	isAccountInherit := strings.Contains(strings.ToLower(ctx.DefaultQuery("inherit", "true")), "t")
 
-	// Check character -> create if not exist
-	if err := global.DB.First(&models.Character{}, "crossbell_character_id = ?", reqCharacterID).Error; errors.Is(err, gorm.ErrRecordNotFound) {
-		global.Logger.Debugf("Character %s doesn't exist, creating...", reqCharacterID)
-		if _, err := createOrRecoverCharacter(reqCharacterID); err != nil {
-			ctx.JSON(http.StatusOK, gin.H{
-				"ok":      false,
-				"message": fmt.Sprintf("Failed to activate character with error: %s", err.Error()),
-			})
-			return
-		}
+	props := utils.BindAccountProps{
+		CrossbellCharacterID: reqCharacterID,
+		Platform:             reqPlatform,
+		Username:             reqUsername,
+		StartFrom:            startFromTime,
+		IsInherit:            isAccountInherit,
 	}
 
-	global.Logger.Debugf("Account #%s (%s@%s) bind request received.", reqCharacterID, reqUsername, reqPlatform)
-
-	var account models.Account
-
-	// Check if accounts already exists
-	if err := global.DB.First(
-		&account,
-		"crossbell_character_id = ? AND platform = ? AND username = ?",
-		reqCharacterID, reqPlatform, reqUsername,
-	).Error; errors.Is(err, gorm.ErrRecordNotFound) {
-		// Not exist
-
-		// Check if already bind by others
-		if err := global.DB.First(
-			&account,
-			"platform = ? AND username = ?",
-			reqPlatform, reqUsername,
-		).Error; !errors.Is(err, gorm.ErrRecordNotFound) && account.CrossbellCharacterID != reqCharacterID {
-			// Already bind but not this one
-			global.Logger.Debugf("Account (%s@%s) has already been occupied by #%s", reqUsername, reqPlatform, reqCharacterID)
-			ctx.JSON(http.StatusOK, gin.H{
-				"ok":      true,
-				"message": fmt.Sprintf("Account (%s@%s) has already been occupied by #%s, please unbind it first.", reqUsername, reqPlatform, reqCharacterID),
-				"result":  false,
-			})
-			return
-		}
-
-		// Check if already bind account on this platform
-		if err := global.DB.First(
-			&account,
-			"crossbell_character_id = ? AND platform = ?",
-			reqCharacterID, reqPlatform,
-		).Error; !errors.Is(err, gorm.ErrRecordNotFound) {
-			// Already bind but not this one
-			global.Logger.Debugf("Account #%s already has an account (%s) on platform %s", reqCharacterID, reqUsername, reqPlatform)
-			ctx.JSON(http.StatusOK, gin.H{
-				"ok":      true,
-				"message": fmt.Sprintf("Account #%s already has an account (%s) on platform %s", reqCharacterID, reqUsername, reqPlatform),
-				"result":  false,
-			})
-			return
-		}
-
-		// Nope? So it's empty and available to bind.
-		global.Logger.Debugf("Account #%s (%s@%s) not exist, start validating...", reqCharacterID, reqUsername, reqPlatform)
-
-		// Check if operator is set
-		if ok, err := utils.CheckOperator(reqCharacterID); err != nil {
-			global.Logger.Errorf("Failed to check operator for %s", reqCharacterID)
-			// Just ignore
-		} else if !ok {
-			// Oops
-			ctx.JSON(http.StatusOK, gin.H{
-				"ok":      true,
-				"message": "Operator not set properly",
-				"result":  false,
-			})
-			return
-		}
-
-		if ok, err := utils.ValidateAccount(reqCharacterID, reqPlatform, reqUsername); err != nil {
-			global.Logger.Errorf("Account #%s (%s@%s) failed to finish account validate process with error: %s", reqUsername, reqPlatform, reqCharacterID, err.Error())
-			ctx.JSON(http.StatusOK, gin.H{
-				"ok":      false,
-				"message": "Failed to finish account validate process.",
-			})
-		} else if ok {
-			global.Logger.Debugf("Account #%s (%s@%s) added.", reqCharacterID, reqUsername, reqPlatform)
-			// Update database
-			possibleDeletedAccount := models.Account{
-				ID: 0,
-			}
-			if isAccountInherit {
-				// Check if is abandoned
-				global.DB.Unscoped().Where(
-					"platform = ? AND username = ?",
-					reqPlatform, reqUsername,
-				).Order("deleted_at DESC").First(
-					&possibleDeletedAccount,
-				)
-			}
-			if possibleDeletedAccount.ID > 0 {
-				// Inherit
-				account.Account = possibleDeletedAccount.Account
-				account.OnChainStatusManageForAccount = possibleDeletedAccount.OnChainStatusManageForAccount
-				// But new
-				account.Account.CrossbellCharacterID = reqCharacterID
-			} else {
-				// Create new
-				account.Account = types.Account{
-					CrossbellCharacterID: reqCharacterID,
-					Platform:             reqPlatform,
-					Username:             reqUsername,
-					LastUpdated:          startFromTime,
-					UpdateInterval:       commonConsts.SUPPORTED_PLATFORM[reqPlatform].MinRefreshGap,
-					NextUpdate:           time.Now(),
-					FeedsCount:           0,
-					NotesCount:           0,
-					MediaUsage:           nil,
-				}
-				account.OnChainStatusManageForAccount = types.OnChainStatusManageForAccount{
-					IsOnChainPaused: false,
-				}
-			}
-			global.DB.Create(&account)
-			// Clear cache
-			listAccountsCacheKey := fmt.Sprintf("%s:%s:%s", consts.CACHE_PREFIX, "accounts:list", reqCharacterID)
-			commonGlobal.Redis.Del(context.Background(), listAccountsCacheKey)
-			// Response
-			ctx.JSON(http.StatusOK, gin.H{
-				"ok":      true,
-				"message": "Account added",
-				"result":  true,
-			})
-		} else {
-			global.Logger.Debugf("Account #%s (%s@%s) no necessary validate info found.", reqCharacterID, reqUsername, reqPlatform)
-			ctx.JSON(http.StatusOK, gin.H{
-				"ok":      true,
-				"message": "Necessary validate info not found",
-				"result":  false,
-			})
-		}
-
-	} else if err != nil {
-		// Failed
-		global.Logger.Errorf("Account #%s (%s@%s) failed to retrieve data from database with error: %s", reqUsername, reqPlatform, reqCharacterID, err.Error())
+	result, message, err := utils.AccountBind(&props)
+	if err != nil {
+		global.Logger.Errorf("Failed to bind account %s (%s) for character #%s with error: %s", reqUsername, reqPlatform, reqCharacterID, err.Error())
 		ctx.JSON(http.StatusOK, gin.H{
 			"ok":      false,
-			"message": "Failed to retrieve data from database.",
+			"message": message,
 		})
 	} else {
-		// Already exists
-		global.Logger.Debugf("Account #%s (%s@%s) record already exists.", reqCharacterID, reqUsername, reqPlatform)
-
 		ctx.JSON(http.StatusOK, gin.H{
 			"ok":      true,
-			"message": "Account already added",
-			"result":  true,
+			"message": message,
+			"result":  result,
 		})
 	}
+
 }
