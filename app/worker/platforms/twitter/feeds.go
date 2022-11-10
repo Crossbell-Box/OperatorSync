@@ -5,6 +5,7 @@ import (
 	"github.com/Crossbell-Box/OperatorSync/app/worker/global"
 	"github.com/Crossbell-Box/OperatorSync/app/worker/types"
 	"github.com/Crossbell-Box/OperatorSync/app/worker/utils"
+	commonConsts "github.com/Crossbell-Box/OperatorSync/common/consts"
 	commonTypes "github.com/Crossbell-Box/OperatorSync/common/types"
 	"regexp"
 	"strings"
@@ -75,7 +76,16 @@ func Feeds(cccs *types.ConcurrencyChannels, work *commonTypes.WorkDispatched, co
 				rawContent = strings.ReplaceAll(rawContent, video[0], "")
 			}
 
-			feed.Media = utils.UploadAllMedia(medias)
+			// Upload media with order
+			for _, mediaUri := range medias {
+				media, err := utils.UploadOneMedia(mediaUri)
+				if err != nil {
+					// Fail to upload, oops
+					return false, nil, commonConsts.ERROR_CODE_FAILED_TO_UPLOAD, err.Error()
+				} else {
+					feed.Media = append(feed.Media, *media)
+				}
+			}
 
 			feed.Content = rawContent
 
