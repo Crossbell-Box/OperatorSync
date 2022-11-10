@@ -21,17 +21,14 @@ func UploadAllMedia(mediaUris []string) []types.Media {
 	var ipfsUploadWg sync.WaitGroup
 	ipfsUploadResultChannel := make(chan types.Media, len(mediaUriSet))
 	for uri := range mediaUriSet {
-		unescapedUri := html.UnescapeString(uri)
+		innerUri := uri
 		ipfsUploadWg.Add(1)
 		go func() {
-			media := types.Media{
-				OriginalURI: unescapedUri,
-			}
-			var err error
-			if media.FileName, media.IPFSUri, media.FileSize, media.ContentType, media.AdditionalProps, err = UploadURLToIPFS(media.OriginalURI, false); err != nil {
-				global.Logger.Error("Failed to upload link (", media.OriginalURI, ") onto IPFS: ", err.Error())
+			media, err := UploadOneMedia(innerUri)
+			if err != nil {
+				global.Logger.Error("Failed to upload link (", innerUri, ") onto IPFS: ", err.Error())
 			} else {
-				ipfsUploadResultChannel <- media
+				ipfsUploadResultChannel <- *media
 			}
 			ipfsUploadWg.Done()
 		}()
@@ -47,4 +44,17 @@ func UploadAllMedia(mediaUris []string) []types.Media {
 
 	return medias
 
+}
+
+func UploadOneMedia(mediaUri string) (*types.Media, error) {
+	unescapedUri := html.UnescapeString(mediaUri)
+	media := types.Media{
+		OriginalURI: unescapedUri,
+	}
+	var err error
+	if media.FileName, media.IPFSUri, media.FileSize, media.ContentType, media.AdditionalProps, err = UploadURLToIPFS(media.OriginalURI, false); err != nil {
+		return nil, err
+	} else {
+		return &media, nil
+	}
 }
