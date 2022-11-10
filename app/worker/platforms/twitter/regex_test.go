@@ -32,3 +32,12 @@ func TestVideoRegex(t *testing.T) {
 	t.Log(medias)
 	t.Log(rawContent)
 }
+
+func TestEndingSpaceRegex(t *testing.T) {
+	rawContent1 := "发送带有媒体资源文件的推文测试（请注意媒体顺序） 2211101058<br><br><br><br>"
+	rawContent2 := "Line 1 <br> Line 2 <br /> Line 3 <br> <br/> <br />  "
+	clearedStr1 := endingSpacesRegex.ReplaceAllString(rawContent1, "")
+	clearedStr2 := endingSpacesRegex.ReplaceAllString(rawContent2, "")
+	t.Log(clearedStr1)
+	t.Log(clearedStr2)
+}

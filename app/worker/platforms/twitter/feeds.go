@@ -12,8 +12,9 @@ import (
 )
 
 var (
-	imageRegex *regexp.Regexp
-	videoRegex *regexp.Regexp
+	imageRegex        *regexp.Regexp
+	videoRegex        *regexp.Regexp
+	endingSpacesRegex *regexp.Regexp
 )
 
 func init() {
@@ -21,6 +22,9 @@ func init() {
 	// Image regex
 	imageRegex = regexp.MustCompile(`<img[^>]+\bsrc=["']([^"']+)["'].*?/?>`)
 	videoRegex = regexp.MustCompile(`<video[^>]+\bsrc=["']([^"']+)["'].*?</video>`)
+
+	// Ending spaces
+	endingSpacesRegex = regexp.MustCompile(`((<br\s*?/?>)|\s)+$`)
 }
 
 func Feeds(cccs *types.ConcurrencyChannels, work *commonTypes.WorkDispatched, collectLink string) (
@@ -75,6 +79,8 @@ func Feeds(cccs *types.ConcurrencyChannels, work *commonTypes.WorkDispatched, co
 				medias = append(medias, video[1])
 				rawContent = strings.ReplaceAll(rawContent, video[0], "")
 			}
+
+			rawContent = endingSpacesRegex.ReplaceAllString(rawContent, "")
 
 			// Upload media with order
 			for _, mediaUri := range medias {
