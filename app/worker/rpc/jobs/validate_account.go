@@ -35,28 +35,33 @@ func ValidateAccounts(validateReq *commonTypes.ValidateRequest, response *common
 		isValid     bool
 	)
 
+	var accountValidateFunc func(string, string) (bool, uint, string, bool)
+
 	switch validateReq.Platform {
 	case "medium":
-		isSucceeded, code, msg, isValid = medium.Account(validateReq.Username, validateString)
+		accountValidateFunc = medium.Account
 	case "tiktok":
-		isSucceeded, code, msg, isValid = tiktok.Account(validateReq.Username, validateString)
+		accountValidateFunc = tiktok.Account
 	case "pinterest":
-		isSucceeded, code, msg, isValid = pinterest.Account(validateReq.Username, validateString)
+		accountValidateFunc = pinterest.Account
 	case "twitter":
-		isSucceeded, code, msg, isValid = twitter.Account(validateReq.Username, validateString)
+		accountValidateFunc = twitter.Account
 	case "tg_channel":
-		isSucceeded, code, msg, isValid = tg_channel.Account(validateReq.Username, validateString)
+		accountValidateFunc = tg_channel.Account
 	case "substack":
-		isSucceeded, code, msg, isValid = substack.Account(validateReq.Username, validateString)
+		accountValidateFunc = substack.Account
 	case "pixiv":
-		isSucceeded, code, msg, isValid = pixiv.Account(validateReq.Username, validateString)
+		accountValidateFunc = pixiv.Account
 	case "y2b_channel":
-		isSucceeded, code, msg, isValid = y2b_channel.Account(validateReq.Username, validateString)
+		accountValidateFunc = y2b_channel.Account
 	case "mastodon":
-		isSucceeded, code, msg, isValid = mastodon.Account(validateReq.Username, validateString)
+		accountValidateFunc = mastodon.Account
 	default:
 		ValidateHandleFailed(commonConsts.ERROR_CODE_UNSUPPORTED_PLATFORM, "Unsupported platform", response)
+		return
 	}
+
+	isSucceeded, code, msg, isValid = accountValidateFunc(validateReq.Username, validateString)
 
 	ValidateHandleResponse(isSucceeded, code, msg, isValid, response)
 
