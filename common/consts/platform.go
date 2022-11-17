@@ -84,4 +84,12 @@ var SUPPORTED_PLATFORM = map[string]platform{
 		IsMediaAttachments: true,
 		HTML2Markdown:      false,
 	},
+	"mastodon": {
+		Name:               "Mastodon",
+		FeedLink:           "https://{{instance}}/@{{username}}.rss",
+		MinRefreshGap:      10 * time.Minute,
+		MaxRefreshGap:      1 * time.Hour,
+		IsMediaAttachments: true,
+		HTML2Markdown:      false,
+	},
 }

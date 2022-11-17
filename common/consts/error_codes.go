@@ -9,6 +9,7 @@ package consts
 
 const (
 	ERROR_CODE_UNSUPPORTED_PLATFORM           = 10101 // Submit request errors
+	ERROR_CODE_INVALID_FORMAT                 = 10102
 	ERROR_CODE_HTTP_REQUEST_FAILED            = 10201 // Request errors
 	ERROR_CODE_FAILED_TO_PARSE_FEEDS          = 10202
 	ERROR_CODE_FAILED_TO_FIND_NECESSARY_FIELD = 10203

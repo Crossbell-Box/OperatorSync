@@ -3,6 +3,7 @@ package jobs
 import (
 	"fmt"
 	"github.com/Crossbell-Box/OperatorSync/app/worker/global"
+	"github.com/Crossbell-Box/OperatorSync/app/worker/platforms/mastodon"
 	"github.com/Crossbell-Box/OperatorSync/app/worker/platforms/medium"
 	"github.com/Crossbell-Box/OperatorSync/app/worker/platforms/pinterest"
 	"github.com/Crossbell-Box/OperatorSync/app/worker/platforms/pixiv"
@@ -51,6 +52,8 @@ func ValidateAccounts(validateReq *commonTypes.ValidateRequest, response *common
 		isSucceeded, code, msg, isValid = pixiv.Account(validateReq.Username, validateString)
 	case "y2b_channel":
 		isSucceeded, code, msg, isValid = y2b_channel.Account(validateReq.Username, validateString)
+	case "mastodon":
+		isSucceeded, code, msg, isValid = mastodon.Account(validateReq.Username, validateString)
 	default:
 		ValidateHandleFailed(commonConsts.ERROR_CODE_UNSUPPORTED_PLATFORM, "Unsupported platform", response)
 	}
