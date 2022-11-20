@@ -56,6 +56,8 @@ func ValidateAccounts(validateReq *commonTypes.ValidateRequest, response *common
 		accountValidateFunc = y2b_channel.Account
 	case "mastodon":
 		accountValidateFunc = mastodon.Account
+	case "jike":
+		accountValidateFunc = jike.Account
 	default:
 		ValidateHandleFailed(commonConsts.ERROR_CODE_UNSUPPORTED_PLATFORM, "Unsupported platform", response)
 		return
