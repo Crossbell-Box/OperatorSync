@@ -61,15 +61,17 @@ func AccountBind(props *BindAccountProps) (bool, string, error) {
 			return false, fmt.Sprintf("Account (%s@%s) has already been occupied by #%s, please unbind it first.", props.Username, props.Platform, props.CrossbellCharacterID), nil
 		}
 
-		// Check if already bind account on this platform
-		if err := global.DB.First(
-			&account,
-			"crossbell_character_id = ? AND platform = ?",
-			props.CrossbellCharacterID, props.Platform,
-		).Error; !errors.Is(err, gorm.ErrRecordNotFound) {
-			// Already bind but not this one
-			global.Logger.Debugf("Account #%s already has an account (%s) on platform %s", props.CrossbellCharacterID, props.Username, props.Platform)
-			return false, fmt.Sprintf("Account #%s already has an account (%s) on platform %s", props.CrossbellCharacterID, props.Username, props.Platform), nil
+		if commonConsts.SUPPORTED_PLATFORM[props.Platform].Limit1Account {
+			// Check if already bind account on this platform
+			if err := global.DB.First(
+				&account,
+				"crossbell_character_id = ? AND platform = ?",
+				props.CrossbellCharacterID, props.Platform,
+			).Error; !errors.Is(err, gorm.ErrRecordNotFound) {
+				// Already bind but not this one
+				global.Logger.Debugf("Account #%s already has an account (%s) on platform %s", props.CrossbellCharacterID, props.Username, props.Platform)
+				return false, fmt.Sprintf("Account #%s already has an account (%s) on platform %s", props.CrossbellCharacterID, props.Username, props.Platform), nil
+			}
 		}
 
 		// Nope? So it's empty and available to bind.

@@ -8,6 +8,7 @@ type platform = struct {
 	FeedLink      string
 	MinRefreshGap time.Duration
 	MaxRefreshGap time.Duration
+	Limit1Account bool
 
 	// OnChain Settings
 	IsMediaAttachments bool
@@ -27,6 +28,7 @@ var SUPPORTED_PLATFORM = map[string]platform{
 		MaxRefreshGap:      1 * time.Hour,
 		IsMediaAttachments: false,
 		HTML2Markdown:      true,
+		Limit1Account:      true,
 	},
 	"tiktok": {
 		Name:               "TikTok",
@@ -35,6 +37,7 @@ var SUPPORTED_PLATFORM = map[string]platform{
 		MaxRefreshGap:      1 * time.Hour,
 		IsMediaAttachments: true,
 		HTML2Markdown:      false,
+		Limit1Account:      true,
 	},
 	"pinterest": {
 		Name:               "Pinterest",
@@ -43,6 +46,7 @@ var SUPPORTED_PLATFORM = map[string]platform{
 		MaxRefreshGap:      1 * time.Hour,
 		IsMediaAttachments: true,
 		HTML2Markdown:      false,
+		Limit1Account:      true,
 	},
 	"twitter": {
 		Name:               "Twitter",
@@ -51,6 +55,7 @@ var SUPPORTED_PLATFORM = map[string]platform{
 		MaxRefreshGap:      1 * time.Hour,
 		IsMediaAttachments: true,
 		HTML2Markdown:      false,
+		Limit1Account:      true,
 	},
 	"tg_channel": {
 		Name:               "Telegram Channel",
@@ -59,6 +64,7 @@ var SUPPORTED_PLATFORM = map[string]platform{
 		MaxRefreshGap:      1 * time.Hour,
 		IsMediaAttachments: false,
 		HTML2Markdown:      true,
+		Limit1Account:      true,
 	},
 	"substack": {
 		Name:               "Substack",
@@ -67,6 +73,7 @@ var SUPPORTED_PLATFORM = map[string]platform{
 		MaxRefreshGap:      1 * time.Hour,
 		IsMediaAttachments: false,
 		HTML2Markdown:      true,
+		Limit1Account:      true,
 	},
 	"pixiv": {
 		Name:               "pixiv",
@@ -75,6 +82,7 @@ var SUPPORTED_PLATFORM = map[string]platform{
 		MaxRefreshGap:      12 * time.Hour,
 		IsMediaAttachments: true,
 		HTML2Markdown:      false,
+		Limit1Account:      true,
 	},
 	"y2b_channel": {
 		Name:               "YouTube Channel",
@@ -83,6 +91,7 @@ var SUPPORTED_PLATFORM = map[string]platform{
 		MaxRefreshGap:      12 * time.Hour,
 		IsMediaAttachments: true,
 		HTML2Markdown:      false,
+		Limit1Account:      true,
 	},
 	"mastodon": {
 		Name:               "Mastodon",
@@ -91,6 +100,7 @@ var SUPPORTED_PLATFORM = map[string]platform{
 		MaxRefreshGap:      1 * time.Hour,
 		IsMediaAttachments: true,
 		HTML2Markdown:      false,
+		Limit1Account:      false,
 	},
 	"jike": {
 		Name:               "Jike",
@@ -99,5 +109,6 @@ var SUPPORTED_PLATFORM = map[string]platform{
 		MaxRefreshGap:      1 * time.Hour,
 		IsMediaAttachments: true,
 		HTML2Markdown:      false,
+		Limit1Account:      true,
 	},
 }
