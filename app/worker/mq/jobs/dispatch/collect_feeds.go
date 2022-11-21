@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"github.com/Crossbell-Box/OperatorSync/app/worker/global"
 	"github.com/Crossbell-Box/OperatorSync/app/worker/mq/jobs/callback"
+	"github.com/Crossbell-Box/OperatorSync/app/worker/platforms/jike"
 	"github.com/Crossbell-Box/OperatorSync/app/worker/platforms/mastodon"
 	"github.com/Crossbell-Box/OperatorSync/app/worker/platforms/medium"
 	"github.com/Crossbell-Box/OperatorSync/app/worker/platforms/pinterest"
@@ -65,6 +66,8 @@ func ProcessFeeds(cccs *types.ConcurrencyChannels, ch *amqp.Channel, qRetrieveNa
 		feedCollectFunc = y2b_channel.Feeds
 	case "mastodon":
 		feedCollectFunc = mastodon.Feeds
+	case "jike":
+		feedCollectFunc = jike.Feeds
 	default:
 		// Unable to handle
 		callback.FeedsHandleFailed(ch, qRetrieveName, &workDispatched, acceptTime, commonConsts.ERROR_CODE_UNSUPPORTED_PLATFORM, "Unsupported platform")
