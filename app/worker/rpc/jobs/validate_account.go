@@ -3,6 +3,7 @@ package jobs
 import (
 	"fmt"
 	"github.com/Crossbell-Box/OperatorSync/app/worker/global"
+	"github.com/Crossbell-Box/OperatorSync/app/worker/platforms/jike"
 	"github.com/Crossbell-Box/OperatorSync/app/worker/platforms/mastodon"
 	"github.com/Crossbell-Box/OperatorSync/app/worker/platforms/medium"
 	"github.com/Crossbell-Box/OperatorSync/app/worker/platforms/pinterest"

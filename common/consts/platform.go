@@ -94,7 +94,7 @@ var SUPPORTED_PLATFORM = map[string]platform{
 	},
 	"jike": {
 		Name:               "Jike",
-		FeedLink:           "{{rsshub_stateless}}/jike/user/@{{username}}",
+		FeedLink:           "{{rsshub_stateless}}/jike/user/{{username}}",
 		MinRefreshGap:      10 * time.Minute,
 		MaxRefreshGap:      1 * time.Hour,
 		IsMediaAttachments: true,
