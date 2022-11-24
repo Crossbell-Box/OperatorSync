@@ -9,6 +9,11 @@ type serverConfig struct {
 
 	IsMainServer bool // Works on cluster mode
 
+	HeartBeatWebhooks struct { // Create a heartbeat request when ...
+		FeedCollect   string
+		AccountResume string
+	}
+
 	commonConfig.Config
 }
 

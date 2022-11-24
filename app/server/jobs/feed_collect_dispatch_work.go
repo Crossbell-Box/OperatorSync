@@ -3,12 +3,14 @@ package jobs
 import (
 	"context"
 	"encoding/json"
+	"github.com/Crossbell-Box/OperatorSync/app/server/config"
 	"github.com/Crossbell-Box/OperatorSync/app/server/global"
 	"github.com/Crossbell-Box/OperatorSync/app/server/models"
 	commonConsts "github.com/Crossbell-Box/OperatorSync/common/consts"
 	commonGlobal "github.com/Crossbell-Box/OperatorSync/common/global"
 	commonTypes "github.com/Crossbell-Box/OperatorSync/common/types"
 	amqp "github.com/rabbitmq/amqp091-go"
+	"net/http"
 	"time"
 )
 
@@ -50,6 +52,15 @@ func FeedCollectStartDispatchWork() {
 
 func dispatchAllFeedCollectWorks(ch *amqp.Channel, queueName string) {
 	global.Logger.Debug("Start dispatching feeds collect works...")
+
+	if config.Config.HeartBeatWebhooks.FeedCollect != "" {
+		// Send heartbeat packet
+		global.Logger.Debug("Sending feed collect heartbeat packet")
+		_, err := (&http.Client{}).Get(config.Config.HeartBeatWebhooks.FeedCollect) // Ignore response
+		if err != nil {
+			global.Logger.Errorf("Failed to send feed collect heartbeat packet with error: %s", err.Error())
+		}
+	}
 
 	nowTime := time.Now()
 

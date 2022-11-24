@@ -3,6 +3,7 @@ package inits
 import (
 	"github.com/Crossbell-Box/OperatorSync/app/server/config"
 	"github.com/Crossbell-Box/OperatorSync/app/server/consts"
+	"github.com/Crossbell-Box/OperatorSync/app/worker/utils"
 	commonConsts "github.com/Crossbell-Box/OperatorSync/common/consts"
 	"log"
 	"os"
@@ -30,6 +31,18 @@ func Config() error {
 		config.Config.WorkerRPCPort = commonConsts.CONFIG_DEFAULT_WORKER_RPC_PORT
 	}
 	config.Config.IsMainServer = strings.Contains(strings.ToLower(os.Getenv("MAIN_SERVER")), "t")
+
+	if config.Config.IsMainServer {
+		// Check jobs webhook
+		if config.Config.HeartBeatWebhooks.FeedCollect, exist = os.LookupEnv("HEARTBEAT_WEBHOOK_FEED_COLLECT");
+			!exist || !utils.ValidateUri(config.Config.HeartBeatWebhooks.FeedCollect) {
+			config.Config.HeartBeatWebhooks.FeedCollect = "" // Nope
+		}
+		if config.Config.HeartBeatWebhooks.AccountResume, exist = os.LookupEnv("HEARTBEAT_WEBHOOK_ACCOUNT_RESUME");
+			!exist || !utils.ValidateUri(config.Config.HeartBeatWebhooks.AccountResume) {
+			config.Config.HeartBeatWebhooks.AccountResume = "" // Nope
+		}
+	}
 
 	config.Config.DevelopmentMode = !strings.Contains(strings.ToLower(os.Getenv("MODE")), "prod")
 

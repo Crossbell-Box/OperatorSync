@@ -2,11 +2,13 @@ package jobs
 
 import (
 	"errors"
+	"github.com/Crossbell-Box/OperatorSync/app/server/config"
 	"github.com/Crossbell-Box/OperatorSync/app/server/global"
 	"github.com/Crossbell-Box/OperatorSync/app/server/models"
 	"github.com/Crossbell-Box/OperatorSync/app/server/types"
 	"github.com/Crossbell-Box/OperatorSync/app/server/utils"
 	"gorm.io/gorm"
+	"net/http"
 	"sort"
 	"time"
 )
@@ -42,6 +44,15 @@ func TryToResumeAllPausedAccounts() {
 	_isResumeWorkProcessing = true
 
 	global.Logger.Debug("Start trying to resume all paused accounts...")
+
+	if config.Config.HeartBeatWebhooks.AccountResume != "" {
+		// Send heartbeat packet
+		global.Logger.Debug("Sending account resume heartbeat packet")
+		_, err := (&http.Client{}).Get(config.Config.HeartBeatWebhooks.AccountResume) // Ignore response
+		if err != nil {
+			global.Logger.Errorf("Failed to send account resume heartbeat packet with error: %s", err.Error())
+		}
+	}
 
 	var pausedAccounts []models.Account
 
