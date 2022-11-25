@@ -8,7 +8,7 @@ import (
 
 type Character struct {
 	// Database related fields
-	CreatedAt time.Time      `json:"-"`
+	CreatedAt time.Time      `json:"created_at"`
 	UpdatedAt time.Time      `json:"-"`
 	DeletedAt gorm.DeletedAt `gorm:"index" json:"-"`
 
