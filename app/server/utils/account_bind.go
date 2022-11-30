@@ -83,10 +83,10 @@ func AccountBind(props *BindAccountProps) (bool, string, error) {
 			return false, "Failed to check on-chain data", err
 		} else if !isOperatorSet {
 			// Oops
-			return false, "Operator not set properly", nil
+			return false, "Operator not set", nil
 		} else if !IsInConnectedAccounts(props.Platform, props.Username, connectedAccounts) {
 			// Oops
-			return false, "Target account not connected properly", nil
+			return false, "Target account not connected", nil
 		}
 
 		if ok, err := ValidateAccount(props.CrossbellCharacterID, props.Platform, props.Username); err != nil {
