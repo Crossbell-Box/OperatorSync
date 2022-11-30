@@ -5,6 +5,7 @@ import (
 	"github.com/Crossbell-Box/OperatorSync/app/worker/chain"
 	"github.com/Crossbell-Box/OperatorSync/app/worker/indexer"
 	commonTypes "github.com/Crossbell-Box/OperatorSync/common/types"
+	"strings"
 )
 
 func CheckOnChainData(workDispatched *commonTypes.CheckOnChainDataRequest, response *commonTypes.CheckOnChainDataResponse) {
@@ -40,9 +41,9 @@ func CheckOnChainData(workDispatched *commonTypes.CheckOnChainDataRequest, respo
 		return
 	}
 
-	targetConnectedAccount := fmt.Sprintf("csb://account:%s@%s", workDispatched.Account, workDispatched.Platform)
+	targetConnectedAccount := strings.ToLower(fmt.Sprintf("csb://account:%s@%s", workDispatched.Account, workDispatched.Platform))
 	for _, connectedAccount := range metadata.Content.ConnectedAccounts {
-		if connectedAccount == targetConnectedAccount {
+		if strings.ToLower(connectedAccount) == targetConnectedAccount {
 			*response = commonTypes.CheckOnChainDataResponse{
 				IsSucceeded:        true,
 				Message:            "",
