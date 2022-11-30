@@ -42,6 +42,15 @@ func AccountUnbind(props *UnbindAccountProps) (bool, string, error) {
 		return false, "Failed to retrieve data from database.", err
 	} else {
 
+		//// Check if connected account is not removed
+		//if _, isAccountConnected, err := CheckOnChainData(props.CrossbellCharacterID, props.Platform, props.Username); err != nil {
+		//	global.Logger.Errorf("Failed to check operator for %s", props.CrossbellCharacterID)
+		//	// Just ignore
+		//} else if isAccountConnected {
+		//	// Oops
+		//	return false, "Account not disconnected", nil
+		//}
+
 		if ok, err := ValidateAccount(props.CrossbellCharacterID, props.Platform, props.Username); err != nil {
 			global.Logger.Errorf("Account #%s (%s@%s) failed to finish validate request with error: %s", props.Username, props.Platform, props.CrossbellCharacterID, err.Error())
 			return false, "Failed to finish account validate process.", err

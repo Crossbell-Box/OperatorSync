@@ -8,24 +8,26 @@ import (
 	"time"
 )
 
-func CheckOperator(crossbellCharacterID string) (bool, error) {
+func CheckOnChainData(crossbellCharacterID string, platform string, account string) (bool, bool, error) {
 
 	// Why return true as default result?
 	// Cause if check error, system might mistakenly
 	// terminate users' accounts for false.
 
-	checkRequest := commonTypes.CheckOperatorRequest{
+	checkRequest := commonTypes.CheckOnChainDataRequest{
 		CrossbellCharacterID: crossbellCharacterID,
+		Platform:             platform,
+		Account:              account,
 	}
 
-	var checkResponse commonTypes.CheckOperatorResponse
+	var checkResponse commonTypes.CheckOnChainDataResponse
 
 	// Start request
 	errChan := make(chan error, 1)
 
 	go func() {
 		errChan <- global.RPC.Call(
-			fmt.Sprintf("%s.%s", commonConsts.RPCSETTINGS_BaseServiceName, commonConsts.RPCSETTINGS_CheckOperatorServiceName),
+			fmt.Sprintf("%s.%s", commonConsts.RPCSETTINGS_BaseServiceName, commonConsts.RPCSETTINGS_CheckOnChainDataServiceName),
 			checkRequest,
 			&checkResponse,
 		)
@@ -33,25 +35,25 @@ func CheckOperator(crossbellCharacterID string) (bool, error) {
 
 	// Set timeout
 	select {
-	case <-time.After(commonConsts.RPCSETTINGS_CheckOperatorRequestTimeOut):
+	case <-time.After(commonConsts.RPCSETTINGS_CheckOnChainDataRequestTimeOut):
 		// Timeout
 		global.Logger.Errorf("Check Operator request timeout...")
-		return true, fmt.Errorf("check operator request timeout")
+		return true, false, fmt.Errorf("check operator request timeout")
 
 	case err := <-errChan:
 		if err != nil {
 			global.Logger.Errorf("Failed to receive operator check response with error: %s", err.Error())
-			return true, err
+			return true, false, err
 		}
 	}
 
-	// Check operator response
+	// Check on-chain data response
 	if !checkResponse.IsSucceeded {
 		// Something is wrong
-		global.Logger.Errorf("Check Operator work failed with error: %s", checkResponse.Message)
-		return true, fmt.Errorf(checkResponse.Message)
+		global.Logger.Errorf("Check OnChain data work failed with error: %s", checkResponse.Message)
+		return true, false, fmt.Errorf(checkResponse.Message)
 	}
 
-	return checkResponse.IsOperatorValid, nil
+	return checkResponse.IsOperatorValid, checkResponse.IsAccountConnected, nil
 
 }

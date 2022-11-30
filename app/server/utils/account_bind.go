@@ -78,12 +78,15 @@ func AccountBind(props *BindAccountProps) (bool, string, error) {
 		global.Logger.Debugf("Account #%s (%s@%s) not exist, start validating...", props.CrossbellCharacterID, props.Username, props.Platform)
 
 		// Check if operator is set
-		if ok, err := CheckOperator(props.CrossbellCharacterID); err != nil {
+		if isOperatorSet, isAccountConnected, err := CheckOnChainData(props.CrossbellCharacterID, props.Platform, props.Username); err != nil {
 			global.Logger.Errorf("Failed to check operator for %s", props.CrossbellCharacterID)
 			// Just ignore
-		} else if !ok {
+		} else if !isOperatorSet {
 			// Oops
 			return false, "Operator not set properly", nil
+		} else if !isAccountConnected {
+			// Oops
+			return false, "Target account not connected properly", nil
 		}
 
 		if ok, err := ValidateAccount(props.CrossbellCharacterID, props.Platform, props.Username); err != nil {

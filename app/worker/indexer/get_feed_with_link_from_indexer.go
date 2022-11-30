@@ -1,4 +1,4 @@
-package utils
+package indexer
 
 import (
 	"encoding/json"
@@ -8,7 +8,7 @@ import (
 	"net/http"
 )
 
-type IndexerResponse struct {
+type feedWithLinkIndexerResponse struct {
 	List []struct {
 		//CharacterID     uint   `json:"characterId"`
 		//NoteID          uint   `json:"noteId"`
@@ -46,7 +46,7 @@ func GetFeedWithLinkFromIndexer(link string) (string, string, error) {
 	}
 
 	// Parse response
-	var res IndexerResponse
+	var res feedWithLinkIndexerResponse
 	err = json.NewDecoder(rawRes.Body).Decode(&res)
 	if err != nil {
 		global.Logger.Errorf("Failed to parse request for indexer query %s with error: %s", link, err.Error())

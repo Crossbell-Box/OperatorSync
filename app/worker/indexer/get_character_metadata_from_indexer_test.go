@@ -1,4 +1,4 @@
-package utils
+package indexer
 
 import (
 	"github.com/Crossbell-Box/OperatorSync/app/worker/config"
@@ -7,7 +7,7 @@ import (
 	"testing"
 )
 
-func TestGetFeedWithLinkFromIndexer(t *testing.T) {
+func TestGetCharacterMetadataFromIndexer(t *testing.T) {
 
 	// Init settings
 	config.Config.CrossbellIndexer = "https://indexer.crossbell.io"
@@ -17,8 +17,10 @@ func TestGetFeedWithLinkFromIndexer(t *testing.T) {
 	global.Logger = logger.Sugar()
 
 	// Defile variables
-	link := "https://twitter.com/NyaRSS3/status/1534713583270998018"
+	characterId1 := "451"
+	characterId2 := "19"
 
 	// Run test
-	t.Log(GetFeedWithLinkFromIndexer(link))
+	t.Log(GetCharacterMetadataFromIndexer(characterId1))
+	t.Log(GetCharacterMetadataFromIndexer(characterId2))
 }

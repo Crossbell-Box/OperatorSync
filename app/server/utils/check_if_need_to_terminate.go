@@ -5,8 +5,8 @@ import (
 )
 
 func CheckAndTerminateIfNeed(account *models.Account) bool {
-	// Check operator for character
-	if isOperatorValid, checkOperatorErr := CheckOperator(account.CrossbellCharacterID); checkOperatorErr != nil {
+	// Check operator for character, ignore metadata platform changes
+	if isOperatorValid, _, checkOnChainDataErr := CheckOnChainData(account.CrossbellCharacterID, account.Platform, account.Username); checkOnChainDataErr != nil {
 		// Failed to check operator status, unable to handle now
 		return false
 	} else if !isOperatorValid {

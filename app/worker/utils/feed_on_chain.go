@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/Crossbell-Box/OperatorSync/app/worker/chain"
 	"github.com/Crossbell-Box/OperatorSync/app/worker/global"
+	"github.com/Crossbell-Box/OperatorSync/app/worker/indexer"
 	"github.com/Crossbell-Box/OperatorSync/app/worker/types"
 	commonConsts "github.com/Crossbell-Box/OperatorSync/common/consts"
 	commonTypes "github.com/Crossbell-Box/OperatorSync/common/types"
@@ -16,7 +17,7 @@ func FeedOnChain(work *commonTypes.OnChainRequest) (string, string, error) {
 	// Step -1: Check if feed with this uri (if any) is already on chain
 	if ValidateUri(work.Link) {
 		// Get feed with link from indexer
-		ipfsUri, tx, err := GetFeedWithLinkFromIndexer(work.Link)
+		ipfsUri, tx, err := indexer.GetFeedWithLinkFromIndexer(work.Link)
 		if err == nil && ipfsUri != "" && tx != "" {
 			// Already post
 			return ipfsUri, tx, nil
