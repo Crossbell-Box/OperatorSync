@@ -77,9 +77,9 @@ func AccountBind(props *BindAccountProps) (bool, string, error) {
 		// Nope? So it's empty and available to bind.
 		global.Logger.Debugf("Account #%s (%s@%s) not exist, start validating...", props.CrossbellCharacterID, props.Username, props.Platform)
 
-		// Check if operator is set
+		// Check on-chain data
 		if isOperatorSet, connectedAccounts, err := CheckOnChainData(props.CrossbellCharacterID); err != nil {
-			global.Logger.Errorf("Failed to check operator for %s", props.CrossbellCharacterID)
+			global.Logger.Errorf("Failed to check on-chain data for %s", props.CrossbellCharacterID)
 			return false, "Failed to check on-chain data", err
 		} else if !isOperatorSet {
 			// Oops

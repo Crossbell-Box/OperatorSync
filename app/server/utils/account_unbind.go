@@ -9,6 +9,7 @@ import (
 	"github.com/Crossbell-Box/OperatorSync/app/server/models"
 	commonConsts "github.com/Crossbell-Box/OperatorSync/common/consts"
 	commonGlobal "github.com/Crossbell-Box/OperatorSync/common/global"
+	commonTypes "github.com/Crossbell-Box/OperatorSync/common/types"
 	"gorm.io/gorm"
 )
 
@@ -42,19 +43,30 @@ func AccountUnbind(props *UnbindAccountProps) (bool, string, error) {
 		return false, "Failed to retrieve data from database.", err
 	} else {
 
-		//// Check if connected account is not removed
-		//if _, isAccountConnected, err := CheckOnChainData(props.CrossbellCharacterID, props.Platform, props.Username); err != nil {
-		//	global.Logger.Errorf("Failed to check operator for %s", props.CrossbellCharacterID)
-		//	// Just ignore
-		//} else if isAccountConnected {
-		//	// Oops
-		//	return false, "Account not disconnected", nil
-		//}
+		var (
+			isOperatorSet          bool = true
+			isAccountInMetadata    bool = true
+			isAccountHasValidation bool = true
+		)
 
-		if ok, err := ValidateAccount(props.CrossbellCharacterID, props.Platform, props.Username); err != nil {
+		var connectedAccounts []commonTypes.Account
+
+		// Check if connected account is not removed
+		isOperatorSet, connectedAccounts, err = CheckOnChainData(props.CrossbellCharacterID)
+		if err != nil {
+			global.Logger.Errorf("Failed to check on-chain data for %s", props.CrossbellCharacterID)
+			return false, "Failed to check on-chain data.", err
+		}
+
+		isAccountInMetadata = IsInConnectedAccounts(props.Platform, props.Username, connectedAccounts)
+
+		isAccountHasValidation, err = ValidateAccount(props.CrossbellCharacterID, props.Platform, props.Username)
+		if err != nil {
 			global.Logger.Errorf("Account #%s (%s@%s) failed to finish validate request with error: %s", props.Username, props.Platform, props.CrossbellCharacterID, err.Error())
 			return false, "Failed to finish account validate process.", err
-		} else if !ok {
+		}
+
+		if !isOperatorSet || !isAccountInMetadata || !isAccountHasValidation {
 			global.Logger.Debugf("Account #%s (%s@%s) unbind.", props.CrossbellCharacterID, props.Username, props.Platform)
 			// Update database
 			global.DB.Delete(&account)
@@ -65,7 +77,7 @@ func AccountUnbind(props *UnbindAccountProps) (bool, string, error) {
 			return true, "Account unbind", nil
 		} else {
 			global.Logger.Debugf("Account #%s (%s@%s) validate information still exists.", props.CrossbellCharacterID, props.Username, props.Platform)
-			return false, "Account validate information still exists, please remove it.", nil
+			return false, "Account validate information and connected account still exists, please remove at least one of them.", nil
 		}
 	}
 
