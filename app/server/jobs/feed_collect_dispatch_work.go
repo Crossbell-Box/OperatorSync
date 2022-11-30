@@ -74,8 +74,12 @@ func dispatchAllFeedCollectWorks(ch *amqp.Channel, queueName string) {
 		return
 	}
 
+	global.Logger.Debugf("Found %d accounts need update", len(accountsNeedUpdate))
+
 	// Dispatch update works
 	for _, account := range accountsNeedUpdate {
+
+		global.Logger.Debugf("Dispatching account update work for #%d (%s@%s)", account.ID, account.Username, account.Platform)
 
 		// Update account settings
 		platform, ok := commonConsts.SUPPORTED_PLATFORM[account.Platform]
@@ -110,6 +114,8 @@ func dispatchAllFeedCollectWorks(ch *amqp.Channel, queueName string) {
 		} else {
 			// Update account
 			global.DB.Save(&account)
+
+			global.Logger.Debugf("Account update work for #%d (%s@%s) dispatched successfully", account.ID, account.Username, account.Platform)
 		}
 
 	}
