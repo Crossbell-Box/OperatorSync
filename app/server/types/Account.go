@@ -25,3 +25,10 @@ type OnChainStatusManageForAccount struct {
 	OnChainPausedAt     time.Time `json:"onChain_paused_at"`
 	OnChainPauseMessage string    `json:"onChain_pause_message"`
 }
+
+type AccountWithAdditionalPropsForListResponse struct {
+	Account
+	OnChainStatusManageForAccount
+
+	IsMetadataCorrect bool `json:"is_metadata_correct"`
+}

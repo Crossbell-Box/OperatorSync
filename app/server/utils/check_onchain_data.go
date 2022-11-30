@@ -8,7 +8,7 @@ import (
 	"time"
 )
 
-func CheckOnChainData(crossbellCharacterID string, platform string, account string) (bool, bool, error) {
+func CheckOnChainData(crossbellCharacterID string) (bool, []commonTypes.Account, error) {
 
 	// Why return true as default result?
 	// Cause if check error, system might mistakenly
@@ -16,8 +16,6 @@ func CheckOnChainData(crossbellCharacterID string, platform string, account stri
 
 	checkRequest := commonTypes.CheckOnChainDataRequest{
 		CrossbellCharacterID: crossbellCharacterID,
-		Platform:             platform,
-		Account:              account,
 	}
 
 	var checkResponse commonTypes.CheckOnChainDataResponse
@@ -38,12 +36,12 @@ func CheckOnChainData(crossbellCharacterID string, platform string, account stri
 	case <-time.After(commonConsts.RPCSETTINGS_CheckOnChainDataRequestTimeOut):
 		// Timeout
 		global.Logger.Errorf("Check Operator request timeout...")
-		return true, false, fmt.Errorf("check operator request timeout")
+		return true, nil, fmt.Errorf("check operator request timeout")
 
 	case err := <-errChan:
 		if err != nil {
 			global.Logger.Errorf("Failed to receive operator check response with error: %s", err.Error())
-			return true, false, err
+			return true, nil, err
 		}
 	}
 
@@ -51,9 +49,9 @@ func CheckOnChainData(crossbellCharacterID string, platform string, account stri
 	if !checkResponse.IsSucceeded {
 		// Something is wrong
 		global.Logger.Errorf("Check OnChain data work failed with error: %s", checkResponse.Message)
-		return true, false, fmt.Errorf(checkResponse.Message)
+		return true, nil, fmt.Errorf(checkResponse.Message)
 	}
 
-	return checkResponse.IsOperatorValid, checkResponse.IsAccountConnected, nil
+	return checkResponse.IsOperatorValid, checkResponse.ConnectedAccounts, nil
 
 }

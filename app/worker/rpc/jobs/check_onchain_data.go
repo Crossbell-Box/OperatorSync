@@ -1,7 +1,6 @@
 package jobs
 
 import (
-	"fmt"
 	"github.com/Crossbell-Box/OperatorSync/app/worker/chain"
 	"github.com/Crossbell-Box/OperatorSync/app/worker/indexer"
 	commonTypes "github.com/Crossbell-Box/OperatorSync/common/types"
@@ -33,32 +32,28 @@ func CheckOnChainData(workDispatched *commonTypes.CheckOnChainDataRequest, respo
 	metadata, err := indexer.GetCharacterMetadataFromIndexer(workDispatched.CrossbellCharacterID)
 	if err != nil {
 		*response = commonTypes.CheckOnChainDataResponse{
-			IsSucceeded:        false,
-			Message:            err.Error(),
-			IsOperatorValid:    true,
-			IsAccountConnected: false,
+			IsSucceeded:       false,
+			Message:           err.Error(),
+			IsOperatorValid:   true,
+			ConnectedAccounts: nil,
 		}
 		return
 	}
 
-	targetConnectedAccount := strings.ToLower(fmt.Sprintf("csb://account:%s@%s", workDispatched.Account, workDispatched.Platform))
-	for _, connectedAccount := range metadata.Content.ConnectedAccounts {
-		if strings.ToLower(connectedAccount) == targetConnectedAccount {
-			*response = commonTypes.CheckOnChainDataResponse{
-				IsSucceeded:        true,
-				Message:            "",
-				IsOperatorValid:    true,
-				IsAccountConnected: true,
-			}
-			return
-		}
+	*response = commonTypes.CheckOnChainDataResponse{
+		IsSucceeded:       true,
+		Message:           "",
+		IsOperatorValid:   true,
+		ConnectedAccounts: nil,
 	}
 
-	// Else
-	*response = commonTypes.CheckOnChainDataResponse{
-		IsSucceeded:        true,
-		Message:            "Connected account not set",
-		IsOperatorValid:    true,
-		IsAccountConnected: false,
+	for _, connectedAccount := range metadata.Content.ConnectedAccounts {
+		// Parse accounts
+		accountPlatformSplits := strings.Split(strings.Replace(connectedAccount, "csb://account:", "", 1), "@")
+		response.ConnectedAccounts = append(response.ConnectedAccounts, commonTypes.Account{
+			Platform: accountPlatformSplits[len(accountPlatformSplits)-1],
+			Username: strings.Join(accountPlatformSplits[0:len(accountPlatformSplits)-1], "@"), // For fediverse
+		})
 	}
+
 }

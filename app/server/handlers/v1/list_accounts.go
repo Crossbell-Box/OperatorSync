@@ -7,6 +7,8 @@ import (
 	"github.com/Crossbell-Box/OperatorSync/app/server/consts"
 	"github.com/Crossbell-Box/OperatorSync/app/server/global"
 	"github.com/Crossbell-Box/OperatorSync/app/server/models"
+	"github.com/Crossbell-Box/OperatorSync/app/server/types"
+	"github.com/Crossbell-Box/OperatorSync/app/server/utils"
 	commonGlobal "github.com/Crossbell-Box/OperatorSync/common/global"
 	"github.com/gin-gonic/gin"
 	"net/http"
@@ -19,6 +21,7 @@ func ListAccounts(ctx *gin.Context) {
 
 	// Get requests
 	var accounts []models.Account
+	var accountsForResponse []types.AccountWithAdditionalPropsForListResponse
 
 	// Use redis cache
 	cacheKey := fmt.Sprintf("%s:%s:%s", consts.CACHE_PREFIX, "accounts:list", reqCharacterID)
@@ -31,7 +34,7 @@ func ListAccounts(ctx *gin.Context) {
 	} else if exist > 0 {
 		if accountsBytes, err := commonGlobal.Redis.Get(getCacheCtx, cacheKey).Bytes(); err != nil {
 			global.Logger.Error("Unable to get accounts cache")
-		} else if err = json.Unmarshal(accountsBytes, &accounts); err != nil {
+		} else if err = json.Unmarshal(accountsBytes, &accountsForResponse); err != nil {
 			global.Logger.Error("Unable to parse accounts cache")
 			// Clear invalid cache
 			commonGlobal.Redis.Del(getCacheCtx, cacheKey)
@@ -41,7 +44,7 @@ func ListAccounts(ctx *gin.Context) {
 			ctx.JSON(http.StatusOK, gin.H{
 				"ok":      true,
 				"message": "Records found",
-				"result":  accounts,
+				"result":  accountsForResponse,
 			})
 
 			return
@@ -55,26 +58,39 @@ func ListAccounts(ctx *gin.Context) {
 		Order("created_at").
 		Find(&accounts)
 
-	// Parse accounts update interval to seconds
-	for i, _ := range accounts {
-		accounts[i].UpdateInterval = time.Duration(accounts[i].UpdateInterval.Seconds())
-		if !accounts[i].LastUpdated.After(time.Unix(0, 0)) {
-			// Prevent 1970-1-1
-			accounts[i].LastUpdated = accounts[i].NextUpdate
+	// Accounts on crossbell chain
+	_, accountsOnChain, _ := utils.CheckOnChainData(reqCharacterID)
+
+	// Process account for result check
+	for _, rawAccount := range accounts {
+		// Fill status
+		accountForResponse := types.AccountWithAdditionalPropsForListResponse{
+			Account:                       rawAccount.Account,
+			OnChainStatusManageForAccount: rawAccount.OnChainStatusManageForAccount,
+			IsMetadataCorrect:             utils.IsInConnectedAccounts(rawAccount.Platform, rawAccount.Username, accountsOnChain),
 		}
+
+		// Parse accounts update interval to seconds
+		accountForResponse.UpdateInterval = time.Duration(accountForResponse.UpdateInterval.Seconds())
+		if !accountForResponse.LastUpdated.After(time.Unix(0, 0)) {
+			// Prevent 1970-1-1
+			accountForResponse.LastUpdated = accountForResponse.NextUpdate
+		}
+
+		accountsForResponse = append(accountsForResponse, accountForResponse)
 	}
 
 	// Respond
 	ctx.JSON(http.StatusOK, gin.H{
 		"ok":      true,
 		"message": "Records found",
-		"result":  accounts,
+		"result":  accountsForResponse,
 	})
 
 	// Set cache
 	/*
 		setCacheCtx := context.Background()
-		if accountsBytes, err := json.Marshal(&accounts); err != nil {
+		if accountsBytes, err := json.Marshal(&accountsForResponse); err != nil {
 			// WTF?
 			global.Logger.Error("Failed to parse accounts")
 		} else {
