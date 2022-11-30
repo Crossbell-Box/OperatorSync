@@ -63,7 +63,7 @@ var SUPPORTED_PLATFORM = map[string]platform{
 		MinRefreshGap:      30 * time.Minute,
 		MaxRefreshGap:      1 * time.Hour,
 		IsMediaAttachments: false,
-		HTML2Markdown:      true,
+		HTML2Markdown:      false,
 		Limit1Account:      true,
 	},
 	"substack": {
