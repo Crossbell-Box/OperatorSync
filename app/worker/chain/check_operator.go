@@ -29,7 +29,7 @@ func CheckOperator(characterIdStr string) (bool, error) {
 		return false, err
 	}
 
-	// Check contract definitions at https://github.com/Crossbell-Box/Crossbell-Contracts/blob/main/contracts/libraries/OP.sol#L54
-	return operatorPermissions.Bit(198) == 1, nil
+	// Check contract definitions at https://github.com/Crossbell-Box/Crossbell-Contracts/blob/main/contracts/libraries/OP.sol#L63
+	return operatorPermissions.Bit(236) == 1, nil
 
 }
