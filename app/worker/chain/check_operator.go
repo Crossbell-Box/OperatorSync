@@ -23,12 +23,13 @@ func CheckOperator(characterIdStr string) (bool, error) {
 	}
 
 	// Do query
-	result, err := contractInstance.IsOperator(&bind.CallOpts{}, big.NewInt(characterId), operatorAuth.From)
+	operatorPermissions, err := contractInstance.GetOperatorPermissions(&bind.CallOpts{}, big.NewInt(characterId), operatorAuth.From)
 	if err != nil {
 		global.Logger.Errorf("Failed to check if is operator of character %s with error: %s", characterIdStr, err.Error())
 		return false, err
 	}
 
-	return result, nil
+	// Check contract definitions at https://github.com/Crossbell-Box/Crossbell-Contracts/blob/main/contracts/libraries/OP.sol#L63
+	return operatorPermissions.Bit(236) == 1, nil
 
 }
