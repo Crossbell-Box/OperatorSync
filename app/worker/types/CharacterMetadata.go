@@ -15,6 +15,17 @@ type CharacterMetadata struct {
 			Value     string `json:"value"`
 			TraitType string `json:"trait_type"`
 		} `json:"attributes"`
-		ConnectedAccounts []string `json:"connected_accounts"`
+		ConnectedAccounts []interface{} `json:"connected_accounts"`
 	} `json:"content"`
+}
+
+//type ConnectedAccountsString = string
+type ConnectedAccountsObject struct {
+	URI   string `json:"uri"`
+	Extra struct {
+		Witness          string `json:"witness"`
+		Algorithm        string `json:"algorithm"`
+		Signature        string `json:"signature"`
+		SignaturePayload string `json:"signature_payload"`
+	} `json:"extra"`
 }
