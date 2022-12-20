@@ -68,7 +68,7 @@ func Config() error {
 
 	if crossbellChainIDStr, exist := os.LookupEnv("CROSSBELL_CHAIN_ID"); !exist {
 		config.Config.CrossbellChainID = consts.CONFIG_DEFAULT_CROSSBELL_CHAIN_ID // Default
-	} else if config.Config.CrossbellChainID, err = strconv.ParseInt(crossbellChainIDStr, 10, 64); err != nil || config.Config.ConcurrencyDirect <= 0 {
+	} else if config.Config.CrossbellChainID, err = strconv.ParseInt(crossbellChainIDStr, 10, 64); err != nil {
 		log.Println("Invalid Crossbell chain ID settings, using default value (3737)")
 		config.Config.CrossbellChainID = consts.CONFIG_DEFAULT_CROSSBELL_CHAIN_ID // Default
 	}
