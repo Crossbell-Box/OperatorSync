@@ -2,7 +2,7 @@ package utils
 
 import (
 	"github.com/Crossbell-Box/OperatorSync/app/worker/config"
-	"io/ioutil"
+	"io"
 	"net/http"
 )
 
@@ -22,7 +22,7 @@ func HttpRequest(url string, withProxy bool) ([]byte, error) {
 		return nil, err
 	}
 
-	body, err := ioutil.ReadAll(res.Body)
+	body, err := io.ReadAll(res.Body)
 	if err != nil {
 		return nil, err
 	}
