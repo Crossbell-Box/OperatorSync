@@ -57,8 +57,8 @@ func AccountBind(props *BindAccountProps) (bool, string, error) {
 			props.Platform, props.Username,
 		).Error; !errors.Is(err, gorm.ErrRecordNotFound) && account.CrossbellCharacterID != props.CrossbellCharacterID {
 			// Already bind but not this one
-			global.Logger.Debugf("Account (%s@%s) has already been occupied by #%s", props.Username, props.Platform, props.CrossbellCharacterID)
-			return false, fmt.Sprintf("Account (%s@%s) has already been occupied by #%s, please unbind it first.", props.Username, props.Platform, props.CrossbellCharacterID), nil
+			global.Logger.Debugf("Account (%s@%s) has already been occupied by #%s", props.Username, props.Platform, account.CrossbellCharacterID)
+			return false, fmt.Sprintf("Account (%s@%s) has already been occupied by #%s, please unbind it first.", props.Username, props.Platform, account.CrossbellCharacterID), nil
 		}
 
 		if commonConsts.SUPPORTED_PLATFORM[props.Platform].Limit1Account {
