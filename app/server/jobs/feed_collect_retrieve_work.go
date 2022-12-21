@@ -265,9 +265,6 @@ func feedCollectHandleSucceeded(d *amqp.Delivery) {
 				// Post feeds On Chain
 				utils.FeedOnChainDispatchWork(&account, feeds)
 			}
-
-			// Update metrics
-			global.Metrics.Work.Succeeded.Inc(1)
 		}
 	}
 }
@@ -280,6 +277,5 @@ func feedCollectHandleFailed(d *amqp.Delivery) {
 		global.Logger.Error("Unable to parse failed work: ", string(d.Body))
 	} else {
 		global.Logger.Warn("Work failed for: ", workFailed)
-		global.Metrics.Work.Failed.Inc(1)
 	}
 }

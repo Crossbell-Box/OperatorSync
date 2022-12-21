@@ -1,7 +1,6 @@
 package public
 
 import (
-	"github.com/Crossbell-Box/OperatorSync/app/server/global"
 	"github.com/gin-gonic/gin"
 	"net/http"
 )
@@ -20,10 +19,5 @@ type healthStatus struct {
 func HealthCheck(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, healthStatus{
 		OK: true,
-		WorksCount: worksCount{
-			Dispatched: global.Metrics.Work.Dispatched.Count(),
-			Succeeded:  global.Metrics.Work.Succeeded.Count(),
-			Failed:     global.Metrics.Work.Failed.Count(),
-		},
 	})
 }

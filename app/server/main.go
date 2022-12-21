@@ -44,11 +44,6 @@ func main() {
 		global.Logger.Fatal("Failed to connect to worker RPC: ", err.Error())
 	}
 
-	// Initialize metrics
-	if err := inits.Metrics(); err != nil {
-		global.Logger.Fatal("Failed to load metrics: ", err.Error())
-	}
-
 	// Initialize jobs
 	if err := inits.Jobs(); err != nil {
 		global.Logger.Fatal("Failed to start jobs: ", err.Error())

@@ -10,7 +10,6 @@ require (
 	github.com/lib/pq v1.10.7
 	github.com/mmcdole/gofeed v1.1.3
 	github.com/rabbitmq/amqp091-go v1.5.0
-	github.com/rcrowley/go-metrics v0.0.0-20201227073835-cf1acfcdf475
 	go.uber.org/zap v1.24.0
 	gorm.io/driver/postgres v1.4.5
 	gorm.io/gorm v1.24.2
