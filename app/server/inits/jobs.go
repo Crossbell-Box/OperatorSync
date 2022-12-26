@@ -3,6 +3,7 @@ package inits
 import (
 	"github.com/Crossbell-Box/OperatorSync/app/server/config"
 	"github.com/Crossbell-Box/OperatorSync/app/server/jobs"
+	"time"
 )
 
 func Jobs() error {
@@ -14,7 +15,9 @@ func Jobs() error {
 
 	if config.Config.IsMainServer {
 		// Start dispatch flush works
+		config.Status.Jobs.FeedCollectLastRun = time.Now()
 		jobs.FeedCollectStartDispatchWork()
+		config.Status.Jobs.ResumePausedAccountsLastRun = time.Now()
 		jobs.ResumePausedAccounts()
 	}
 

@@ -3,6 +3,7 @@ package jobs
 import (
 	"errors"
 	"github.com/Crossbell-Box/OperatorSync/app/server/config"
+	"github.com/Crossbell-Box/OperatorSync/app/server/consts"
 	"github.com/Crossbell-Box/OperatorSync/app/server/global"
 	"github.com/Crossbell-Box/OperatorSync/app/server/models"
 	"github.com/Crossbell-Box/OperatorSync/app/server/types"
@@ -16,7 +17,7 @@ import (
 func ResumePausedAccounts() {
 	global.Logger.Debug("Paused account resume work start dispatching...")
 	go func() {
-		t := time.NewTicker(10 * time.Minute)
+		t := time.NewTicker(consts.JOBS_INTERVAL_RESUME_PAUSED_ACCOUNTS)
 		for {
 			select {
 			case <-t.C:
@@ -44,6 +45,8 @@ func TryToResumeAllPausedAccounts() {
 	_isResumeWorkProcessing = true
 
 	global.Logger.Debug("Start trying to resume all paused accounts...")
+
+	config.Status.Jobs.ResumePausedAccountsLastRun = time.Now()
 
 	if config.Config.HeartBeatWebhooks.AccountResume != "" {
 		// Send heartbeat packet

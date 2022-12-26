@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"github.com/Crossbell-Box/OperatorSync/app/server/config"
+	"github.com/Crossbell-Box/OperatorSync/app/server/consts"
 	"github.com/Crossbell-Box/OperatorSync/app/server/global"
 	"github.com/Crossbell-Box/OperatorSync/app/server/models"
 	commonConsts "github.com/Crossbell-Box/OperatorSync/common/consts"
@@ -20,7 +21,7 @@ func FeedCollectStartDispatchWork() {
 
 	global.Logger.Debug("Feed Collect work start dispatching...")
 	go func() {
-		t := time.NewTicker(10 * time.Second)
+		t := time.NewTicker(consts.JOBS_INTERVAL_FEED_COLLECT)
 		for {
 			// Waiting for connection
 			for {
@@ -52,6 +53,8 @@ func FeedCollectStartDispatchWork() {
 
 func dispatchAllFeedCollectWorks(ch *amqp.Channel, queueName string) {
 	global.Logger.Debug("Start dispatching feeds collect works...")
+
+	config.Status.Jobs.FeedCollectLastRun = time.Now()
 
 	if config.Config.HeartBeatWebhooks.FeedCollect != "" {
 		// Send heartbeat packet
