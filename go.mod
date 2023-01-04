@@ -12,7 +12,7 @@ require (
 	github.com/rabbitmq/amqp091-go v1.5.0
 	go.uber.org/zap v1.24.0
 	gorm.io/driver/postgres v1.4.6
-	gorm.io/gorm v1.24.2
+	gorm.io/gorm v1.24.3
 )
 
 require (
