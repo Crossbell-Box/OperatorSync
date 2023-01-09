@@ -51,7 +51,23 @@ func FeedCollectStartDispatchWork() {
 	}()
 }
 
+var (
+	_isFeedCollectDispatchWorkProcessing bool
+)
+
+func init() {
+	_isFeedCollectDispatchWorkProcessing = false
+}
+
 func dispatchAllFeedCollectWorks(ch *amqp.Channel, queueName string) {
+
+	if _isFeedCollectDispatchWorkProcessing {
+		return
+	}
+
+	// Set busy flag
+	_isFeedCollectDispatchWorkProcessing = true
+
 	global.Logger.Debug("Start dispatching feeds collect works...")
 
 	config.Status.Jobs.FeedCollectLastRun = time.Now()
@@ -122,6 +138,8 @@ func dispatchAllFeedCollectWorks(ch *amqp.Channel, queueName string) {
 		}
 
 	}
+
+	_isFeedCollectDispatchWorkProcessing = false
 
 	global.Logger.Debugf("Feeds collect works dispatched for %d accounts.", len(accountsNeedUpdate))
 }
