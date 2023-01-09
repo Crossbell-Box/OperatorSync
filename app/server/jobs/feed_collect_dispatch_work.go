@@ -39,7 +39,7 @@ func FeedCollectStartDispatchWork() {
 				}
 				select {
 				case <-t.C:
-					dispatchAllFeedCollectWorks(ch, q.Name)
+					go dispatchAllFeedCollectWorks(ch, q.Name)
 				case err := <-notifyClose:
 					if err != nil {
 						global.Logger.Errorf("MQ channel closed with error %d (%s), preparing to reconnect", err.Code, err.Error())

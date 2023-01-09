@@ -21,7 +21,7 @@ func ResumePausedAccounts() {
 		for {
 			select {
 			case <-t.C:
-				TryToResumeAllPausedAccounts()
+				go TryToResumeAllPausedAccounts()
 			}
 		}
 	}()
