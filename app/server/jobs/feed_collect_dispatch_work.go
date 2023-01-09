@@ -62,6 +62,7 @@ func init() {
 func dispatchAllFeedCollectWorks(ch *amqp.Channel, queueName string) {
 
 	if _isFeedCollectDispatchWorkProcessing {
+		global.Logger.Warn("Another FeedCollectDispatch work is running, skip this.")
 		return
 	}
 

@@ -38,6 +38,7 @@ func init() {
 func TryToResumeAllPausedAccounts() {
 	if _isResumeWorkProcessing {
 		// No need to start another one, skip
+		global.Logger.Warn("Another ResumePausedAccounts work is running, skip this.")
 		return
 	}
 
