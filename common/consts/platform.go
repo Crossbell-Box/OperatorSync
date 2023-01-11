@@ -50,7 +50,7 @@ var SUPPORTED_PLATFORM = map[string]platform{
 	},
 	"twitter": {
 		Name:               "Twitter",
-		FeedLink:           "{{rsshub_stateless}}/twitter/user/{{username}}/excludeReplies=1&includeRts=0",
+		FeedLink:           "{{rsshub_stateless}}/twitter/user/{{username}}/excludeReplies=0&includeRts=1.json",
 		MinRefreshGap:      10 * time.Minute,
 		MaxRefreshGap:      1 * time.Hour,
 		IsMediaAttachments: true,
@@ -104,7 +104,7 @@ var SUPPORTED_PLATFORM = map[string]platform{
 	},
 	"jike": {
 		Name:               "Jike",
-		FeedLink:           "{{rsshub_stateless}}/jike/user/{{username}}",
+		FeedLink:           "{{rsshub_stateless}}/jike/user/{{username}}.json",
 		MinRefreshGap:      10 * time.Minute,
 		MaxRefreshGap:      1 * time.Hour,
 		IsMediaAttachments: true,
