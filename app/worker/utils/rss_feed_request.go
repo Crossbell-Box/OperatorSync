@@ -2,6 +2,7 @@ package utils
 
 import (
 	"encoding/json"
+	"github.com/Crossbell-Box/OperatorSync/app/worker/global"
 	commonConsts "github.com/Crossbell-Box/OperatorSync/common/consts"
 	commonTypes "github.com/Crossbell-Box/OperatorSync/common/types"
 	"github.com/mmcdole/gofeed"
@@ -32,6 +33,7 @@ func RSSFeedRequestJson(url string, withProxy bool) (*commonTypes.FeedWithExtra,
 
 	err = json.Unmarshal(feedsBody, &feed)
 	if err != nil {
+		global.Logger.Errorf("Failed to parse response %s as json with error: %v", feedsBody, err)
 		return nil, commonConsts.ERROR_CODE_FAILED_TO_PARSE_FEEDS, err
 	}
 
