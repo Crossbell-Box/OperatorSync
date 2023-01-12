@@ -34,6 +34,8 @@ type FeedWithExtra struct {
 type ItemWithExtra struct {
 	gofeed.Item
 
+	ID            string    `json:"id"`
+	URL           string    `json:"url"`
 	DatePublished time.Time `json:"date_published"`
 	ContentHTML   string    `json:"content_html"`
 	Extra         ExtraSpec `json:"_extra"`

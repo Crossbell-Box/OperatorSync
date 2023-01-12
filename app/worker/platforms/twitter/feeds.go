@@ -59,8 +59,8 @@ func Feeds(cccs *types.ConcurrencyChannels, work *commonTypes.WorkDispatched, co
 	for _, item := range rawFeed.Items {
 		if item.DatePublished.After(work.DropBefore) && item.DatePublished.Before(work.DropAfter) {
 			feed := commonTypes.RawFeed{
-				Link:        item.Link,
-				GUID:        item.GUID,
+				Link:        item.URL,
+				GUID:        item.ID,
 				Authors:     utils.ParseAuthors(item.Authors),
 				PublishedAt: item.DatePublished,
 			}
