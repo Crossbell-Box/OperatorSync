@@ -2,6 +2,7 @@ package types
 
 import (
 	"github.com/mmcdole/gofeed"
+	"time"
 )
 
 type ExtraLinks struct {
@@ -33,6 +34,7 @@ type FeedWithExtra struct {
 type ItemWithExtra struct {
 	gofeed.Item
 
-	ContentHTML string    `json:"content_html"`
-	Extra       ExtraSpec `json:"_extra"`
+	DatePublished time.Time `json:"date_published"`
+	ContentHTML   string    `json:"content_html"`
+	Extra         ExtraSpec `json:"_extra"`
 }
