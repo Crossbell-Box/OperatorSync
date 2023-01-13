@@ -72,9 +72,11 @@ func dispatchAllFeedCollectWorks(ch *amqp.Channel, queueName string) {
 		_isFeedCollectDispatchWorkProcessing = false
 	}()
 
-	global.Logger.Debug("Start dispatching feeds collect works...")
+	nowTime := time.Now()
 
-	config.Status.Jobs.FeedCollectLastRun = time.Now()
+	global.Logger.Debugf("Start dispatching feeds collect works at %v ...", nowTime)
+
+	config.Status.Jobs.FeedCollectLastRun = nowTime
 
 	if config.Config.HeartBeatWebhooks.FeedCollect != "" {
 		// Send heartbeat packet
@@ -84,8 +86,6 @@ func dispatchAllFeedCollectWorks(ch *amqp.Channel, queueName string) {
 			global.Logger.Errorf("Failed to send feed collect heartbeat packet with error: %s", err.Error())
 		}
 	}
-
-	nowTime := time.Now()
 
 	// Accounts need update
 	var accountsNeedUpdate []models.Account
@@ -133,12 +133,12 @@ func dispatchAllFeedCollectWorks(ch *amqp.Channel, queueName string) {
 		}
 
 		if err := DispatchSingleFeedCollectWork(ch, &work, queueName); err != nil {
-			global.Logger.Error("Failed to dispatch work: ", work)
+			global.Logger.Errorf("Failed to dispatch work: %v", work)
 		} else {
 			// Update account
 			global.DB.Save(&account)
 
-			global.Logger.Debugf("Account update work for #%d (%s@%s) dispatched successfully", account.ID, account.Username, account.Platform)
+			global.Logger.Debugf("Account update work %v for #%d (%s@%s) dispatched successfully", work, account.ID, account.Username, account.Platform)
 		}
 
 	}
