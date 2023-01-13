@@ -67,8 +67,10 @@ func dispatchAllFeedCollectWorks(ch *amqp.Channel, queueName string) {
 	}
 
 	// Set busy flag
+	global.Logger.Debugf("Lock busy flag for feed collect work.")
 	_isFeedCollectDispatchWorkProcessing = true
 	defer func() {
+		global.Logger.Debugf("Unlock busy flag for feed collect work.")
 		_isFeedCollectDispatchWorkProcessing = false
 	}()
 
