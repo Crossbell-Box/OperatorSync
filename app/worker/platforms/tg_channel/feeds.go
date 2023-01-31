@@ -11,13 +11,17 @@ import (
 )
 
 var (
-	imageRegex *regexp.Regexp
+	imageRegex       *regexp.Regexp
+	videoRegex       *regexp.Regexp
+	videoPosterRegex *regexp.Regexp
 )
 
 func init() {
 
 	// Image regex
 	imageRegex = regexp.MustCompile(`<img[^>]+\bsrc=["']([^"']+)["'].*?/?>`)
+	videoRegex = regexp.MustCompile(`<video[^>]+\bsrc=["']([^"']+)["'].*?</video>`)
+	videoPosterRegex = regexp.MustCompile(`poster=["']([^"']+)["']`)
 }
 
 func Feeds(cccs *types.ConcurrencyChannels, work *commonTypes.WorkDispatched, collectLink string) (
@@ -91,12 +95,21 @@ func Feeds(cccs *types.ConcurrencyChannels, work *commonTypes.WorkDispatched, co
 			}
 
 			imgs := imageRegex.FindAllStringSubmatch(rawContent, -1)
-			var normalImages []string
+			var medias []string
 			for _, img := range imgs {
-				normalImages = append(normalImages, img[1])
+				medias = append(medias, img[1])
 			}
 
-			feed.Media = utils.UploadAllMedia(normalImages)
+			videos := videoRegex.FindAllStringSubmatch(rawContent, -1)
+			for _, video := range videos {
+				medias = append(medias, video[1])
+
+				// Upload video poster
+				poster := videoPosterRegex.FindStringSubmatch(video[0])
+				medias = append(medias, poster[1])
+			}
+
+			feed.Media = utils.UploadAllMedia(medias)
 			for _, media := range feed.Media {
 				rawContent = strings.ReplaceAll(rawContent, media.OriginalURI, media.IPFSUri)
 			}
