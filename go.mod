@@ -6,10 +6,10 @@ require (
 	github.com/JohannesKaufmann/html-to-markdown v1.3.6
 	github.com/ethereum/go-ethereum v1.10.26
 	github.com/gin-gonic/gin v1.8.2
-	github.com/go-redis/redis/v9 v9.0.1
 	github.com/lib/pq v1.10.7
 	github.com/mmcdole/gofeed v1.2.0
 	github.com/rabbitmq/amqp091-go v1.6.0
+	github.com/redis/go-redis/v9 v9.0.1
 	go.uber.org/zap v1.24.0
 	gorm.io/driver/postgres v1.4.6
 	gorm.io/gorm v1.24.3
@@ -20,7 +20,7 @@ require (
 	github.com/StackExchange/wmi v0.0.0-20180116203802-5d049714c4a6 // indirect
 	github.com/andybalholm/cascadia v1.3.1 // indirect
 	github.com/btcsuite/btcd/btcec/v2 v2.2.0 // indirect
-	github.com/cespare/xxhash/v2 v2.1.2 // indirect
+	github.com/cespare/xxhash/v2 v2.2.0 // indirect
 	github.com/deckarep/golang-set v1.8.0 // indirect
 	github.com/decred/dcrd/dcrec/secp256k1/v4 v4.0.1 // indirect
 	github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f // indirect

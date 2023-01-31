@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/Crossbell-Box/OperatorSync/common/global"
-	"github.com/go-redis/redis/v9"
+	"github.com/redis/go-redis/v9"
 	"time"
 )
 
