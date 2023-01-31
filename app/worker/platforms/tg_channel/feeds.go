@@ -38,7 +38,7 @@ func Feeds(cccs *types.ConcurrencyChannels, work *commonTypes.WorkDispatched, co
 			config.Config.RSSHubEndpointStateless,
 		)
 
-	rawFeed, errCode, err := utils.RSSFeedRequest(
+	rawFeed, errCode, err := utils.RSSFeedRequestJson(
 		strings.ReplaceAll(collectLink, "{{username}}", work.Username),
 		true,
 	)
@@ -49,17 +49,46 @@ func Feeds(cccs *types.ConcurrencyChannels, work *commonTypes.WorkDispatched, co
 	var feeds []commonTypes.RawFeed
 
 	for _, item := range rawFeed.Items {
-		if item.PublishedParsed.After(work.DropBefore) && item.PublishedParsed.Before(work.DropAfter) {
+		if item.DatePublished.After(work.DropBefore) && item.DatePublished.Before(work.DropAfter) {
 			feed := commonTypes.RawFeed{
 				//Title:       item.Title,
-				Link:        item.Link,
-				GUID:        item.GUID,
+				Link:        item.URL,
+				GUID:        item.ID,
 				Authors:     utils.ParseAuthors(item.Authors),
-				PublishedAt: *item.PublishedParsed,
+				PublishedAt: item.DatePublished,
 			}
 
 			// Process content
-			rawContent := item.Description
+			rawContent := item.ContentHTML
+
+			skipThis := false
+
+			// Check extra links
+			for _, link := range item.Extra.Links {
+				switch link.Type {
+				case "quote":
+					// Set ForURI
+					feed.ForURI = link.URL
+					// Remove inner quote content
+					rawContent = strings.Replace(rawContent, link.ContentHTML, "", 1)
+
+				case "reply":
+					// Set ForURI
+					feed.ForURI = link.URL
+
+				case "repost":
+					// No need to post, skip this
+					skipThis = true
+
+				default:
+					// Unknown link, just log it
+					global.Logger.Warnf("Unknown extra link type detected: %v", link)
+				}
+			}
+
+			if skipThis {
+				continue
+			}
 
 			imgs := imageRegex.FindAllStringSubmatch(rawContent, -1)
 			var normalImages []string
