@@ -70,15 +70,11 @@ func Feeds(cccs *types.ConcurrencyChannels, work *commonTypes.WorkDispatched, co
 			// Check extra links
 			for _, link := range item.Extra.Links {
 				switch link.Type {
-				case "quote":
+				case "reply":
 					// Set ForURI
 					feed.ForURI = link.URL
 					// Remove inner quote content
 					rawContent = strings.Replace(rawContent, link.ContentHTML, "", 1)
-
-				case "reply":
-					// Set ForURI
-					feed.ForURI = link.URL
 
 				case "repost":
 					// No need to post, skip this
