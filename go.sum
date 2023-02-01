@@ -123,6 +123,8 @@ github.com/rabbitmq/amqp091-go v1.6.0 h1:fiFHcMcP+5/A+35MXniiagho1lEXX4+jpHGR+q+
 github.com/rabbitmq/amqp091-go v1.6.0/go.mod h1:wfClAtY0C7bOHxd3GjmF26jEHn+rR/0B3+YV+Vn9/NI=
 github.com/redis/go-redis/v9 v9.0.1 h1:L1B0L2Y7dQMnKxwfzSwemceGlQwVUsqJ1kjkdaoNhts=
 github.com/redis/go-redis/v9 v9.0.1/go.mod h1:/xDTe9EF1LM61hek62Poq2nzQSGj0xSrEtEHbBQevps=
+github.com/redis/go-redis/v9 v9.0.2 h1:BA426Zqe/7r56kCcvxYLWe1mkaz71LKF77GwgFzSxfE=
+github.com/redis/go-redis/v9 v9.0.2/go.mod h1:/xDTe9EF1LM61hek62Poq2nzQSGj0xSrEtEHbBQevps=
 github.com/rjeczalik/notify v0.9.1 h1:CLCKso/QK1snAlnhNR/CNvNiFU2saUtjV0bx3EwNeCE=
 github.com/rjeczalik/notify v0.9.1/go.mod h1:rKwnCoCGeuQnwBtTSPL9Dad03Vh2n40ePRrjvIXnJho=
 github.com/rogpeppe/go-internal v1.6.1/go.mod h1:xXDCJY+GAPziupqXw64V24skbSoqbTEfhy4qGm1nDQc=
