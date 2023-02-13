@@ -23,7 +23,7 @@ func Account(username string, validateString string) (bool, uint, string, bool) 
 			config.Config.RSSHubEndpointStateless,
 		)
 
-	if rawFeed, errCode, err := utils.RSSFeedRequest(
+	if rawFeed, errCode, err := utils.RSSFeedRequestJson(
 		strings.ReplaceAll(collectLink, "{{username}}", username),
 		true,
 	); err != nil {
