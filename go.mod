@@ -8,7 +8,7 @@ require (
 	github.com/gin-gonic/gin v1.8.2
 	github.com/lib/pq v1.10.7
 	github.com/mmcdole/gofeed v1.2.0
-	github.com/rabbitmq/amqp091-go v1.6.0
+	github.com/rabbitmq/amqp091-go v1.7.0
 	github.com/redis/go-redis/v9 v9.0.2
 	go.uber.org/zap v1.24.0
 	gorm.io/driver/postgres v1.4.6

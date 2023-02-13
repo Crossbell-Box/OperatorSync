@@ -121,6 +121,8 @@ github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZN
 github.com/prometheus/tsdb v0.7.1 h1:YZcsG11NqnK4czYLrWd9mpEuAJIHVQLwdrleYfszMAA=
 github.com/rabbitmq/amqp091-go v1.6.0 h1:fiFHcMcP+5/A+35MXniiagho1lEXX4+jpHGR+q+LeBU=
 github.com/rabbitmq/amqp091-go v1.6.0/go.mod h1:wfClAtY0C7bOHxd3GjmF26jEHn+rR/0B3+YV+Vn9/NI=
+github.com/rabbitmq/amqp091-go v1.7.0 h1:V5CF5qPem5OGSnEo8BoSbsDGwejg6VUJsKEdneaoTUo=
+github.com/rabbitmq/amqp091-go v1.7.0/go.mod h1:wfClAtY0C7bOHxd3GjmF26jEHn+rR/0B3+YV+Vn9/NI=
 github.com/redis/go-redis/v9 v9.0.1 h1:L1B0L2Y7dQMnKxwfzSwemceGlQwVUsqJ1kjkdaoNhts=
 github.com/redis/go-redis/v9 v9.0.1/go.mod h1:/xDTe9EF1LM61hek62Poq2nzQSGj0xSrEtEHbBQevps=
 github.com/redis/go-redis/v9 v9.0.2 h1:BA426Zqe/7r56kCcvxYLWe1mkaz71LKF77GwgFzSxfE=
