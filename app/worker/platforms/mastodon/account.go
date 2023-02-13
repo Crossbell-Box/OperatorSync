@@ -28,13 +28,6 @@ func Account(usernameAtInstance string, validateString string) (bool, uint, stri
 		return false, commonConsts.ERROR_CODE_INVALID_FORMAT, err.Error(), false
 	}
 
-	// Whitelist instances
-	if instance == "thenomads.social" {
-		// Whitelisted
-		return true, 0, "", true
-	}
-	// End Whitelist
-
 	req, err := http.NewRequest("GET", fmt.Sprintf("https://%s/@%s", instance, username), nil)
 	if err != nil {
 		global.Logger.Errorf("Failed to prepare request with error: %s", err.Error())
