@@ -56,6 +56,11 @@ func TryToResumeAllPausedAccounts() {
 
 	// Set busy flag
 	_isResumeWorkProcessing = true
+	global.Logger.Debugf("Lock busy flag for account resume work.")
+	defer func() {
+		global.Logger.Debugf("Unlock busy flag for account resume work.")
+		_isResumeWorkProcessing = false
+	}()
 
 	global.Logger.Debug("Start trying to resume all paused accounts...")
 
@@ -73,9 +78,6 @@ func TryToResumeAllPausedAccounts() {
 
 		}
 	}
-
-	// Unset busy flag
-	_isResumeWorkProcessing = false
 
 	global.Logger.Debug("All paused accounts checked, and already tried best to resume them.")
 }
