@@ -61,6 +61,19 @@ func init() {
 
 func dispatchAllFeedCollectWorks(ch *amqp.Channel, queueName string) {
 
+	if config.Config.HeartBeatWebhooks.FeedCollect != "" {
+		// Send heartbeat packet
+		global.Logger.Debug("Sending feed collect heartbeat packet")
+		_, err := (&http.Client{}).Get(config.Config.HeartBeatWebhooks.FeedCollect) // Ignore response
+		if err != nil {
+			global.Logger.Errorf("Failed to send feed collect heartbeat packet with error: %s", err.Error())
+		}
+	}
+
+	nowTime := time.Now()
+
+	config.Status.Jobs.FeedCollectLastRun = nowTime
+
 	if _isFeedCollectDispatchWorkProcessing {
 		global.Logger.Warn("Another FeedCollectDispatch work is running, skip this.")
 		return
@@ -74,20 +87,7 @@ func dispatchAllFeedCollectWorks(ch *amqp.Channel, queueName string) {
 		_isFeedCollectDispatchWorkProcessing = false
 	}()
 
-	nowTime := time.Now()
-
 	global.Logger.Debugf("Start dispatching feeds collect works at %v ...", nowTime)
-
-	config.Status.Jobs.FeedCollectLastRun = nowTime
-
-	if config.Config.HeartBeatWebhooks.FeedCollect != "" {
-		// Send heartbeat packet
-		global.Logger.Debug("Sending feed collect heartbeat packet")
-		_, err := (&http.Client{}).Get(config.Config.HeartBeatWebhooks.FeedCollect) // Ignore response
-		if err != nil {
-			global.Logger.Errorf("Failed to send feed collect heartbeat packet with error: %s", err.Error())
-		}
-	}
 
 	// Accounts need update
 	var accountsNeedUpdate []models.Account

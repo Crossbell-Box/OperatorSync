@@ -36,6 +36,18 @@ func init() {
 }
 
 func TryToResumeAllPausedAccounts() {
+
+	if config.Config.HeartBeatWebhooks.AccountResume != "" {
+		// Send heartbeat packet
+		global.Logger.Debug("Sending account resume heartbeat packet")
+		_, err := (&http.Client{}).Get(config.Config.HeartBeatWebhooks.AccountResume) // Ignore response
+		if err != nil {
+			global.Logger.Errorf("Failed to send account resume heartbeat packet with error: %s", err.Error())
+		}
+	}
+
+	config.Status.Jobs.ResumePausedAccountsLastRun = time.Now()
+
 	if _isResumeWorkProcessing {
 		// No need to start another one, skip
 		global.Logger.Warn("Another ResumePausedAccounts work is running, skip this.")
@@ -46,17 +58,6 @@ func TryToResumeAllPausedAccounts() {
 	_isResumeWorkProcessing = true
 
 	global.Logger.Debug("Start trying to resume all paused accounts...")
-
-	config.Status.Jobs.ResumePausedAccountsLastRun = time.Now()
-
-	if config.Config.HeartBeatWebhooks.AccountResume != "" {
-		// Send heartbeat packet
-		global.Logger.Debug("Sending account resume heartbeat packet")
-		_, err := (&http.Client{}).Get(config.Config.HeartBeatWebhooks.AccountResume) // Ignore response
-		if err != nil {
-			global.Logger.Errorf("Failed to send account resume heartbeat packet with error: %s", err.Error())
-		}
-	}
 
 	var pausedAccounts []models.Account
 
