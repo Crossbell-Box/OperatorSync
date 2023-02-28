@@ -10,8 +10,8 @@ import (
 
 type feedWithLinkIndexerResponse struct {
 	List []struct {
-		//CharacterID     uint   `json:"characterId"`
-		//NoteID          uint   `json:"noteId"`
+		CharacterID     int64  `json:"characterId"`
+		NoteID          int64  `json:"noteId"`
 		Uri             string `json:"uri"`
 		TransactionHash string `json:"transactionHash"`
 		// Ignore other fields for now
@@ -20,14 +20,14 @@ type feedWithLinkIndexerResponse struct {
 	// Ignore cursor
 }
 
-func GetFeedWithLinkFromIndexer(link string) (string, string, error) {
+func GetFeedWithLinkFromIndexer(link string) (string, string, int64, int64, error) {
 	// Refer to https://indexer.crossbell.io/v1/notes?externalUrls=https%3A%2F%2Ftwitter.com%2FNyaRSS3%2Fstatus%2F1534713583270998018&includeDeleted=false&includeEmptyMetadata=false&limit=1
 
 	// Prepare request
 	req, err := http.NewRequest("GET", fmt.Sprintf("%s/v1/notes", config.Config.CrossbellIndexer), nil)
 	if err != nil {
 		global.Logger.Errorf("Failed to prepare request for indexer query %s with error: %s", link, err.Error())
-		return "", "", err
+		return "", "", 0, 0, err
 	}
 
 	// Prepare query
@@ -42,7 +42,7 @@ func GetFeedWithLinkFromIndexer(link string) (string, string, error) {
 	rawRes, err := (&http.Client{}).Do(req)
 	if err != nil {
 		global.Logger.Errorf("Failed to execute request for indexer query %s with error: %s", link, err.Error())
-		return "", "", err
+		return "", "", 0, 0, err
 	}
 
 	// Parse response
@@ -50,14 +50,14 @@ func GetFeedWithLinkFromIndexer(link string) (string, string, error) {
 	err = json.NewDecoder(rawRes.Body).Decode(&res)
 	if err != nil {
 		global.Logger.Errorf("Failed to parse request for indexer query %s with error: %s", link, err.Error())
-		return "", "", err
+		return "", "", 0, 0, err
 	}
 
 	// Check response
 	if len(res.List) == 0 {
 		// Nothing
-		return "", "", fmt.Errorf("no maching found")
+		return "", "", 0, 0, fmt.Errorf("no maching found")
 	} else {
-		return res.List[0].Uri, res.List[0].TransactionHash, nil
+		return res.List[0].Uri, res.List[0].TransactionHash, res.List[0].CharacterID, res.List[0].NoteID, nil
 	}
 }

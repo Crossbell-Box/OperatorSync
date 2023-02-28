@@ -13,7 +13,7 @@ import (
 	"strconv"
 )
 
-func PostNoteForCharacter(characterIdStr string, metadataUri string, forURI string) (string, error) {
+func PostNoteForCharacter(characterIdStr string, metadataUri string, forURI string, forNoteCharacterId int64, forNoteNoteId int64) (string, error) {
 	characterId, err := strconv.ParseInt(characterIdStr, 10, 64)
 	if err != nil {
 		global.Logger.Errorf("Failed to parse character id with error: %s", err.Error())
@@ -33,11 +33,24 @@ func PostNoteForCharacter(characterIdStr string, metadataUri string, forURI stri
 		ContentUri:  metadataUri,
 	}
 	if forURI != "" {
-		tx, err = contractInstance.PostNote4AnyUri(
-			operatorAuth,
-			noteData,
-			forURI,
-		)
+		if forNoteCharacterId > 0 && forNoteNoteId > 0 {
+			// For note
+			tx, err = contractInstance.PostNote4Note(
+				operatorAuth,
+				noteData,
+				crossbellContract.DataTypesNoteStruct{
+					CharacterId: big.NewInt(forNoteCharacterId),
+					NoteId:      big.NewInt(forNoteNoteId),
+				},
+			)
+		} else {
+			// For normal URI
+			tx, err = contractInstance.PostNote4AnyUri(
+				operatorAuth,
+				noteData,
+				forURI,
+			)
+		}
 	} else {
 		tx, err = contractInstance.PostNote(
 			operatorAuth,

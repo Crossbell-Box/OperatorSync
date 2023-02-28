@@ -17,11 +17,20 @@ func FeedOnChain(work *commonTypes.OnChainRequest) (string, string, error) {
 	// Step -1: Check if feed with this uri (if any) is already on chain
 	if ValidateUri(work.Link) {
 		// Get feed with link from indexer
-		ipfsUri, tx, err := indexer.GetFeedWithLinkFromIndexer(work.Link)
+		ipfsUri, tx, _, _, err := indexer.GetFeedWithLinkFromIndexer(work.Link)
 		if err == nil && ipfsUri != "" && tx != "" {
 			// Already post
 			return ipfsUri, tx, nil
 		}
+	}
+
+	// Step -0.5: What if feed is postNote4AnyUri, and target is on CrossBell?
+	var (
+		forNoteCharacterId int64 = 0
+		forNoteNoteId      int64 = 0
+	)
+	if ValidateUri(work.ForURI) {
+		_, _, forNoteCharacterId, forNoteNoteId, _ = indexer.GetFeedWithLinkFromIndexer(work.ForURI)
 	}
 
 	// Step 0: Prepare platform
@@ -117,7 +126,7 @@ func FeedOnChain(work *commonTypes.OnChainRequest) (string, string, error) {
 	}
 
 	// Step 3: Upload note to Crossbell Chain with ContentUri
-	tx, err := chain.PostNoteForCharacter(work.CrossbellCharacterID, ipfsUri, work.ForURI)
+	tx, err := chain.PostNoteForCharacter(work.CrossbellCharacterID, ipfsUri, work.ForURI, forNoteCharacterId, forNoteNoteId)
 	if err != nil {
 		global.Logger.Errorf("Failed to post note to Crossbell chain for character #%s with error: %s", work.CrossbellCharacterID, err.Error())
 		return ipfsUri, tx, err // Transaction might be invalid
