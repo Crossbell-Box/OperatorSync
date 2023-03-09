@@ -7,7 +7,7 @@ require (
 	github.com/ethereum/go-ethereum v1.11.2
 	github.com/gin-gonic/gin v1.9.0
 	github.com/lib/pq v1.10.7
-	github.com/mmcdole/gofeed v1.2.0
+	github.com/mmcdole/gofeed v1.2.1
 	github.com/rabbitmq/amqp091-go v1.7.0
 	github.com/redis/go-redis/v9 v9.0.2
 	go.uber.org/zap v1.24.0
@@ -45,7 +45,7 @@ require (
 	github.com/klauspost/cpuid/v2 v2.0.9 // indirect
 	github.com/leodido/go-urn v1.2.1 // indirect
 	github.com/mattn/go-isatty v0.0.17 // indirect
-	github.com/mmcdole/goxpp v0.0.0-20200921145534-2f3784f67354 // indirect
+	github.com/mmcdole/goxpp v1.1.0 // indirect
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
 	github.com/modern-go/reflect2 v1.0.2 // indirect
 	github.com/pelletier/go-toml/v2 v2.0.6 // indirect
