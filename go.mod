@@ -4,7 +4,7 @@ go 1.19
 
 require (
 	github.com/JohannesKaufmann/html-to-markdown v1.3.6
-	github.com/ethereum/go-ethereum v1.11.2
+	github.com/ethereum/go-ethereum v1.11.3
 	github.com/gin-gonic/gin v1.9.0
 	github.com/lib/pq v1.10.7
 	github.com/mmcdole/gofeed v1.2.1
