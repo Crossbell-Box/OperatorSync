@@ -50,7 +50,7 @@ var SUPPORTED_PLATFORM = map[string]platform{
 	},
 	"twitter": {
 		Name:               "Twitter",
-		FeedLink:           "{{rsshub_stateless}}/twitter/user/{{username}}/excludeReplies=0&includeRts=1.json",
+		FeedLink:           "{{rsshub_stateless}}/twitter/user/{{username}}/excludeReplies=0&includeRts=1&showSymbolForRetweetAndReply=false.json",
 		MinRefreshGap:      10 * time.Minute,
 		MaxRefreshGap:      1 * time.Hour,
 		IsMediaAttachments: true,
