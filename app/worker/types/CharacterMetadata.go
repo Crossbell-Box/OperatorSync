@@ -12,7 +12,7 @@ type CharacterMetadata struct {
 		} `json:"banners"`
 		Websites   []string `json:"websites"`
 		Attributes []struct {
-			Value     string `json:"value"`
+			Value     any    `json:"value"` // Could be anything
 			TraitType string `json:"trait_type"`
 		} `json:"attributes"`
 		ConnectedAccounts []interface{} `json:"connected_accounts"`
