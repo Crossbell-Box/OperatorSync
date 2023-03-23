@@ -12,7 +12,7 @@ require (
 	github.com/redis/go-redis/v9 v9.0.2
 	go.uber.org/zap v1.24.0
 	gorm.io/driver/postgres v1.5.0
-	gorm.io/gorm v1.24.7-0.20230310094238-cc2d46e5be42
+	gorm.io/gorm v1.24.7-0.20230323031953-1a7ea98ac51a
 )
 
 require (

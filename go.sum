@@ -289,4 +289,6 @@ gorm.io/driver/postgres v1.5.0/go.mod h1:FUZXzO+5Uqg5zzwzv4KK49R8lvGIyscBOqYrtI1
 gorm.io/gorm v1.24.7-0.20230306060331-85eaf9eeda11/go.mod h1:L4uxeKpfBml98NYqVqwAdmV1a2nBtAec/cf3fpucW/k=
 gorm.io/gorm v1.24.7-0.20230310094238-cc2d46e5be42 h1:egxX7AHJBVPK4XSPNnv8/5yqavXayOEvHReG75Qwpm0=
 gorm.io/gorm v1.24.7-0.20230310094238-cc2d46e5be42/go.mod h1:L4uxeKpfBml98NYqVqwAdmV1a2nBtAec/cf3fpucW/k=
+gorm.io/gorm v1.24.7-0.20230323031953-1a7ea98ac51a h1:/qckdpP6Ol1SHRs4z417Im43MwTlABML9HiM2HQotQQ=
+gorm.io/gorm v1.24.7-0.20230323031953-1a7ea98ac51a/go.mod h1:L4uxeKpfBml98NYqVqwAdmV1a2nBtAec/cf3fpucW/k=
 rsc.io/pdf v0.1.1/go.mod h1:n8OzWcQ6Sp37PL01nO98y4iUCRdTGarVfzxY20ICaU4=
