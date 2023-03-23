@@ -43,14 +43,14 @@ func FeedOnChain(work *commonTypes.OnChainRequest) (string, string, error) {
 			work.Authors,
 			fmt.Sprintf("csb://account:%s@%s", work.Username, work.Platform),
 		),
-		Title: work.Title,
+		Title: StringPointerOmitEmpty(work.Title),
 		Tags:  work.Categories,
 		Sources: []string{
 			"xSync",
 			platform.Name,
 		},
-		ContentWarning: work.ContentWarning,
-		DatePublished:  work.PublishedAt.Format("2006-01-02T15:04:05Z"),
+		ContentWarning: StringPointerOmitEmpty(work.ContentWarning),
+		DatePublished:  StringPointerOmitEmpty(work.PublishedAt.Format("2006-01-02T15:04:05Z")),
 	}
 
 	if platform.HTML2Markdown {
@@ -59,12 +59,12 @@ func FeedOnChain(work *commonTypes.OnChainRequest) (string, string, error) {
 		if err != nil {
 			// Failed to parse
 			global.Logger.Errorf("Failed to parse html to markdown for feed (%s-%d) with error: %s", work.Platform, work.FeedID, err.Error())
-			metadata.Content = work.Content
+			metadata.Content = StringPointerOmitEmpty(work.Content)
 		} else {
-			metadata.Content = mdContent
+			metadata.Content = StringPointerOmitEmpty(mdContent)
 		}
 	} else {
-		metadata.Content = work.Content
+		metadata.Content = StringPointerOmitEmpty(work.Content)
 	}
 
 	if ValidateUri(work.Link) {
@@ -75,12 +75,12 @@ func FeedOnChain(work *commonTypes.OnChainRequest) (string, string, error) {
 		for _, media := range work.Media {
 			// Append basic info
 			attachment := types.NoteAttachment{
-				Name:    media.FileName,
-				Address: media.IPFSUri,
+				Name:    StringPointerOmitEmpty(media.FileName),
+				Address: StringPointerOmitEmpty(media.IPFSUri),
 				//Content:  "",
-				MimeType: media.ContentType,
-				FileSize: media.FileSize,
-				Alt:      media.FileName, // Just use filename for now
+				MimeType: StringPointerOmitEmpty(media.ContentType),
+				FileSize: &media.FileSize,
+				Alt:      StringPointerOmitEmpty(media.FileName), // Just use filename for now
 			}
 
 			// Append additional props
@@ -95,7 +95,8 @@ func FeedOnChain(work *commonTypes.OnChainRequest) (string, string, error) {
 					if err != nil {
 						global.Logger.Errorf("Failed to parse width of media #%s with error: %s", media.IPFSUri, err.Error())
 					} else {
-						attachment.Width = uint(mediaWidth)
+						uintMediaWidth := uint(mediaWidth)
+						attachment.Width = &uintMediaWidth
 					}
 				}
 				if mediaHeightStr, ok := additionalProps["height"]; ok {
@@ -103,7 +104,8 @@ func FeedOnChain(work *commonTypes.OnChainRequest) (string, string, error) {
 					if err != nil {
 						global.Logger.Errorf("Failed to parse height of media #%s with error: %s", media.IPFSUri, err.Error())
 					} else {
-						attachment.Width = uint(mediaHeight)
+						uintMediaHeight := uint(mediaHeight)
+						attachment.Width = &uintMediaHeight
 					}
 				}
 			}
