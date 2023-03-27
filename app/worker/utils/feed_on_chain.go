@@ -13,14 +13,14 @@ import (
 	"strconv"
 )
 
-func FeedOnChain(work *commonTypes.OnChainRequest) (string, string, error) {
+func FeedOnChain(work *commonTypes.OnChainRequest) (string, string, int64, int64, error) {
 	// Step -1: Check if feed with this uri (if any) is already on chain
 	if ValidateUri(work.Link) {
 		// Get feed with link from indexer
-		ipfsUri, tx, _, _, err := indexer.GetFeedWithLinkFromIndexer(work.Link)
+		ipfsUri, tx, characterId, noteId, err := indexer.GetFeedWithLinkFromIndexer(work.Link)
 		if err == nil && ipfsUri != "" && tx != "" {
 			// Already post
-			return ipfsUri, tx, nil
+			return ipfsUri, tx, characterId, noteId, nil
 		}
 	}
 
@@ -29,7 +29,10 @@ func FeedOnChain(work *commonTypes.OnChainRequest) (string, string, error) {
 		forNoteCharacterId int64 = 0
 		forNoteNoteId      int64 = 0
 	)
-	if ValidateUri(work.ForURI) {
+	if work.ForCharacterID > 0 && work.ForNoteID > 0 {
+		forNoteCharacterId = work.ForCharacterID
+		forNoteNoteId = work.ForNoteID
+	} else if ValidateUri(work.ForURI) {
 		_, _, forNoteCharacterId, forNoteNoteId, _ = indexer.GetFeedWithLinkFromIndexer(work.ForURI)
 	}
 
@@ -119,21 +122,21 @@ func FeedOnChain(work *commonTypes.OnChainRequest) (string, string, error) {
 	metaBytes, err := json.Marshal(&metadata)
 	if err != nil {
 		global.Logger.Errorf("Failed to parse metadata to json with error: %s", err.Error())
-		return "", "", err
+		return "", "", 0, 0, err
 	}
 	ipfsUri, _, err := UploadBytesToIPFS(metaBytes, "metadata.json")
 	if err != nil {
 		global.Logger.Errorf("Failed to upload metadata to IPFS with error: %s", err.Error())
-		return "", "", err
+		return "", "", 0, 0, err
 	}
 
 	// Step 3: Upload note to Crossbell Chain with ContentUri
-	tx, err := chain.PostNoteForCharacter(work.CrossbellCharacterID, ipfsUri, work.ForURI, forNoteCharacterId, forNoteNoteId)
+	tx, characterId, noteId, err := chain.PostNoteForCharacter(work.CrossbellCharacterID, ipfsUri, work.ForURI, forNoteCharacterId, forNoteNoteId)
 	if err != nil {
 		global.Logger.Errorf("Failed to post note to Crossbell chain for character #%s with error: %s", work.CrossbellCharacterID, err.Error())
-		return ipfsUri, tx, err // Transaction might be invalid
+		return ipfsUri, tx, characterId, noteId, err // Transaction might be invalid
 	}
 
 	// Step 4: Return Transaction hash and done!
-	return ipfsUri, tx, nil
+	return ipfsUri, tx, characterId, noteId, nil
 }

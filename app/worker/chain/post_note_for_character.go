@@ -13,18 +13,18 @@ import (
 	"strconv"
 )
 
-func PostNoteForCharacter(characterIdStr string, metadataUri string, forURI string, forNoteCharacterId int64, forNoteNoteId int64) (string, error) {
+func PostNoteForCharacter(characterIdStr string, metadataUri string, forURI string, forNoteCharacterId int64, forNoteNoteId int64) (string, int64, int64, error) {
 	characterId, err := strconv.ParseInt(characterIdStr, 10, 64)
 	if err != nil {
 		global.Logger.Errorf("Failed to parse character id with error: %s", err.Error())
-		return "", err
+		return "", 0, 0, err
 	}
 
 	// Prepare contract instance
 	client, contractInstance, operatorAuth, err := Prepare()
 	if err != nil {
 		global.Logger.Errorf("Failed to prepare eth contract instance")
-		return "", err
+		return "", 0, 0, err
 	}
 
 	var tx *ethTypes.Transaction
@@ -59,23 +59,30 @@ func PostNoteForCharacter(characterIdStr string, metadataUri string, forURI stri
 	}
 	if err != nil {
 		global.Logger.Errorf("Failed to create transaction: %s", err.Error())
-		return "", err
+		return "", 0, 0, err
 	}
 
 	// Wait till transaction finish or timeout
 	ctx, cancel := context.WithTimeout(context.Background(), consts.CONFIG_TRANSACTION_TIMEOUT)
 	defer cancel()
-	rcpt, err := bind.WaitMined(ctx, client, tx)
+	rcpt, err := bind.WaitMined(ctx, client, tx) // Warn: Not stable -> for other evm chains, we should query this later (like for transaction revert etc.)
 	if err != nil {
 		if errors.Is(err, context.DeadlineExceeded) {
 			global.Logger.Errorf("Transaction %s timed out!", tx.Hash().Hex())
 		}
-		return "", err
+		return "", 0, 0, err
 	}
 	if rcpt.Status == ethTypes.ReceiptStatusFailed {
 		global.Logger.Errorf("Transaction %s failed", tx.Hash().Hex())
-		return "", fmt.Errorf("transaction failed")
+		return "", 0, 0, fmt.Errorf("transaction failed")
 	}
 
-	return tx.Hash().Hex(), nil
+	// Get return value
+	noteId, err := ExtractNoteID(rcpt)
+	if err != nil {
+		global.Logger.Errorf("Failed to extract note id for transaction %s with error: %v", tx.Hash().Hex(), err)
+		return "", 0, 0, err
+	}
+
+	return tx.Hash().Hex(), characterId, noteId, nil
 }

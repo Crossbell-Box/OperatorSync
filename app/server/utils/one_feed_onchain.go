@@ -9,7 +9,7 @@ import (
 	"time"
 )
 
-func OneFeedOnChain(account *models.Account, feed *models.Feed) (string, string, error, bool) {
+func OneFeedOnChain(account *models.Account, feed *models.Feed) (string, string, int64, int64, error, bool) {
 
 	onChainRequest := types.OnChainRequest{
 		FeedID:               feed.ID,
@@ -37,13 +37,13 @@ func OneFeedOnChain(account *models.Account, feed *models.Feed) (string, string,
 	case <-time.After(consts.RPCSETTINGS_OnChainRequestTimeOut):
 		// Timeout
 		global.Logger.Errorf("OnChain request timeout...")
-		return "", "", fmt.Errorf("onChain request timeout"), false
+		return "", "", 0, 0, fmt.Errorf("onChain request timeout"), false
 
 	case err := <-errChan:
 		if err != nil {
 			global.Logger.Errorf("Failed to receive on chain respond with error: %s", err.Error())
 			AccountOnChainPause(account, fmt.Sprintf("Failed toreceive on chain respond with error: %s", err.Error()))
-			return "", "", err, false
+			return "", "", 0, 0, err, false
 		}
 	}
 
@@ -52,9 +52,9 @@ func OneFeedOnChain(account *models.Account, feed *models.Feed) (string, string,
 		global.Logger.Errorf("Failed to finish OnChain work for feed %s#%d with error: %s", account.Platform, feed.ID, onChainResponse.Message)
 		AccountOnChainPause(account, fmt.Sprintf("Failed to finish OnChain work for feed %s#%d", account.Platform, feed.ID))
 		isAccountTerminated := CheckAndTerminateIfNeed(account)
-		return onChainResponse.IPFSUri, onChainResponse.Transaction, fmt.Errorf(onChainResponse.Message), isAccountTerminated
+		return onChainResponse.IPFSUri, onChainResponse.Transaction, onChainResponse.CharacterID, onChainResponse.NoteID, fmt.Errorf(onChainResponse.Message), isAccountTerminated
 	}
 
-	return onChainResponse.IPFSUri, onChainResponse.Transaction, nil, false
+	return onChainResponse.IPFSUri, onChainResponse.Transaction, onChainResponse.CharacterID, onChainResponse.NoteID, nil, false
 
 }

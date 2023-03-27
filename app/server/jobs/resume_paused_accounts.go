@@ -117,7 +117,7 @@ func tryToResumeOnePausedAccount(account *models.Account) bool {
 		}
 
 		// Try to push as many feeds as we can
-		ipfsUri, tx, err, terminated := utils.OneFeedOnChain(account, &feed)
+		ipfsUri, tx, characterId, noteId, err, terminated := utils.OneFeedOnChain(account, &feed)
 		if err != nil {
 			// Oops
 			global.Logger.Errorf("Failed to OnCHain feed %s#%d with error: %s", account.Platform, feed.ID, err.Error())
@@ -128,8 +128,12 @@ func tryToResumeOnePausedAccount(account *models.Account) bool {
 			break
 		} else {
 			global.Logger.Debugf("Succeeded to OnChain feed %s#%d", account.Platform, feed.ID)
-			pausedFeeds[index].IPFSUri = ipfsUri
-			pausedFeeds[index].Transaction = tx
+			pausedFeeds[index].OnChainData = types.OnChainData{
+				IPFSUri:     ipfsUri,
+				Transaction: tx,
+				CharacterID: characterId,
+				NoteID:      noteId,
+			}
 
 			// Increase succeeded notes count
 			account.NotesCount++

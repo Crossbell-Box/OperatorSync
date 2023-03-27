@@ -15,4 +15,6 @@ type OnChainResponse struct {
 	FeedID      uint   `json:"feed_id"` // Feed ID in main database
 	IPFSUri     string `json:"ipfs_uri"`
 	Transaction string `json:"tx"`
+	CharacterID int64  `json:"character_id"`
+	NoteID      int64  `json:"note_id"`
 }

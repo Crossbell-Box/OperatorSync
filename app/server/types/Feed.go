@@ -24,4 +24,6 @@ type Feed struct {
 type OnChainData struct {
 	IPFSUri     string `json:"ipfs_uri" gorm:"column:ipfs_uri"`
 	Transaction string `json:"transaction" gorm:"index"` // Query for unpublished feeds
+	CharacterID int64
+	NoteID      int64
 }

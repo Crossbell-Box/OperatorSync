@@ -21,6 +21,12 @@ type RawFeed struct {
 	Media          []Media        `json:"media" gorm:"-"`
 	ContentWarning string         `json:"content_warning"` // 'nsfw' | 'sensitive' | 'spoiler'
 
+	RelationDeps
+}
+
+type RelationDeps struct {
 	// PostNote4Uri specified field
-	ForURI string `json:"for_uri"`
+	ForURI         string `json:"for_uri"`
+	ForCharacterID int64  `gorm:"-" json:"-"`
+	ForNoteID      int64  `gorm:"-" json:"-"`
 }
