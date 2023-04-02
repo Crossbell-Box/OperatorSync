@@ -9,7 +9,7 @@ require (
 	github.com/lib/pq v1.10.7
 	github.com/mmcdole/gofeed v1.2.1
 	github.com/rabbitmq/amqp091-go v1.8.0
-	github.com/redis/go-redis/v9 v9.0.2
+	github.com/redis/go-redis/v9 v9.0.3
 	go.uber.org/zap v1.24.0
 	gorm.io/driver/postgres v1.5.0
 	gorm.io/gorm v1.24.7-0.20230323031953-1a7ea98ac51a
