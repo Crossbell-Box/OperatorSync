@@ -13,8 +13,8 @@ type NoteAttachment struct {
 	Height *uint   `json:"height,omitempty"`
 }
 
-type NoteAttributes struct {
-	Value       string `json:"value"` // string | number | boolean | null
+type NoteAttribute struct {
+	Value       any    `json:"value"` // string | number | boolean | null
 	TraitType   string `json:"trait_type,omitempty"`
 	DisplayType string `json:"display_type"` // 'string' | 'number' | 'date' | 'boolean'
 }
@@ -28,7 +28,7 @@ type NoteMetadata struct {
 	Tags           []string         `json:"tags,omitempty"`
 	Attachments    []NoteAttachment `json:"attachments,omitempty"`
 	Sources        []string         `json:"sources,omitempty"`
-	Attributes     []NoteAttributes `json:"attributes,omitempty"`
+	Attributes     []NoteAttribute  `json:"attributes,omitempty"`
 	ExternalUrls   []string         `json:"external_urls,omitempty"`
 	ContentWarning *string          `json:"content_warning,omitempty"` // 'nsfw' | 'sensitive' | 'spoiler'
 	DatePublished  *string          `json:"date_published,omitempty"`  // ISO8601
