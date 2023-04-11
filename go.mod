@@ -3,7 +3,7 @@ module github.com/Crossbell-Box/OperatorSync
 go 1.19
 
 require (
-	github.com/Crossbell-Box/contracts.go v0.0.0-20230410022722-2a11a8bfb170
+	github.com/Crossbell-Box/contracts.go v0.0.0-20230410043303-3f6ac5d3fae2
 	github.com/JohannesKaufmann/html-to-markdown v1.3.7
 	github.com/ethereum/go-ethereum v1.11.5
 	github.com/gin-gonic/gin v1.9.0

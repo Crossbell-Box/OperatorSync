@@ -20,7 +20,7 @@ var (
 	_client      *ethclient.Client
 	_address     common.Address
 	_auth        *bind.TransactOpts
-	_instance    *crossbellContract.Contract
+	_instance    *crossbellContract.Contracts
 )
 
 func init() {
@@ -47,7 +47,7 @@ func update() error {
 	return nil
 }
 
-func Prepare() (*ethclient.Client, *crossbellContract.Contract, *bind.TransactOpts, error) {
+func Prepare() (*ethclient.Client, *crossbellContract.Contracts, *bind.TransactOpts, error) {
 	if _initialized {
 		// Already initialized, just update
 		err := update()
@@ -66,7 +66,7 @@ func Prepare() (*ethclient.Client, *crossbellContract.Contract, *bind.TransactOp
 		return nil, nil, nil, err
 	}
 
-	_instance, err = crossbellContract.NewContract(common.HexToAddress(config.Config.CrossbellContractAddress), _client)
+	_instance, err = crossbellContract.NewContracts(common.HexToAddress(config.Config.CrossbellContractAddress), _client)
 	if err != nil {
 		global.Logger.Errorf("Failed to create Crossbell Contract instance with error: %s", err.Error())
 		return nil, nil, nil, err
