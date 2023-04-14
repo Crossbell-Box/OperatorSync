@@ -7,7 +7,7 @@ require (
 	github.com/JohannesKaufmann/html-to-markdown v1.3.7
 	github.com/ethereum/go-ethereum v1.11.5
 	github.com/gin-gonic/gin v1.9.0
-	github.com/lib/pq v1.10.7
+	github.com/lib/pq v1.10.8
 	github.com/mmcdole/gofeed v1.2.1
 	github.com/rabbitmq/amqp091-go v1.8.0
 	github.com/redis/go-redis/v9 v9.0.3
