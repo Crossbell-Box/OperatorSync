@@ -29,13 +29,13 @@ func init() {
 }
 
 func update() error {
-	if gasPrice, err := _client.SuggestGasPrice(context.Background()); err != nil {
-		global.Logger.Errorf("Failed to get eth gas price with error: %s", err.Error())
-		// Keep current gas price
-	} else {
-		// Update gas price
-		_auth.GasPrice = gasPrice
-	}
+	//if gasPrice, err := _client.SuggestGasPrice(context.Background()); err != nil {
+	//	global.Logger.Errorf("Failed to get eth gas price with error: %s", err.Error())
+	//	// Keep current gas price
+	//} else {
+	//	// Update gas price
+	//	_auth.GasPrice = gasPrice
+	//}
 
 	nonce, err := _client.PendingNonceAt(context.Background(), _address)
 	if err != nil {
@@ -96,6 +96,8 @@ func Prepare() (*ethclient.Client, *crossbellContract.Contracts, *bind.TransactO
 	}
 	_auth.Value = big.NewInt(0)     // in wei
 	_auth.GasLimit = uint64(300000) // in units
+
+	_auth.GasPrice = big.NewInt(1_000_000_000) // Lock gas price
 
 	err = update()
 	if err != nil {

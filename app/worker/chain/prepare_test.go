@@ -32,7 +32,7 @@ func TestPrepare(t *testing.T) {
 	global.Logger = logger.Sugar()
 
 	// Prepare contract instance
-	_, contractInstance, _, err := Prepare()
+	_, contractInstance, auth, err := Prepare()
 	if err != nil {
 		global.Logger.Errorf("Failed to prepare eth contract instance")
 		t.Fail()
@@ -42,4 +42,7 @@ func TestPrepare(t *testing.T) {
 	result, err := contractInstance.GetCharacter(&bind.CallOpts{}, big.NewInt(19))
 	resultJson, _ := json.MarshalIndent(&result, "", "  ")
 	t.Log(string(resultJson))
+
+	// Get gas price
+	t.Log(auth.GasPrice)
 }
