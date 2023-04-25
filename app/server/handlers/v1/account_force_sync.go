@@ -52,23 +52,25 @@ func ForceSyncAccount(ctx *gin.Context) {
 			"result":  nil,
 		})
 	} else {
-		// Check if eligible to sync now
-		earliestNextUpdate := account.LastUpdated.Add(commonConsts.SUPPORTED_PLATFORM[reqPlatform].MinRefreshGap)
-		if earliestNextUpdate.Before(time.Now()) {
-			account.NextUpdate = time.Now()
-		} else {
-			account.NextUpdate = earliestNextUpdate
-		}
+		// Check if is just bind
+		if account.LastUpdated.After(time.Unix(0, 0)) {
+			// Already synced, check if eligible to sync now
+			earliestNextUpdate := account.LastUpdated.Add(commonConsts.SUPPORTED_PLATFORM[reqPlatform].MinRefreshGap)
+			if earliestNextUpdate.Before(time.Now()) {
+				account.NextUpdate = time.Now()
+			} else {
+				account.NextUpdate = earliestNextUpdate
+			}
 
-		// Save account
-		global.DB.Save(&account)
+			// Save account
+			global.DB.Save(&account)
+		} else {
+			// Yes, it's just bind, prevent 1970-1-1
+			account.LastUpdated = account.NextUpdate
+		}
 
 		// Parse accounts update interval to seconds
 		account.UpdateInterval = time.Duration(account.UpdateInterval.Seconds())
-		if !account.LastUpdated.After(time.Unix(0, 0)) {
-			// Prevent 1970-1-1
-			account.LastUpdated = account.NextUpdate
-		}
 
 		// Response
 		ctx.JSON(http.StatusOK, gin.H{
