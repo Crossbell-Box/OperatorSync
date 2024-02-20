@@ -24,7 +24,7 @@ spec:
     spec:
       enableServiceLinks: false
       containers:
-        - image: $IMAGE_TAG_RELEASE
+        - image: flosspicks/opsync
           imagePullPolicy: Always
           name: operator-sync-worker
           command: ["worker"]
