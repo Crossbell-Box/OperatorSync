@@ -1,7 +1,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: operatorsync-server
+  name: operator-sync-server
   namespace: crossbell
 spec:
   progressDeadlineSeconds: 600
@@ -9,7 +9,7 @@ spec:
   revisionHistoryLimit: 10
   selector:
     matchLabels:
-      app: operatorsync
+      app: operator-sync
       tier: server
   strategy:
     rollingUpdate:
@@ -19,18 +19,18 @@ spec:
   template:
     metadata:
       labels:
-        app: operatorsync
+        app: operator-sync
         tier: server
     spec:
       enableServiceLinks: false
       containers:
-        - image: $IMAGE_TAG_RELEASE
+        - image: flosspicks/opsync
           imagePullPolicy: Always
-          name: operatorsync-server
+          name: operator-sync-server
           command: ["server"]
           envFrom:
             - secretRef:
-                name: operatorsync-server
+                name: operator-sync-server
           env:
             - name: MAIN_SERVER
               value: 'false'
