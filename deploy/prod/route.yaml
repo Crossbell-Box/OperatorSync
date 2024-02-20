@@ -5,7 +5,7 @@ metadata:
   namespace: crossbell
 spec:
   entryPoints:
-  - web
+  - websecure
   routes:
   - kind: Rule
     match: Host(`opsync.crossbell.io`)
