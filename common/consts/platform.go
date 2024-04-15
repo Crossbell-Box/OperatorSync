@@ -50,7 +50,7 @@ var SUPPORTED_PLATFORM = map[string]platform{
 	},
 	"twitter": {
 		Name:               "Twitter",
-		FeedLink:           "{{rsshub_stateless}}/twitter/user/{{username}}/excludeReplies=0&includeRts=1&showSymbolForRetweetAndReply=false.json",
+		FeedLink:           "{{rsshub_stateless}}/twitter/user/{{username}}/excludeReplies=0&includeRts=1&showSymbolForRetweetAndReply=false&format=json",
 		MinRefreshGap:      10 * time.Minute,
 		MaxRefreshGap:      1 * time.Hour,
 		IsMediaAttachments: true,
@@ -59,7 +59,7 @@ var SUPPORTED_PLATFORM = map[string]platform{
 	},
 	"tg_channel": {
 		Name:               "Telegram Channel",
-		FeedLink:           "{{rsshub_stateless}}/telegram/channel/{{username}}/includeServiceMsg=0.json",
+		FeedLink:           "{{rsshub_stateless}}/telegram/channel/{{username}}/includeServiceMsg=0&format=json",
 		MinRefreshGap:      30 * time.Minute,
 		MaxRefreshGap:      1 * time.Hour,
 		IsMediaAttachments: false,
@@ -104,7 +104,7 @@ var SUPPORTED_PLATFORM = map[string]platform{
 	},
 	"jike": {
 		Name:               "Jike",
-		FeedLink:           "{{rsshub_stateless}}/jike/user/{{username}}.json",
+		FeedLink:           "{{rsshub_stateless}}/jike/user/{{username}}?format=json",
 		MinRefreshGap:      10 * time.Minute,
 		MaxRefreshGap:      1 * time.Hour,
 		IsMediaAttachments: true,

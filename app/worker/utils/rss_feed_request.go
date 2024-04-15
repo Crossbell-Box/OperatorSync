@@ -11,7 +11,15 @@ import (
 func RSSFeedRequest(url string, withProxy bool) (*gofeed.Feed, uint, error) {
 	feedsBody, err := HttpRequest(url, withProxy)
 	if err != nil {
-		return nil, commonConsts.ERROR_CODE_HTTP_REQUEST_FAILED, err
+		if withProxy {
+			// Try again but without proxy
+			feedsBody, err = HttpRequest(url, false)
+			if err != nil {
+				return nil, commonConsts.ERROR_CODE_HTTP_REQUEST_FAILED, err
+			}
+		} else {
+			return nil, commonConsts.ERROR_CODE_HTTP_REQUEST_FAILED, err
+		}
 	}
 
 	fp := gofeed.NewParser()
@@ -26,7 +34,15 @@ func RSSFeedRequest(url string, withProxy bool) (*gofeed.Feed, uint, error) {
 func RSSFeedRequestJson(url string, withProxy bool) (*commonTypes.FeedWithExtra, uint, error) {
 	feedsBody, err := HttpRequest(url, withProxy)
 	if err != nil {
-		return nil, commonConsts.ERROR_CODE_HTTP_REQUEST_FAILED, err
+		if withProxy {
+			// Try again but without proxy
+			feedsBody, err = HttpRequest(url, false)
+			if err != nil {
+				return nil, commonConsts.ERROR_CODE_HTTP_REQUEST_FAILED, err
+			}
+		} else {
+			return nil, commonConsts.ERROR_CODE_HTTP_REQUEST_FAILED, err
+		}
 	}
 
 	var feed commonTypes.FeedWithExtra
