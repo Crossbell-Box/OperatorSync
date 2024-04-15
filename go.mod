@@ -11,7 +11,7 @@ require (
 	github.com/mmcdole/gofeed v1.2.1
 	github.com/rabbitmq/amqp091-go v1.8.0
 	github.com/redis/go-redis/v9 v9.0.3
-	go.uber.org/zap v1.24.0
+	go.uber.org/zap v1.27.0
 	gorm.io/driver/postgres v1.5.0
 	gorm.io/gorm v1.25.0
 )
@@ -57,7 +57,7 @@ require (
 	github.com/ugorji/go/codec v1.2.9 // indirect
 	github.com/yusufpapurcu/wmi v1.2.2 // indirect
 	go.uber.org/atomic v1.10.0 // indirect
-	go.uber.org/multierr v1.8.0 // indirect
+	go.uber.org/multierr v1.10.0 // indirect
 	golang.org/x/arch v0.0.0-20210923205945-b76863e36670 // indirect
 	golang.org/x/crypto v0.8.0 // indirect
 	golang.org/x/net v0.9.0 // indirect
