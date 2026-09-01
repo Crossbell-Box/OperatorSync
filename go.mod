@@ -1,13 +1,13 @@
 module github.com/Crossbell-Box/OperatorSync
 
-go 1.19
+go 1.21
 
 require (
 	github.com/Crossbell-Box/contracts.go v0.0.0-20230410043303-3f6ac5d3fae2
 	github.com/JohannesKaufmann/html-to-markdown v1.5.0
 	github.com/ethereum/go-ethereum v1.11.5
 	github.com/gin-gonic/gin v1.9.1
-	github.com/lib/pq v1.10.9
+	github.com/lib/pq v1.12.3
 	github.com/mmcdole/gofeed v1.3.0
 	github.com/rabbitmq/amqp091-go v1.9.0
 	github.com/redis/go-redis/v9 v9.5.1
